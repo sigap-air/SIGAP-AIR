@@ -1,24 +1,32 @@
-# SIGAP-AIR
+# 💧 SIGAP-AIR
 
-**Sistem Informasi Gerak Cepat Pengaduan Air**  
+**Sistem Informasi Gerak Cepat Pengaduan Air**
 Aplikasi web berbasis Laravel untuk pengelolaan pengaduan kualitas air bersih PDAM.
 
 ---
 
-## 🧰 Teknologi
+## 🧾 Deskripsi
 
-- PHP 8.1+
-- Laravel 10
-- Laravel Breeze (Blade) – autentikasi
-- MySQL / MariaDB
-- Tailwind CSS
-- Laravel Dusk – testing otomatis
-- Jira – manajemen proyek
-- Git & GitHub – version control
+SIGAP-AIR adalah sistem berbasis web yang dirancang untuk mempermudah masyarakat dalam melaporkan permasalahan kualitas air, serta membantu pihak PDAM dalam mengelola, memproses, dan memonitor pengaduan secara efisien.
 
 ---
 
-## 📁 Struktur Folder 
+## 🧰 Teknologi yang Digunakan
+
+* PHP 8.1+
+* Laravel 10
+* Laravel Breeze (Blade) – Authentication
+* MySQL / MariaDB
+* Tailwind CSS
+* Laravel Dusk – Automated Testing
+* Jira – Project Management
+* Git & GitHub – Version Control
+
+---
+
+## 📁 Struktur Folder
+
+```bash
 sigap-air/
 ├── .gitignore
 ├── .env.example
@@ -96,40 +104,92 @@ sigap-air/
         │   └── edit.blade.php
         └── master/
             └── sla.blade.php
+```
 
+> 📌 Setiap anggota hanya perlu fokus pada folder:
 
-
-> Setiap anggota hanya perlu fokus pada folder `Domains/[domain masing-masing]`.
+```bash
+app/Domains/[domain masing-masing]
+```
 
 ---
 
-## 🚀 Setup Proyek (Untuk Semua Anggota)
+## ⚙️ Setup Proyek
+
+Ikuti langkah berikut untuk menjalankan project secara lokal:
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/aturrr62/SIGAP-AIR.git
+
+# 2. Masuk ke folder project
 cd SIGAP-AIR
 
-# 2. Install PHP dependencies
+# 3. Install dependency PHP
 composer install
 
-# 3. Install Node dependencies
+# 4. Install dependency frontend
 npm install
 
-# 4. Copy environment file
+# 5. Copy file environment
 cp .env.example .env
 
-# 5. Generate application key
+# 6. Generate application key
 php artisan key:generate
 
-# 6. Atur database di file .env (DB_DATABASE, DB_USERNAME, DB_PASSWORD)
+# 7. Konfigurasi database di file .env
+# DB_DATABASE=nama_database
+# DB_USERNAME=root
+# DB_PASSWORD=
 
-# 7. Jalankan migrasi
+# 8. Jalankan migrasi database
 php artisan migrate
 
-# 8. Build assets
+# 9. Build assets frontend
 npm run build
 
-# 9. Jalankan server lokal
+# 10. Jalankan server
 php artisan serve
+```
 
+---
+
+## 🧪 Testing
+
+Untuk menjalankan automated testing menggunakan Laravel Dusk:
+
+```bash
+php artisan dusk
+```
+
+---
+
+## 👥 Kontribusi
+
+1. Buat branch baru dari `main`
+2. Kerjakan fitur sesuai domain masing-masing
+3. Commit perubahan dengan pesan yang jelas
+4. Push ke branch
+5. Buat Pull Request ke `main`
+
+---
+
+## 🔐 Git Workflow (Disarankan)
+
+* ❌ Tidak diperbolehkan push langsung ke `main`
+* ✅ Gunakan Pull Request
+* ✅ Minimal 1 approval sebelum merge
+
+---
+
+## 📌 Catatan
+
+* Pastikan `.env` tidak di-commit
+* Gunakan struktur domain yang sudah ditentukan
+* Ikuti standar penamaan file & class Laravel
+
+---
+
+## 📄 Lisensi
+
+Project ini dibuat untuk keperluan akademik dan pengembangan internal.
