@@ -44,6 +44,16 @@ class User extends Authenticatable
     public function isPetugas(): bool    { return $this->role === 'petugas'; }
     public function isMasyarakat(): bool { return $this->role === 'masyarakat'; }
 
+    public function dashboardPath(): string
+    {
+        return match ($this->role) {
+            'admin' => '/admin/dashboard',
+            'supervisor' => '/supervisor/dashboard',
+            'petugas' => '/petugas/dashboard',
+            default => '/masyarakat/dashboard',
+        };
+    }
+
     // ========================
     // RELASI
     // ========================
