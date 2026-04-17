@@ -29,9 +29,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $dashboardPath = $request->user()?->dashboardPath() ?? RouteServiceProvider::HOME;
-
-        return redirect()->intended($dashboardPath);
+        return $this->redirectBasedOnRole();
     }
 
     /**
@@ -45,6 +43,22 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->with('success', 'Logout berhasil');
+    }
+
+    /**
+     * Redirect berdasarkan role user yang login
+     */
+    protected function redirectBasedOnRole(): RedirectResponse
+    {
+        $user = Auth::user();
+
+        return match ($user->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'supervisor' => redirect()->route('supervisor.dashboard'),
+            'petugas' => redirect()->route('petugas.dashboard'),
+            'masyarakat' => redirect()->route('masyarakat.dashboard'),
+            default => redirect()->route('dashboard'),
+        };
     }
 }

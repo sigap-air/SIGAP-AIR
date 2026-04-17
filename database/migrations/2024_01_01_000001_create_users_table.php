@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('username', 100)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->enum('role', ['admin', 'supervisor', 'petugas', 'masyarakat'])->default('masyarakat');
-            $table->string('no_telepon')->nullable();
+            $table->string('no_telepon', 20)->nullable();
             $table->string('foto_profil')->nullable();
             $table->boolean('is_active')->default(true);
             $table->rememberToken();

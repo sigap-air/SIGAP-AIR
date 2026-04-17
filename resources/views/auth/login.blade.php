@@ -15,12 +15,10 @@
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
-
             <x-text-input id="password" class="block mt-1 w-full"
                             type="password"
                             name="password"
                             required autocomplete="current-password" />
-
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
@@ -32,16 +30,14 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
+        <div class="mt-6 flex items-center justify-between gap-4">
+            <a href="{{ route('password.request') }}" class="text-sm text-indigo-600 hover:text-indigo-700 underline">
+                {{ __('Forgot your password?') }}
+            </a>
 
-            <x-primary-button class="ms-3">
+            <button type="submit" style="padding: 0.5rem 1.5rem; background-color: rgb(79, 70, 229); color: white; font-weight: 600; border-radius: 0.5rem; border: none; cursor: pointer;" onmouseover="this.style.backgroundColor='rgb(67, 56, 202)'" onmouseout="this.style.backgroundColor='rgb(79, 70, 229)'">
                 {{ __('Log in') }}
-            </x-primary-button>
+            </button>
         </div>
     </form>
 </x-guest-layout>
