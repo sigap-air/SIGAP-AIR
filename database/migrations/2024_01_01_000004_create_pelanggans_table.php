@@ -8,13 +8,18 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('pelanggans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('nomor_sambungan')->unique();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('zona_id')->constrained('zonas');
+            $table->string('nama_pelanggan', 255);
             $table->text('alamat');
-            $table->foreignId('zona_id')->constrained();
+            $table->string('nomor_sambungan', 50)->unique();
+            $table->string('no_telepon', 20)->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
-    public function down(): void { Schema::dropIfExists('pelanggans'); }
+    
+    public function down(): void { 
+        Schema::dropIfExists('pelanggans'); 
+    }
 };

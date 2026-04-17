@@ -16,9 +16,11 @@ class PelangganSeeder extends Seeder
         if ($user && $zona) {
             Pelanggan::create([
                 'user_id'          => $user->id,
+                'nama_pelanggan'   => $user->name ?? 'Masyarakat Dummy',
                 'nomor_sambungan'  => 'PDAM-2024-0001',
                 'alamat'           => 'Jl. Contoh No. 1, RT 01/RW 01',
                 'zona_id'          => $zona->id,
+                'no_telepon'       => '08123456789',
                 'is_active'        => true,
             ]);
         }

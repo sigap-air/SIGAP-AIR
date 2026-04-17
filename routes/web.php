@@ -29,7 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Role: Masyarakat
-    Route::middleware(['role:masyarakat'])->prefix('pengaduan')->name('masyarakat.')->group(function () {
+    Route::middleware(['role:masyarakat'])->prefix('masyarakat')->name('masyarakat.')->group(function () {
         Route::get('/dashboard', function () {
             return view('dashboard');
         })->name('dashboard');
@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
             return view('dashboard');
         })->name('dashboard');
         // PBI-01,02,03,09,16,17 routes here
+        Route::resource('pelanggan', \App\Http\Controllers\Admin\PelangganController::class);
     });
 
     // Shared: Admin & Supervisor
