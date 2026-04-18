@@ -37,7 +37,8 @@
                     <span class="material-symbols-outlined text-white text-4xl">person</span>
                 </div>
                 <h2 class="text-xl font-bold text-white font-headline">{{ $pelanggan->nama_pelanggan }}</h2>
-                <p class="text-blue-200 text-sm mt-1 font-mono">{{ $pelanggan->nomor_sambungan }}</p>
+                <p class="text-blue-300/80 text-xs mt-2 uppercase tracking-wide">No Tiket</p>
+                <p class="text-blue-100 text-sm font-mono">{{ $pelanggan->latestPengaduan?->nomor_tiket ?? $pelanggan->nomor_sambungan }}</p>
                 <div class="mt-3">
                     @if($pelanggan->is_active)
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/20 text-emerald-200 rounded-full text-xs font-semibold">

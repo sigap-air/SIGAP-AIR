@@ -18,18 +18,25 @@ class Sla extends Model
 
     protected $fillable = [
         'pengaduan_id',
-        'deadline',         // Kapan harus selesai
-        'is_overdue',       // Apakah sudah melewati deadline
-        'is_fulfilled',     // Apakah SLA terpenuhi
-        'waktu_selesai',
+        'batas_waktu',      // Kapan harus selesai
+        'status_sla',       // berjalan | terpenuhi | overdue
+        'is_flagged',
+        'resolved_at',
     ];
 
     protected $casts = [
-        'deadline'      => 'datetime',
-        'waktu_selesai' => 'datetime',
-        'is_overdue'    => 'boolean',
-        'is_fulfilled'  => 'boolean',
+        'batas_waktu' => 'datetime',
+        'resolved_at' => 'datetime',
+        'is_flagged'  => 'boolean',
     ];
 
     public function pengaduan() { return $this->belongsTo(Pengaduan::class); }
+
+    /**
+     * Alias kompatibilitas agar bagian kode lama tetap bisa akses $sla->deadline.
+     */
+    public function getDeadlineAttribute()
+    {
+        return $this->batas_waktu;
+    }
 }

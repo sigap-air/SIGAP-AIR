@@ -34,7 +34,7 @@
                 <p class="text-sm font-semibold leading-none">{{ auth()->user()->name }}</p>
                 <p class="text-xs text-white/80 capitalize">{{ auth()->user()->role }}</p>
             </div>
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ route('logout') }}" data-confirm="Yakin ingin logout dari akun ini?">
                 @csrf
                 <button type="submit"
                     class="text-xs bg-brand-dark hover:opacity-90 px-3 py-1.5 rounded-lg transition">

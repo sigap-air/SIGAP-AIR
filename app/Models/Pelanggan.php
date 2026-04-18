@@ -40,6 +40,12 @@ class Pelanggan extends Model
         return $this->hasMany(Pengaduan::class, 'user_id', 'user_id');
     }
 
+    /** Pengaduan terbaru milik user yang sama (sinkron dengan gform). */
+    public function latestPengaduan()
+    {
+        return $this->hasOne(Pengaduan::class, 'user_id', 'user_id')->latestOfMany();
+    }
+
     public function scopeFilter($query, array $filters)
     {
         $query->when($filters['zona_id'] ?? false, function ($query, $zona_id) {
@@ -53,7 +59,10 @@ class Pelanggan extends Model
         $query->when($filters['search'] ?? false, function ($query, $search) {
             $query->where(function ($query) use ($search) {
                 $query->where('nama_pelanggan', 'like', "%{$search}%")
-                      ->orWhere('nomor_sambungan', 'like', "%{$search}%");
+                      ->orWhere('nomor_sambungan', 'like', "%{$search}%")
+                      ->orWhereHas('pengaduan', function ($q) use ($search) {
+                          $q->where('nomor_tiket', 'like', "%{$search}%");
+                      });
             });
         });
     }

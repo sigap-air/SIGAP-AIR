@@ -41,6 +41,10 @@ class Pengaduan extends Model
         'tanggal_pengajuan' => 'datetime',
     ];
 
+    protected $appends = [
+        'tanggal_pengajuan',
+    ];
+
     // ========================
     // RELASI
     // ========================
@@ -86,8 +90,7 @@ class Pengaduan extends Model
 
     public function scopeOverdue($query)
     {
-        // TODO FALAH: implementasi scope overdue berdasarkan SLA
-        return $query->whereHas('sla', fn($q) => $q->where('is_overdue', true));
+        return $query->whereHas('sla', fn ($q) => $q->where('status_sla', 'overdue'));
     }
 
     // ========================
@@ -100,5 +103,14 @@ class Pengaduan extends Model
         $prefix = 'SIGAP-' . now()->format('Ymd');
         $last = static::whereDate('created_at', today())->count() + 1;
         return $prefix . '-' . str_pad($last, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Kompatibilitas lintas-PBI:
+     * beberapa bagian app memakai tanggal_pengajuan, sementara migrasi hanya created_at.
+     */
+    public function getTanggalPengajuanAttribute()
+    {
+        return $this->attributes['tanggal_pengajuan'] ?? $this->created_at;
     }
 }
