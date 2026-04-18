@@ -152,7 +152,7 @@
         @endif
 
         <!-- Form Register -->
-        <form method="POST" action="{{ route('register') }}" class="space-y-5" x-data="{ loading: false }" @submit="loading = true">
+        <form method="POST" action="{{ route('register') }}" class="space-y-5" x-data="{ loading: false }" @submit="loading = true" data-confirm="Yakin data pendaftaran sudah benar dan ingin membuat akun?">
             @csrf
             
             <input type="hidden" name="role" value="masyarakat">

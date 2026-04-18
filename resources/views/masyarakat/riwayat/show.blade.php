@@ -19,7 +19,7 @@
                     <div><dt class="text-gray-500">Zona</dt><dd class="font-semibold mt-0.5">{{ $pengaduan->zona->nama_zona }}</dd></div>
                     <div class="col-span-2"><dt class="text-gray-500">Lokasi</dt><dd class="font-semibold mt-0.5">{{ $pengaduan->lokasi }}</dd></div>
                     <div class="col-span-2"><dt class="text-gray-500">Deskripsi</dt><dd class="leading-relaxed text-gray-700 mt-0.5">{{ $pengaduan->deskripsi }}</dd></div>
-                    <div><dt class="text-gray-500">Tanggal Pengajuan</dt><dd class="font-semibold mt-0.5">{{ $pengaduan->tanggal_pengajuan->translatedFormat('d F Y, H:i') }}</dd></div>
+                    <div><dt class="text-gray-500">Tanggal Pengajuan</dt><dd class="font-semibold mt-0.5">{{ $pengaduan->tanggal_pengajuan->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }} WIB</dd></div>
                     @if ($pengaduan->status === 'ditolak')
                     <div class="col-span-2 bg-red-50 border border-red-200 rounded-lg p-3">
                         <dt class="text-red-600 font-semibold text-xs">Alasan Penolakan</dt>
@@ -33,7 +33,7 @@
             @if ($pengaduan->foto_bukti)
             <div class="bg-white rounded-xl shadow p-5">
                 <h2 class="font-bold text-gray-700 mb-3">📸 Foto Bukti</h2>
-                <img src="{{ asset('storage/' . $pengaduan->foto_bukti) }}" alt="Foto Bukti" class="w-full max-h-72 object-cover rounded-lg">
+                <img src="{{ asset('storage/' . $pengaduan->foto_bukti) }}" alt="Foto Bukti" class="w-full h-auto max-h-[34rem] object-contain rounded-lg bg-gray-50">
             </div>
             @endif
 
@@ -41,7 +41,7 @@
             @if ($pengaduan->assignment && $pengaduan->assignment->foto_hasil)
             <div class="bg-white rounded-xl shadow p-5">
                 <h2 class="font-bold text-gray-700 mb-3">🛠️ Foto Hasil Penanganan</h2>
-                <img src="{{ asset('storage/' . $pengaduan->assignment->foto_hasil) }}" alt="Foto Hasil" class="w-full max-h-72 object-cover rounded-lg">
+                <img src="{{ asset('storage/' . $pengaduan->assignment->foto_hasil) }}" alt="Foto Hasil" class="w-full h-auto max-h-[34rem] object-contain rounded-lg bg-gray-50">
                 @if ($pengaduan->assignment->catatan_penanganan)
                 <p class="text-sm text-gray-600 mt-3 bg-gray-50 rounded p-3">{{ $pengaduan->assignment->catatan_penanganan }}</p>
                 @endif
@@ -99,13 +99,13 @@
             @if ($pengaduan->sla)
             <div class="bg-white rounded-xl shadow p-5">
                 <h2 class="font-bold text-gray-700 mb-3">⏱️ SLA</h2>
-                <p class="text-sm text-gray-600">Batas: <strong>{{ $pengaduan->sla->deadline->translatedFormat('d M Y H:i') }}</strong></p>
-                @if ($pengaduan->sla->is_fulfilled)
+                <p class="text-sm text-gray-600">Batas: <strong>{{ $pengaduan->sla->deadline->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB</strong></p>
+                @if (($pengaduan->sla->status_sla ?? null) === 'terpenuhi')
                 <p class="text-sm text-green-600 font-semibold mt-1">✅ SLA Terpenuhi</p>
-                @elseif ($pengaduan->sla->is_overdue)
+                @elseif (($pengaduan->sla->status_sla ?? null) === 'overdue')
                 <p class="text-sm text-red-600 font-semibold mt-1">🚨 SLA Terlampaui</p>
                 @else
-                <p class="text-sm text-orange-600 mt-1">Sisa: {{ $pengaduan->sla->deadline->diffForHumans() }}</p>
+                <p class="text-sm text-orange-600 mt-1">Sisa: {{ $pengaduan->sla->deadline->timezone('Asia/Jakarta')->diffForHumans() }}</p>
                 @endif
             </div>
             @endif
@@ -115,7 +115,7 @@
             <div class="bg-white rounded-xl shadow p-5">
                 <h2 class="font-bold text-gray-700 mb-3">👷 Petugas Penanganan</h2>
                 <p class="font-semibold text-gray-800">{{ $pengaduan->assignment->petugas->user->name }}</p>
-                <p class="text-xs text-gray-500 mt-1">Jadwal: {{ $pengaduan->assignment->jadwal_penanganan?->translatedFormat('d M Y H:i') }}</p>
+                <p class="text-xs text-gray-500 mt-1">Jadwal: {{ $pengaduan->assignment->jadwal_penanganan?->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB</p>
             </div>
             @endif
 

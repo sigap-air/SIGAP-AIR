@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Masyarakat\DashboardController as MasyarakatDashboardController;
+use App\Http\Controllers\Masyarakat\NotifikasiController;
+use App\Http\Controllers\Masyarakat\PengaduanController;
+use App\Http\Controllers\Masyarakat\RiwayatController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,10 +35,21 @@ Route::middleware('auth')->group(function () {
 
     // Role: Masyarakat
     Route::middleware(['role:masyarakat'])->prefix('masyarakat')->name('masyarakat.')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboard');
-        })->name('dashboard');
-        // PBI-04,10,11,12 routes here
+        Route::get('/dashboard', [MasyarakatDashboardController::class, 'index'])->name('dashboard');
+
+        // PBI-04 Pengajuan Pengaduan Digital
+        Route::get('/pengaduan/create', [PengaduanController::class, 'create'])->name('pengaduan.create');
+        Route::post('/pengaduan', [PengaduanController::class, 'store'])->name('pengaduan.store');
+        Route::get('/pengaduan/{pengaduan}/sukses', [PengaduanController::class, 'sukses'])->name('pengaduan.sukses');
+
+        // PBI-10 Riwayat Pengaduan
+        Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
+        Route::get('/riwayat/{pengaduan}', [RiwayatController::class, 'show'])->name('riwayat.show');
+
+        // PBI-12 Notifikasi
+        Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+        Route::patch('/notifikasi/{id}/read', [NotifikasiController::class, 'markRead'])->name('notifikasi.read');
+        Route::patch('/notifikasi/read-all', [NotifikasiController::class, 'markAllRead'])->name('notifikasi.read-all');
     });
 
     // Role: Petugas
@@ -54,9 +70,7 @@ Route::middleware('auth')->group(function () {
 
     // Role: Admin
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         // PBI-01,02,03,09,16,17 routes here
         Route::resource('pelanggan', \App\Http\Controllers\Admin\PelangganController::class);
     });

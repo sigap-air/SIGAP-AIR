@@ -14,11 +14,12 @@ class StorePengaduanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kategori_id' => 'required|exists:kategoris,id',
-            'zona_id'     => 'required|exists:zonas,id',
+            'kategori_id' => 'required|exists:kategori_pengaduan,id',
+            'zona_id'     => 'required|exists:zona_wilayah,id',
             'lokasi'      => 'required|string|max:500',
+            'no_telepon'  => 'required|string|max:20',
             'deskripsi'   => 'required|string|min:20|max:2000',
-            'foto_bukti'  => 'nullable|image|mimes:jpg,jpeg,png|max:5120', // max 5MB
+            'foto_bukti'  => 'required|image|mimes:jpg,jpeg,png|max:10240', // max 10MB
         ];
     }
 
@@ -28,10 +29,12 @@ class StorePengaduanRequest extends FormRequest
             'kategori_id.required' => 'Kategori pengaduan wajib dipilih.',
             'zona_id.required'     => 'Zona wilayah wajib dipilih.',
             'lokasi.required'      => 'Lokasi pengaduan wajib diisi.',
+            'no_telepon.required'  => 'Nomor telepon wajib diisi.',
             'deskripsi.required'   => 'Deskripsi masalah wajib diisi.',
             'deskripsi.min'        => 'Deskripsi minimal 20 karakter.',
+            'foto_bukti.required'  => 'Foto bukti wajib diunggah.',
             'foto_bukti.image'     => 'File yang diunggah harus berupa gambar.',
-            'foto_bukti.max'       => 'Ukuran foto maksimal 5MB.',
+            'foto_bukti.max'       => 'Ukuran foto maksimal 10MB.',
         ];
     }
 }

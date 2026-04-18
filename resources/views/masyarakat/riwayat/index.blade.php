@@ -68,7 +68,7 @@
                 <tr class="hover:bg-gray-50 transition">
                     <td class="px-5 py-3 font-mono font-semibold text-blue-700">{{ $p->nomor_tiket }}</td>
                     <td class="px-5 py-3 text-gray-700">{{ $p->kategori->nama_kategori }}</td>
-                    <td class="px-5 py-3 text-gray-500 text-xs">{{ $p->tanggal_pengajuan->translatedFormat('d M Y') }}</td>
+                    <td class="px-5 py-3 text-gray-500 text-xs">{{ $p->tanggal_pengajuan->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB</td>
                     <td class="px-5 py-3 text-center"><x-badge-status :status="$p->status" /></td>
                     <td class="px-5 py-3 text-center">
                         @if ($p->rating)
