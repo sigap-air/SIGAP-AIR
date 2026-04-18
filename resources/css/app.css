@@ -1,24 +1,190 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Blob Animation */
-@keyframes blob {
-    0%, 100% {
-        transform: translate(0, 0) scale(1);
+/* ========================
+   CUSTOM BUTTON UTILITIES
+   ======================== */
+@layer components {
+    .btn-primary {
+        @apply bg-[#0F4C81] hover:bg-[#0D3F6E] text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed;
     }
-    33% {
-        transform: translate(30px, -50px) scale(1.1);
-    }
-    66% {
-        transform: translate(-20px, 20px) scale(0.9);
-    }
-}
 
-.animate-blob {
-    animation: blob 7s infinite;
-}
+    .btn-secondary {
+        @apply bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+    }
 
-.animation-delay-2000 {
-    animation-delay: 2s;
+    .btn-danger {
+        @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .btn-success {
+        @apply bg-[#00A878] hover:bg-[#008F66] text-white px-4 py-2 rounded-lg font-medium transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .btn-small {
+        @apply px-3 py-1.5 text-sm rounded-lg font-medium;
+    }
+
+    /* ========================
+       CARD COMPONENTS
+       ======================== */
+    .card {
+        @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+    }
+
+    .card-hover {
+        @apply card hover:shadow-md transition-shadow duration-200 cursor-pointer;
+    }
+
+    .card-sm {
+        @apply bg-white rounded-lg shadow-sm border border-gray-100 p-4;
+    }
+
+    /* ========================
+       FORM INPUTS
+       ======================== */
+    .input-field {
+        @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0F4C81] focus:border-transparent;
+    }
+
+    .input-field-error {
+        @apply input-field border-red-300 focus:ring-red-500;
+    }
+
+    /* ========================
+       BADGES & LABELS
+       ======================== */
+    .badge-status {
+        @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border;
+    }
+
+    .badge-status-waiting {
+        @apply badge-status bg-yellow-100 text-yellow-800 border-yellow-200;
+    }
+
+    .badge-status-approved {
+        @apply badge-status bg-blue-100 text-blue-800 border-blue-200;
+    }
+
+    .badge-status-assigned {
+        @apply badge-status bg-purple-100 text-purple-800 border-purple-200;
+    }
+
+    .badge-status-processing {
+        @apply badge-status bg-orange-100 text-orange-800 border-orange-200;
+    }
+
+    .badge-status-completed {
+        @apply badge-status bg-green-100 text-green-800 border-green-200;
+    }
+
+    .badge-status-rejected {
+        @apply badge-status bg-red-100 text-red-800 border-red-200;
+    }
+
+    /* ========================
+       TYPOGRAPHY
+       ======================== */
+    .page-title {
+        @apply text-2xl font-bold text-gray-900 font-heading;
+    }
+
+    .page-subtitle {
+        @apply text-sm text-gray-600 mt-1;
+    }
+
+    .section-label {
+        @apply text-xs font-semibold uppercase tracking-wider text-gray-500;
+    }
+
+    .text-muted {
+        @apply text-gray-500;
+    }
+
+    /* ========================
+       TABLE UTILITIES
+       ======================== */
+    .table-head {
+        @apply bg-gray-50 border-b border-gray-200;
+    }
+
+    .table-cell {
+        @apply px-4 py-3 text-sm text-gray-900;
+    }
+
+    .table-cell-header {
+        @apply table-cell font-semibold text-gray-700 bg-gray-50;
+    }
+
+    .table-row-hover {
+        @apply hover:bg-gray-50 transition-colors;
+    }
+
+    /* ========================
+       ANIMATIONS
+       ======================== */
+    @keyframes fadeInSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInSlideUp 0.6s ease-out;
+    }
+
+    .animate-slide-in-right {
+        animation: slideInRight 0.3s ease-out;
+    }
+
+    /* ========================
+       LAYOUT UTILITIES
+       ======================== */
+    .max-container {
+        @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .flex-between {
+        @apply flex items-center justify-between;
+    }
+
+    /* Blob Animation */
+    @keyframes blob {
+        0%, 100% {
+            transform: translate(0, 0) scale(1);
+        }
+        33% {
+            transform: translate(30px, -50px) scale(1.1);
+        }
+        66% {
+            transform: translate(-20px, 20px) scale(0.9);
+        }
+    }
+
+    .animate-blob {
+        animation: blob 7s infinite;
+    }
+
+    .animation-delay-2000 {
+        animation-delay: 2s;
+    }
 }
