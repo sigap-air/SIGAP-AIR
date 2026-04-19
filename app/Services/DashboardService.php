@@ -1,7 +1,7 @@
 <?php
 /**
  * DashboardService — Agregasi data untuk dashboard statistik
- * TANGGUNG JAWAB: Imanuel Karmelio V. Liuw (PBI 15)
+ * TANGGUNG JAWAB: Imanuel Karmelio V. Liuw (PBI 13)
  */
 namespace App\Services;
 
