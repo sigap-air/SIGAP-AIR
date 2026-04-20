@@ -52,7 +52,7 @@
         isactive(route) {
             return window.location.pathname.includes(route);
         }
-    }" class="min-h-screen flex flex-col">
+    }" class="h-screen flex flex-col overflow-hidden">
 
         <!-- TOPBAR -->
         <nav class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
@@ -128,9 +128,9 @@
         </nav>
 
         <!-- MAIN CONTAINER -->
-        <div class="flex flex-1 overflow-hidden">
+        <div class="flex flex-1 overflow-hidden min-h-0">
             <!-- SIDEBAR -->
-            <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="w-64 bg-navy-gradient text-white transition-transform duration-300 lg:translate-x-0 fixed lg:relative h-[calc(100vh-4rem)] z-30 overflow-y-auto flex flex-col shadow-xl">
+            <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="w-64 bg-navy-gradient text-white transition-transform duration-300 lg:translate-x-0 fixed lg:relative inset-y-0 left-0 z-30 overflow-y-auto flex flex-col shadow-xl flex-shrink-0">
 
                 <!-- Sidebar Header -->
                 <div class="p-6 border-b border-white/10">
@@ -200,17 +200,16 @@
             </aside>
 
             <!-- MAIN CONTENT -->
-            <main class="flex-1 overflow-y-auto">
-                <div class="p-6 lg:p-8">
+            <main class="flex-1 overflow-y-auto flex flex-col">
+                <div class="flex-1 p-6 lg:p-8">
                     {{ $slot }}
                 </div>
+                <!-- FOOTER -->
+                <footer class="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-500 flex-shrink-0">
+                    <p>&copy; 2026 SIGAP-AIR v1.0 — Sistem Informasi Gerak Cepat Pengaduan Air</p>
+                </footer>
             </main>
         </div>
-
-        <!-- FOOTER -->
-        <footer class="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-500">
-            <p>&copy; 2026 SIGAP-AIR v1.0 — Sistem Informasi Gerak Cepat Pengaduan Air</p>
-        </footer>
     </div>
 
     @include('layouts.partials.flash-message')
