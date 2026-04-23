@@ -3,6 +3,7 @@
     $menus = match($role) {
         'admin' => [
             ['label' => 'Dashboard',  'route' => 'admin.dashboard',     'icon' => '🏠'],
+            ['label' => 'Pengaduan',  'route' => 'admin.pengaduan.index', 'icon' => '🔍'],
             ['label' => 'User',       'route' => 'admin.user.index',     'icon' => '👥'],
             ['label' => 'Petugas',    'route' => 'admin.petugas.index',  'icon' => '👷'],
             ['label' => 'Pelanggan',  'route' => 'admin.pelanggan.index','icon' => '🏘️'],

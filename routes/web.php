@@ -1,11 +1,17 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DaftarPengaduanController;
 use App\Http\Controllers\Masyarakat\DashboardController as MasyarakatDashboardController;
 use App\Http\Controllers\Masyarakat\NotifikasiController;
 use App\Http\Controllers\Masyarakat\PengaduanController;
 use App\Http\Controllers\Masyarakat\RiwayatController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Supervisor\AssignmentController;
+use App\Http\Controllers\Supervisor\DashboardController as SupervisorDashboardController;
+use App\Http\Controllers\Supervisor\FilterPengaduanController;
+use App\Http\Controllers\Supervisor\LaporanController;
+use App\Http\Controllers\Supervisor\VerifikasiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -65,15 +71,27 @@ Route::middleware('auth')->group(function () {
 
     // Role: Supervisor
     Route::middleware(['role:supervisor'])->prefix('supervisor')->name('supervisor.')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboard');
-        })->name('dashboard');
-        // PBI-05,06,13,14,15,18 routes here
+        Route::get('/dashboard', [SupervisorDashboardController::class, 'index'])->name('dashboard');
+
+        Route::get('/verifikasi', [VerifikasiController::class, 'index'])->name('verifikasi.index');
+        Route::get('/verifikasi/{pengaduan}', [VerifikasiController::class, 'show'])->name('verifikasi.show');
+        Route::patch('/verifikasi/{pengaduan}', [VerifikasiController::class, 'update'])->name('verifikasi.update');
+
+        Route::get('/filter', [FilterPengaduanController::class, 'index'])->name('filter.index');
+        Route::get('/filter/export-csv', [FilterPengaduanController::class, 'exportCsv'])->name('filter.export-csv');
+
+        Route::get('/assignment/{pengaduan}/create', [AssignmentController::class, 'create'])->name('assignment.create');
+        Route::post('/assignment/{pengaduan}', [AssignmentController::class, 'store'])->name('assignment.store');
+
+        Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('/laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
     });
 
     // Role: Admin
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/pengaduan', [DaftarPengaduanController::class, 'index'])->name('pengaduan.index');
+        Route::get('/pengaduan/export-csv', [DaftarPengaduanController::class, 'exportCsv'])->name('pengaduan.export-csv');
         // PBI-01,02,03,09,16,17 routes here
         Route::resource('pelanggan', \App\Http\Controllers\Admin\PelangganController::class);
     });

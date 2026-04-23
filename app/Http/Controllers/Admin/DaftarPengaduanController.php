@@ -1,15 +1,12 @@
 <?php
-/**
- * PBI-13 — Filter & Pencarian Lanjutan Pengaduan
- * Supervisor dan Admin memakai layanan yang sama (lihat Admin\DaftarPengaduanController).
- */
-namespace App\Http\Controllers\Supervisor;
+
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\PengaduanFilterService;
 use Illuminate\Http\Request;
 
-class FilterPengaduanController extends Controller
+class DaftarPengaduanController extends Controller
 {
     public function __construct(private PengaduanFilterService $pengaduanFilterService) {}
 
@@ -22,15 +19,15 @@ class FilterPengaduanController extends Controller
 
         $dropdown = $this->pengaduanFilterService->dropdownData();
 
-        return view('supervisor.pengaduan.daftar', [
+        return view('admin.pengaduan.daftar', [
             'pengaduans'     => $pengaduans,
             'zonas'          => $dropdown['zonas'],
             'kategoris'      => $dropdown['kategoris'],
             'statuses'       => $dropdown['statuses'],
             'petugasList'    => $dropdown['petugas'],
-            'indexRoute'     => 'supervisor.filter.index',
-            'exportCsvRoute' => 'supervisor.filter.export-csv',
-            'pageTitle'      => 'Filter Pengaduan',
+            'indexRoute'     => 'admin.pengaduan.index',
+            'exportCsvRoute' => 'admin.pengaduan.export-csv',
+            'pageTitle'      => 'Daftar & Filter Pengaduan',
         ]);
     }
 

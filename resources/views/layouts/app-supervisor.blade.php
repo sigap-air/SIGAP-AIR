@@ -138,7 +138,7 @@
                         <span>Dashboard</span>
                     </a>
 
-                    <a href="#" :class="isactive('/supervisor/verifikasi') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors relative">
+                    <a href="{{ route('supervisor.verifikasi.index') }}" :class="isactive('/supervisor/verifikasi') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors relative">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M2.5 1A1.5 1.5 0 001 2.5v15A1.5 1.5 0 002.5 19h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0017.5 1h-15zM7 9a2 2 0 11-4 0 2 2 0 014 0zM7 13a6 6 0 11-12 0 6 6 0 0112 0z" />
                         </svg>
@@ -146,7 +146,7 @@
                         <span x-show="verifikasiCount > 0" class="absolute -right-2 -top-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold" x-text="verifikasiCount"></span>
                     </a>
 
-                    <a href="#" :class="isactive('/supervisor/pengaduan') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
+                    <a href="{{ route('supervisor.filter.index') }}" :class="isactive('/supervisor/filter') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z" />
                         </svg>
@@ -160,7 +160,7 @@
                         <span>Assignment</span>
                     </a>
 
-                    <a href="#" :class="isactive('/supervisor/laporan') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
+                    <a href="{{ route('supervisor.laporan.index') }}" :class="isactive('/supervisor/laporan') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm0 4a1 1 0 100 2h6a1 1 0 100-2H7zm0 4a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
                         </svg>
