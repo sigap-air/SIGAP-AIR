@@ -157,7 +157,7 @@
         @endif
 
         <!-- Login Form -->
-        <form method="POST" action="{{ route('login') }}" class="space-y-6" x-data="{ loading: false }" @submit="loading = true">
+        <form method="POST" action="{{ route('login') }}" class="space-y-6" x-data="{ loading: false }" @submit="loading = true" data-confirm="Yakin ingin login ke akun ini?">
             @csrf
             
             <input class="hidden" type="checkbox" name="remember" checked>

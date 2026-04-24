@@ -24,8 +24,15 @@ class UpdatePelangganRequest extends FormRequest
                 'max:50',
                 Rule::unique('pelanggan', 'nomor_sambungan')->ignore($this->route('pelanggan')),
             ],
-            'no_telepon'      => ['nullable', 'string', 'max:20'],
+            'no_telepon'      => ['required', 'string', 'max:20'],
             'is_active'       => ['boolean'],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'nomor_sambungan' => 'No Tiket',
         ];
     }
 }

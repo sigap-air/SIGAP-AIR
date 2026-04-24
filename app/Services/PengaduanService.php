@@ -11,9 +11,8 @@
  */
 namespace App\Services;
 
-use App\Models\{Pengaduan, Sla, User};
-use App\Notifications\{PengaduanDiterimaNotification, PengaduanDisetujuiNotification, PengaduanDitolakNotification};
-use Illuminate\Support\Facades\{DB, Storage};
+use App\Models\{Pelanggan, Pengaduan, Sla, User};
+use Illuminate\Support\Facades\DB;
 
 class PengaduanService
 {
@@ -21,10 +20,13 @@ class PengaduanService
 
     /**
      * Buat pengaduan baru + generate tiket + set SLA
+     *
+     * @param  bool  $sinkronPelanggan  Jika true, data pelanggan di-update agar selaras dengan form publik.
+     *                                Set false ketika pelanggan sudah dibuat admin (mis. dari Panel Pelanggan).
      */
-    public function buat(array $data, User $pelapor): Pengaduan
+    public function buat(array $data, User $pelapor, bool $sinkronPelanggan = true): Pengaduan
     {
-        return DB::transaction(function () use ($data, $pelapor) {
+        return DB::transaction(function () use ($data, $pelapor, $sinkronPelanggan) {
             // 1. Upload foto bukti
             $fotoBukti = null;
             if (isset($data['foto_bukti'])) {
@@ -41,16 +43,35 @@ class PengaduanService
                 'deskripsi'         => $data['deskripsi'],
                 'foto_bukti'        => $fotoBukti,
                 'status'            => 'menunggu_verifikasi',
-                'tanggal_pengajuan' => now(),
             ]);
+
+            // Simpan no telepon terbaru pelapor dari form pengaduan.
+            $pelapor->update([
+                'no_telepon' => $data['no_telepon'],
+            ]);
+
+            if ($sinkronPelanggan) {
+                // Sinkronisasi ke data pelanggan admin agar input selaras dengan form masyarakat.
+                Pelanggan::updateOrCreate(
+                    ['user_id' => $pelapor->id],
+                    [
+                        'zona_id' => $data['zona_id'],
+                        'nama_pelanggan' => $pelapor->name,
+                        'alamat' => $data['lokasi'],
+                        'nomor_sambungan' => 'AUTO-' . str_pad((string) $pelapor->id, 6, '0', STR_PAD_LEFT),
+                        'no_telepon' => $data['no_telepon'],
+                        'is_active' => true,
+                    ]
+                );
+            }
 
             // 3. Set SLA otomatis berdasarkan kategori
             $slaJam = $pengaduan->kategori->sla_jam;
             Sla::create([
                 'pengaduan_id' => $pengaduan->id,
-                'deadline'     => now()->addHours($slaJam),
-                'is_overdue'   => false,
-                'is_fulfilled' => false,
+                'batas_waktu'  => now()->addHours($slaJam),
+                'status_sla'   => 'berjalan',
+                'is_flagged'   => false,
             ]);
 
             // 4. Kirim notifikasi ke pelapor

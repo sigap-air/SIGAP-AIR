@@ -17,8 +17,8 @@ class SlaService
         $sla = $pengaduan->sla;
         if (!$sla || $sla->is_fulfilled) return;
 
-        if (now()->greaterThan($sla->deadline) && !$sla->is_overdue) {
-            $sla->update(['is_overdue' => true]);
+        if (now()->greaterThan($sla->batas_waktu) && !$sla->is_overdue) {
+            $sla->update(['status_sla' => 'overdue', 'is_flagged' => true]);
 
             // Kirim alert ke semua supervisor
             $supervisors = \App\Models\User::where('role', 'supervisor')->where('is_active', true)->get();
@@ -40,8 +40,8 @@ class SlaService
     public function tandaiTerpenuhi(Pengaduan $pengaduan): void
     {
         $pengaduan->sla?->update([
-            'is_fulfilled' => true,
-            'waktu_selesai'=> now(),
+            'status_sla'  => 'terpenuhi',
+            'resolved_at' => now(),
         ]);
     }
 }

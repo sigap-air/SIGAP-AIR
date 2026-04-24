@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return $this->redirectBasedOnRole();
+        return $this->redirectBasedOnRole()->with('success', 'Login berhasil');
     }
 
     /**
@@ -43,7 +43,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/')->with('success', 'Logout berhasil');
+        return redirect()->route('login')->with('status', 'Logout berhasil');
     }
 
     /**

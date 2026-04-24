@@ -20,7 +20,7 @@
         {{-- Search --}}
         <div class="flex-1 relative">
             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">search</span>
-            <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Cari nama atau nomor sambungan..." class="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400">
+            <input type="text" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Cari nama atau no tiket..." class="w-full h-12 pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400">
         </div>
 
         {{-- Filter Zona --}}
@@ -62,10 +62,14 @@
             <thead>
                 <tr class="bg-gray-50 border-b border-gray-100">
                     <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">No</th>
-                    <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Nama Pelanggan</th>
-                    <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">No. Sambungan</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Nama Pelapor / Pelanggan</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">No Tiket</th>
                     <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Zona</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Lokasi</th>
                     <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">No. Telepon</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Kategori Pengaduan</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Deskripsi Masalah</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Bukti Foto</th>
                     <th class="px-6 py-4 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs">Status</th>
                     <th class="px-6 py-4 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs">Aksi</th>
                 </tr>
@@ -90,11 +94,23 @@
                         <td class="px-6 py-4">
                             <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-[#022448] rounded-lg text-xs font-mono font-semibold">
                                 <span class="material-symbols-outlined text-sm">tag</span>
-                                {{ $item->nomor_sambungan }}
+                                {{ $item->latestPengaduan?->nomor_tiket ?? $item->nomor_sambungan }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-gray-700">{{ $item->zona->nama_zona ?? '-' }}</td>
+                        <td class="px-6 py-4 text-gray-600">{{ \Illuminate\Support\Str::limit($item->alamat, 45) }}</td>
                         <td class="px-6 py-4 text-gray-600">{{ $item->no_telepon ?? '-' }}</td>
+                        <td class="px-6 py-4 text-gray-700">{{ $item->latestPengaduan?->kategori->nama_kategori ?? '—' }}</td>
+                        <td class="px-6 py-4 text-gray-600 max-w-[14rem]">{{ $item->latestPengaduan ? \Illuminate\Support\Str::limit($item->latestPengaduan->deskripsi, 80) : '—' }}</td>
+                        <td class="px-6 py-4">
+                            @if($item->latestPengaduan?->foto_bukti)
+                                <a href="{{ asset('storage/' . $item->latestPengaduan->foto_bukti) }}" target="_blank" class="inline-block">
+                                    <img src="{{ asset('storage/' . $item->latestPengaduan->foto_bukti) }}" alt="" class="h-10 w-14 rounded-lg border border-gray-200 object-cover hover:opacity-90">
+                                </a>
+                            @else
+                                <span class="text-xs text-gray-400">—</span>
+                            @endif
+                        </td>
                         <td class="px-6 py-4 text-center">
                             @if($item->is_active)
                                 <span class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">
@@ -131,7 +147,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-16 text-center">
+                        <td colspan="11" class="px-6 py-16 text-center">
                             <div class="flex flex-col items-center">
                                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                                     <span class="material-symbols-outlined text-gray-300 text-3xl">group_off</span>

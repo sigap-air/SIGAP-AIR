@@ -26,12 +26,12 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('admin.pelanggan.store') }}" class="p-8 space-y-6">
+        <form method="POST" action="{{ route('admin.pelanggan.store') }}" enctype="multipart/form-data" class="p-8 space-y-6" data-confirm="Yakin ingin menyimpan data pelanggan ini?">
             @csrf
 
             {{-- Nama Pelanggan --}}
             <div>
-                <label for="nama_pelanggan" class="block text-sm font-semibold text-gray-700 mb-2">Nama Pelanggan <span class="text-red-500">*</span></label>
+                <label for="nama_pelanggan" class="block text-sm font-semibold text-gray-700 mb-2">Nama Pelapor / Nama Pelanggan <span class="text-red-500">*</span></label>
                 <input type="text" name="nama_pelanggan" id="nama_pelanggan" value="{{ old('nama_pelanggan') }}" required placeholder="Masukkan nama lengkap pelanggan" class="w-full h-14 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400">
                 @error('nama_pelanggan')
                     <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
@@ -41,10 +41,10 @@
                 @enderror
             </div>
 
-            {{-- Nomor Sambungan --}}
+            {{-- No Tiket --}}
             <div>
-                <label for="nomor_sambungan" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Sambungan <span class="text-red-500">*</span></label>
-                <input type="text" name="nomor_sambungan" id="nomor_sambungan" value="{{ old('nomor_sambungan') }}" required placeholder="Contoh: SAM-001234" class="w-full h-14 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400 font-mono">
+                <label for="nomor_sambungan" class="block text-sm font-semibold text-gray-700 mb-2">No Tiket <span class="text-red-500">*</span></label>
+                <input type="text" name="nomor_sambungan" id="nomor_sambungan" value="{{ old('nomor_sambungan') }}" required placeholder="Contoh: SIGAP-20260419-0001" class="w-full h-14 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400 font-mono">
                 @error('nomor_sambungan')
                     <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
                         <span class="material-symbols-outlined text-sm">error</span>
@@ -70,10 +70,10 @@
                 @enderror
             </div>
 
-            {{-- Alamat --}}
+            {{-- Lokasi (alamat) --}}
             <div>
-                <label for="alamat" class="block text-sm font-semibold text-gray-700 mb-2">Alamat <span class="text-red-500">*</span></label>
-                <textarea name="alamat" id="alamat" rows="3" required placeholder="Masukkan alamat lengkap pelanggan" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400 resize-none">{{ old('alamat') }}</textarea>
+                <label for="alamat" class="block text-sm font-semibold text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
+                <textarea name="alamat" id="alamat" rows="3" required placeholder="Alamat atau patokan lokasi kejadian" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400 resize-none">{{ old('alamat') }}</textarea>
                 @error('alamat')
                     <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
                         <span class="material-symbols-outlined text-sm">error</span>
@@ -82,11 +82,56 @@
                 @enderror
             </div>
 
-            {{-- Nomor Telepon --}}
+            {{-- Nomor Telepon (sebelum deskripsi, sama seperti gform masyarakat) --}}
             <div>
+            
                 <label for="no_telepon" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon</label>
                 <input type="tel" name="no_telepon" id="no_telepon" value="{{ old('no_telepon') }}" placeholder="Contoh: 08123456789" inputmode="numeric" pattern="[0-9]*" maxlength="15" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="w-full h-14 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400">
+                
                 @error('no_telepon')
+                    <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">error</span>
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
+
+            {{-- Kategori Pengaduan --}}
+            <div>
+                <label for="kategori_id" class="block text-sm font-semibold text-gray-700 mb-2">Kategori Pengaduan <span class="text-red-500">*</span></label>
+                <select name="kategori_id" id="kategori_id" required class="w-full h-14 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200">
+                    <option value="">-- Pilih Kategori --</option>
+                    @foreach($kategoris as $kat)
+                        <option value="{{ $kat->id }}" {{ (string) old('kategori_id') === (string) $kat->id ? 'selected' : '' }}>{{ $kat->nama_kategori }}</option>
+                    @endforeach
+                </select>
+                @error('kategori_id')
+                    <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">error</span>
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
+
+            {{-- Deskripsi Masalah --}}
+            <div>
+                <label for="deskripsi" class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi Masalah <span class="text-red-500">*</span></label>
+                <textarea name="deskripsi" id="deskripsi" rows="4" required minlength="20" placeholder="Jelaskan kendala secara detail (minimal 20 karakter)" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400 resize-y">{{ old('deskripsi') }}</textarea>
+                <p class="mt-1 text-xs text-gray-500">Minimal 20 karakter.</p>
+                @error('deskripsi')
+                    <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">error</span>
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
+
+            {{-- Bukti Foto --}}
+            <div>
+                <label for="foto_bukti" class="block text-sm font-semibold text-gray-700 mb-2">Bukti Foto <span class="text-red-500">*</span></label>
+                <input type="file" name="foto_bukti" id="foto_bukti" accept="image/jpeg,image/png,image/jpg" required class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-[#022448] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white">
+                <p class="mt-1 text-xs text-gray-500">JPG atau PNG, maks. 10MB.</p>
+                @error('foto_bukti')
                     <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
                         <span class="material-symbols-outlined text-sm">error</span>
                         {{ $message }}

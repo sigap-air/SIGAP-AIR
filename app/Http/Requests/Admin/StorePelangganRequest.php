@@ -18,8 +18,29 @@ class StorePelangganRequest extends FormRequest
             'nama_pelanggan'  => ['required', 'string', 'max:255'],
             'alamat'          => ['required', 'string', 'max:1000'],
             'nomor_sambungan' => ['required', 'string', 'max:50', 'unique:pelanggan,nomor_sambungan'],
-            'no_telepon'      => ['nullable', 'digits_between:8,15'],
+
+            'no_telepon' => ['required', 'digits_between:8,15'],
+          
+           
             'is_active'       => ['boolean'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'kategori_id.required' => 'Kategori pengaduan wajib dipilih.',
+            'deskripsi.required'   => 'Deskripsi masalah wajib diisi.',
+            'deskripsi.min'        => 'Deskripsi minimal 20 karakter.',
+            'foto_bukti.required'  => 'Bukti foto wajib diunggah.',
+            'foto_bukti.max'        => 'Ukuran foto maksimal 10MB.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'nomor_sambungan' => 'No Tiket',
         ];
     }
 }

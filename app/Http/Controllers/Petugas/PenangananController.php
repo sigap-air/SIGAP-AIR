@@ -40,6 +40,23 @@ class PenangananController extends Controller
         return view('petugas.tugas.index', compact('tugasAktif', 'tugasSelesai'));
     }
 
+    /**
+     * Halaman riwayat tugas selesai (dengan pagination).
+     */
+    public function riwayat(Request $request)
+    {
+        $petugasId = auth()->user()->petugas?->id;
+        abort_if(!$petugasId, 403, 'Akun Anda belum terdaftar sebagai petugas.');
+
+        $tugasSelesai = Assignment::with(['pengaduan.kategori', 'pengaduan.zona', 'pengaduan.sla'])
+            ->where('petugas_id', $petugasId)
+            ->where('status_assignment', 'selesai')
+            ->latest('tanggal_selesai')
+            ->paginate(10);
+
+        return view('petugas.tugas.riwayat', compact('tugasSelesai'));
+    }
+
     public function show(Assignment $tugas)
     {
         // Pastikan hanya petugas yang ditugaskan yang bisa lihat
@@ -56,9 +73,15 @@ class PenangananController extends Controller
         $request->validate([
             'status_assignment'  => 'required|in:diproses,selesai',
             'catatan_penanganan' => 'nullable|string|max:1000',
-            'foto_hasil'         => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+            'foto_hasil'         => [
+                $request->status_assignment === 'selesai' ? 'required' : 'nullable',
+                'image',
+                'mimes:jpg,jpeg,png',
+                'max:5120',
+            ],
         ], [
             'status_assignment.required' => 'Status penanganan wajib dipilih.',
+            'foto_hasil.required'        => 'Foto dokumentasi wajib diunggah saat menyelesaikan tugas.',
             'foto_hasil.image'           => 'File harus berupa gambar.',
             'foto_hasil.max'             => 'Ukuran foto maksimal 5MB.',
         ]);
@@ -82,6 +105,16 @@ class PenangananController extends Controller
                 'Pengaduan Selesai Ditangani ✅',
                 "Pengaduan #{$tugas->pengaduan->nomor_tiket} telah selesai ditangani. Berikan penilaian Anda!"
             );
+
+            // Notifikasi ke supervisor bahwa tugas selesai
+            if ($tugas->supervisor) {
+                $this->notifikasiService->kirim(
+                    $tugas->supervisor,
+                    $tugas->pengaduan,
+                    'Tugas Selesai Dilaporkan 📋',
+                    "Petugas telah menyelesaikan pengaduan #{$tugas->pengaduan->nomor_tiket}. Silakan review."
+                );
+            }
 
             return redirect()
                 ->route('petugas.tugas.index')

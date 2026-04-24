@@ -26,12 +26,16 @@ class AssignmentService
             ]);
 
             // 2. Update status pengaduan menjadi ditugaskan
+            $statusLama = $pengaduan->status;
             $pengaduan->update(['status' => 'ditugaskan']);
 
-            // 3. Ambil data petugas dan user-nya untuk notifikasi
+            // 3. Log perubahan status
+            $this->catatStatusLog($pengaduan, $supervisor, $statusLama, 'ditugaskan', 'Ditugaskan ke petugas.');
+
+            // 4. Ambil data petugas dan user-nya untuk notifikasi
             $petugas = Petugas::with('user')->find($data['petugas_id']);
 
-            // 4. Notifikasi ke petugas
+            // 5. Notifikasi ke petugas
             if ($petugas && $petugas->user) {
                 $this->notifikasiService->kirim(
                     $petugas->user,
@@ -41,7 +45,7 @@ class AssignmentService
                 );
             }
 
-            // 5. Notifikasi ke pelapor
+            // 6. Notifikasi ke pelapor
             $this->notifikasiService->kirim(
                 $pengaduan->pelapor,
                 $pengaduan,
@@ -66,6 +70,8 @@ class AssignmentService
                 $fotoHasil = $data['foto_hasil']->store('uploads/penanganan', 'public');
             }
 
+            $statusLama = $assignment->status_assignment;
+
             $updateData = [
                 'status_assignment'  => $data['status_assignment'],
                 'catatan_penanganan' => $data['catatan_penanganan'] ?? $assignment->catatan_penanganan,
@@ -78,16 +84,42 @@ class AssignmentService
 
             $assignment->update($updateData);
 
-            // Sync status pengaduan
+            // Sync status pengaduan — enum pengaduan: sedang_diproses | selesai
             $statusPengaduan = match ($data['status_assignment']) {
-                'diproses' => 'diproses',
+                'diproses' => 'sedang_diproses',
                 'selesai'  => 'selesai',
                 default    => $assignment->pengaduan->status,
             };
 
+            $statusPengaduanLama = $assignment->pengaduan->status;
             $assignment->pengaduan->update(['status' => $statusPengaduan]);
+
+            // Catat perubahan di status_log
+            $this->catatStatusLog(
+                $assignment->pengaduan,
+                auth()->user(),
+                $statusPengaduanLama,
+                $statusPengaduan,
+                $data['catatan_penanganan'] ?? null
+            );
 
             return $assignment->fresh();
         });
+    }
+
+    /**
+     * Catat perubahan status ke tabel status_log.
+     */
+    private function catatStatusLog(Pengaduan $pengaduan, User $user, ?string $statusLama, string $statusBaru, ?string $catatan = null): void
+    {
+        DB::table('status_log')->insert([
+            'pengaduan_id' => $pengaduan->id,
+            'user_id'      => $user->id,
+            'status_lama'  => $statusLama,
+            'status_baru'  => $statusBaru,
+            'catatan'      => $catatan,
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ]);
     }
 }

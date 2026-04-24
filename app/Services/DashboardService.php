@@ -1,7 +1,7 @@
 <?php
 /**
  * DashboardService — Agregasi data untuk dashboard statistik
- * TANGGUNG JAWAB: Imanuel Karmelio V. Liuw (PBI 15)
+ * TANGGUNG JAWAB: Imanuel Karmelio V. Liuw (PBI 13)
  */
 namespace App\Services;
 
@@ -14,13 +14,19 @@ class DashboardService
     /** Widget KPI: total masuk, menunggu, diproses, selesai, overdue */
     public function getKpi(): array
     {
+        // Kompatibilitas lintas migrasi: ada branch yang memakai
+        // status_ketersediaan, ada yang status_tersedia.
+        $statusPetugasColumn = DB::getSchemaBuilder()->hasColumn('petugas', 'status_ketersediaan')
+            ? 'status_ketersediaan'
+            : 'status_tersedia';
+
         return [
             'total_masuk'         => Pengaduan::count(),
             'menunggu_verifikasi' => Pengaduan::byStatus('menunggu_verifikasi')->count(),
-            'diproses'            => Pengaduan::byStatus('diproses')->count(),
+            'diproses'            => Pengaduan::whereIn('status', ['diproses', 'sedang_diproses'])->count(),
             'selesai'             => Pengaduan::byStatus('selesai')->count(),
             'overdue'             => Pengaduan::overdue()->count(),
-            'total_petugas'       => Petugas::where('status_ketersediaan', 'tersedia')->count(),
+            'total_petugas'       => Petugas::where($statusPetugasColumn, 'tersedia')->count(),
         ];
     }
 
