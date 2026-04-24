@@ -49,6 +49,8 @@
             <x-sigap-form-field label="Nomor Telepon" name="no_telepon" :required="true">
                 <input type="text" name="no_telepon" value="{{ old('no_telepon', auth()->user()->no_telepon) }}"
                     placeholder="Contoh: 08123456789"
+                    inputmode="numeric" pattern="[0-9]*"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                     class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-500 shadow-sm focus:ring-2 focus:ring-brand"
                     required />
             </x-sigap-form-field>
