@@ -52,7 +52,8 @@ class Pengaduan extends Model
 
     public function kategori()
     {
-        return $this->belongsTo(Kategori::class);
+        // FIX ERR-1: pakai KategoriPengaduan (PBI-02), bukan model Kategori lama
+        return $this->belongsTo(KategoriPengaduan::class, 'kategori_id');
     }
 
     public function zona()

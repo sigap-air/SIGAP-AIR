@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Masyarakat;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pengaduan\StorePengaduanRequest;
-use App\Models\{Pengaduan, Kategori, Zona};
+use App\Models\{Pengaduan, KategoriPengaduan, Zona};  // FIX ERR-3: pakai KategoriPengaduan
 use App\Services\PengaduanService;
 
 class PengaduanController extends Controller
@@ -22,7 +22,8 @@ class PengaduanController extends Controller
 
     public function create()
     {
-        $kategoris = Kategori::where('is_active', true)->get();
+        // FIX ERR-3: pakai KategoriPengaduan (model PBI-02) bukan Kategori lama
+        $kategoris = KategoriPengaduan::where('is_active', true)->get();
         $zonas     = Zona::where('is_active', true)->get();
 
         return view('masyarakat.pengaduan.create', compact('kategoris', 'zonas'));

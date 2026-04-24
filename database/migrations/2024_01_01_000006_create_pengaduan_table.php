@@ -21,6 +21,8 @@ return new class extends Migration
             $table->text('alasan_penolakan')->nullable();
             $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('verified_at')->nullable();
+            // FIX ERR-4: tanggal_pengajuan ada di $fillable model tapi tidak ada di migration
+            $table->timestamp('tanggal_pengajuan')->nullable();
             $table->timestamps();
 
             $table->index('status', 'idx_status');

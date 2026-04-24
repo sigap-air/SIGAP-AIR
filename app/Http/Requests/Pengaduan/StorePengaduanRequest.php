@@ -14,8 +14,9 @@ class StorePengaduanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kategori_id' => 'required|exists:kategoris,id',
-            'zona_id'     => 'required|exists:zonas,id',
+            // FIX ERR-2: nama tabel sesuai migration (bukan konvensi plural Laravel)
+            'kategori_id' => 'required|exists:kategori_pengaduan,id',
+            'zona_id'     => 'required|exists:zona_wilayah,id',
             'lokasi'      => 'required|string|max:500',
             'deskripsi'   => 'required|string|min:20|max:2000',
             'foto_bukti'  => 'nullable|image|mimes:jpg,jpeg,png|max:5120', // max 5MB
