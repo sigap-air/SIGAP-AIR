@@ -57,12 +57,12 @@
                                     </x-dropdown-link>
 
                                     <!-- Authentication -->
-                                    <form method="POST" action="{{ route('logout') }}">
+                                    <form method="POST" action="{{ route('logout') }}" data-confirm="Yakin ingin logout dari akun ini?">
                                         @csrf
 
                                         <x-dropdown-link :href="route('logout')"
                                                 onclick="event.preventDefault();
-                                                            this.closest('form').submit();">
+                                                            this.closest('form').requestSubmit();">
                                             {{ __('Log Out') }}
                                         </x-dropdown-link>
                                     </form>
@@ -103,12 +103,12 @@
                             </x-responsive-nav-link>
 
                             <!-- Authentication -->
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}" data-confirm="Yakin ingin logout dari akun ini?">
                                 @csrf
 
                                 <x-responsive-nav-link :href="route('logout')"
                                         onclick="event.preventDefault();
-                                                    this.closest('form').submit();">
+                                                    this.closest('form').requestSubmit();">
                                     {{ __('Log Out') }}
                                 </x-responsive-nav-link>
                             </form>

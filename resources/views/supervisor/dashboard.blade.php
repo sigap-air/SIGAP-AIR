@@ -1,67 +1,122 @@
 <x-app-layout>
     <x-slot name="title">Dashboard Supervisor</x-slot>
 
-    {{-- KPI Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
-        @php
-            $kpiDef = [
-                ['key'=>'total_masuk','label'=>'Total Masuk','color'=>'blue','icon'=>'📥'],
-                ['key'=>'menunggu_verifikasi','label'=>'Menunggu','color'=>'yellow','icon'=>'⏳'],
-                ['key'=>'diproses','label'=>'Diproses','color'=>'indigo','icon'=>'🔧'],
-                ['key'=>'selesai','label'=>'Selesai','color'=>'green','icon'=>'✅'],
-                ['key'=>'overdue','label'=>'Overdue','color'=>'red','icon'=>'🚨'],
-                ['key'=>'total_petugas','label'=>'Petugas Aktif','color'=>'purple','icon'=>'👷'],
-            ];
-        @endphp
-        @foreach ($kpiDef as $k)
-        <div class="bg-white rounded-xl shadow p-4 border-l-4 border-{{ $k['color'] }}-500">
-            <div class="text-2xl mb-1">{{ $k['icon'] }}</div>
-            <div class="text-2xl font-black text-gray-800">{{ $kpi[$k['key']] ?? 0 }}</div>
-            <div class="text-xs text-gray-500 mt-1">{{ $k['label'] }}</div>
-        </div>
-        @endforeach
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {{-- Chart Per Kategori --}}
-        <div class="bg-white rounded-xl shadow p-5">
-            <h2 class="font-bold text-gray-700 mb-4">📊 Per Kategori</h2>
-            <canvas id="chartKategori" height="220"></canvas>
+    <div class="mx-auto w-full max-w-6xl">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Dashboard Supervisor</h1>
+            <p class="mt-1 text-sm text-gray-500">Pantau verifikasi tiket, distribusi zona, dan progres penanganan pengaduan.</p>
         </div>
 
-        {{-- Chart Per Zona --}}
-        <div class="bg-white rounded-xl shadow p-5">
-            <h2 class="font-bold text-gray-700 mb-4">🗺️ Per Zona</h2>
-            <canvas id="chartZona" height="220"></canvas>
-        </div>
-
-        {{-- Antrean Verifikasi --}}
-        <div class="bg-white rounded-xl shadow p-5">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="font-bold text-gray-700">⏳ Antrean Verifikasi</h2>
-                <a href="{{ route('supervisor.verifikasi.index') }}" class="text-xs text-blue-600 hover:underline">Lihat Semua</a>
+        {{-- KPI Utama --}}
+        <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div class="text-xs uppercase tracking-wide text-gray-500">Total Pengaduan</div>
+                <div class="mt-2 text-3xl font-black text-[#022448]">{{ $kpi['total_masuk'] ?? 0 }}</div>
             </div>
-            <div class="space-y-2">
-                @forelse ($antrean as $p)
-                <a href="{{ route('supervisor.verifikasi.show', $p) }}"
-                   class="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50 transition">
-                    <div>
-                        <p class="text-xs font-semibold text-gray-800">{{ $p->nomor_tiket }}</p>
-                        <p class="text-xs text-gray-500">{{ $p->kategori->nama_kategori }} · {{ $p->zona->nama_zona }}</p>
+            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div class="text-xs uppercase tracking-wide text-gray-500">Menunggu Verifikasi</div>
+                <div class="mt-2 text-3xl font-black text-amber-600">{{ $kpi['menunggu_verifikasi'] ?? 0 }}</div>
+            </div>
+            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div class="text-xs uppercase tracking-wide text-gray-500">Sedang Diproses</div>
+                <div class="mt-2 text-3xl font-black text-sky-600">{{ $kpi['diproses'] ?? 0 }}</div>
+            </div>
+        </div>
+
+        {{-- KPI Tambahan --}}
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div class="text-xs text-gray-500">Selesai</div>
+                <div class="mt-1 text-2xl font-extrabold text-emerald-600">{{ $kpi['selesai'] ?? 0 }}</div>
+            </div>
+            <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div class="text-xs text-gray-500">Overdue</div>
+                <div class="mt-1 text-2xl font-extrabold text-rose-600">{{ $kpi['overdue'] ?? 0 }}</div>
+            </div>
+            <div class="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div class="text-xs text-gray-500">Petugas Aktif</div>
+                <div class="mt-1 text-2xl font-extrabold text-violet-600">{{ $kpi['total_petugas'] ?? 0 }}</div>
+            </div>
+        </div>
+
+        {{-- Quick Action + Antrean --}}
+        <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <a href="{{ route('supervisor.verifikasi.index') }}"
+               class="rounded-2xl bg-[#022448] p-5 text-white shadow-sm transition hover:bg-[#1e3a5f]">
+                <p class="text-xs uppercase tracking-wide text-blue-200">Aksi Cepat</p>
+                <p class="mt-2 text-lg font-bold">Verifikasi Pengaduan</p>
+                <p class="mt-1 text-sm text-blue-100">Periksa tiket masuk dan putuskan approve atau tolak.</p>
+            </a>
+
+            <a href="{{ route('supervisor.filter.index') }}"
+               class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:bg-gray-50">
+                <p class="text-xs uppercase tracking-wide text-gray-500">Aksi Cepat</p>
+                <p class="mt-2 text-lg font-bold text-gray-800">Filter Pengaduan</p>
+                <p class="mt-1 text-sm text-gray-500">Cari data lintas status, zona, dan kategori.</p>
+            </a>
+
+            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div class="mb-4 flex items-center justify-between">
+                    <h2 class="font-bold text-gray-800">Antrean Verifikasi</h2>
+                    <a href="{{ route('supervisor.verifikasi.index') }}" class="text-xs text-blue-600 hover:underline">Lihat semua</a>
+                </div>
+                <div class="space-y-2">
+                    @forelse ($antrean as $p)
+                    <a href="{{ route('supervisor.verifikasi.show', $p) }}"
+                       class="flex items-center justify-between rounded-lg border border-transparent p-2.5 transition hover:border-blue-100 hover:bg-blue-50">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-800">{{ $p->nomor_tiket }}</p>
+                            <p class="text-xs text-gray-500">{{ $p->kategori?->nama_kategori ?? '-' }} · {{ $p->zona?->nama_zona ?? '-' }}</p>
+                        </div>
+                        <span class="text-xs text-gray-400">{{ $p->tanggal_pengajuan->diffForHumans() }}</span>
+                    </a>
+                    @empty
+                    <p class="py-4 text-center text-sm text-gray-400">Tidak ada antrean 🎉</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+        {{-- Chart Section --}}
+        <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h2 class="mb-4 font-bold text-gray-700">Per Kategori</h2>
+                <canvas id="chartKategori" height="170"></canvas>
+            </div>
+
+            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h2 class="mb-4 font-bold text-gray-700">Per Zona</h2>
+                <canvas id="chartZona" height="170"></canvas>
+            </div>
+
+            <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h2 class="mb-4 font-bold text-gray-700">Ringkasan Prioritas</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2">
+                        <span class="text-sm text-amber-800">Perlu diverifikasi</span>
+                        <span class="text-sm font-bold text-amber-700">{{ $kpi['menunggu_verifikasi'] ?? 0 }}</span>
                     </div>
-                    <span class="text-xs text-gray-400">{{ $p->tanggal_pengajuan->diffForHumans() }}</span>
-                </a>
-                @empty
-                <p class="text-sm text-gray-400 text-center py-4">Tidak ada antrean 🎉</p>
-                @endforelse
+                    <div class="flex items-center justify-between rounded-lg bg-rose-50 px-3 py-2">
+                        <span class="text-sm text-rose-800">Overdue</span>
+                        <span class="text-sm font-bold text-rose-700">{{ $kpi['overdue'] ?? 0 }}</span>
+                    </div>
+                    <div class="flex items-center justify-between rounded-lg bg-sky-50 px-3 py-2">
+                        <span class="text-sm text-sky-800">Sedang diproses</span>
+                        <span class="text-sm font-bold text-sky-700">{{ $kpi['diproses'] ?? 0 }}</span>
+                    </div>
+                    <a href="{{ route('supervisor.laporan.index') }}"
+                       class="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                        Lihat Laporan
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
 
-    {{-- Tren Bulanan --}}
-    <div class="bg-white rounded-xl shadow p-5">
-        <h2 class="font-bold text-gray-700 mb-4">📈 Tren Pengaduan 12 Bulan Terakhir</h2>
-        <canvas id="chartTren" height="80"></canvas>
+        {{-- Tren Bulanan --}}
+        <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <h2 class="mb-4 font-bold text-gray-700">Tren Pengaduan 12 Bulan</h2>
+            <canvas id="chartTren" height="70"></canvas>
+        </div>
     </div>
 
     @push('scripts')

@@ -42,7 +42,7 @@ class RiwayatController extends Controller
     {
         // Pastikan hanya bisa lihat pengaduan milik sendiri
         abort_if($pengaduan->user_id !== auth()->id(), 403);
-        $pengaduan->load(['kategori', 'zona', 'assignment.petugas.user', 'rating', 'sla']);
+        $pengaduan->load(['pelapor', 'kategori', 'zona', 'assignment.petugas.user', 'rating', 'sla']);
         return view('masyarakat.riwayat.show', compact('pengaduan'));
     }
 }

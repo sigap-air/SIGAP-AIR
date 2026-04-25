@@ -11,9 +11,10 @@
 namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Supervisor\VerifikasiPengaduanRequest;
 use App\Models\Pengaduan;
 use App\Services\PengaduanService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class VerifikasiController extends Controller
 {
@@ -30,24 +31,33 @@ class VerifikasiController extends Controller
 
     public function show(Pengaduan $pengaduan)
     {
+        $pengaduan->loadMissing(['pelapor', 'kategori', 'zona', 'sla']);
+
         return view('supervisor.verifikasi.show', compact('pengaduan'));
     }
 
-    public function update(Request $request, Pengaduan $pengaduan)
+    public function update(VerifikasiPengaduanRequest $request, Pengaduan $pengaduan): RedirectResponse
     {
-        $request->validate([
-            'keputusan'        => 'required|in:disetujui,ditolak',
-            'alasan_penolakan' => 'required_if:keputusan,ditolak|nullable|string',
-        ]);
-
-        // TODO SANITRA: Implementasi via PengaduanService + kirim notifikasi
-        if ($request->keputusan === 'disetujui') {
-            $this->pengaduanService->setujui($pengaduan, auth()->user());
-            return redirect()->route('supervisor.assignment.create', $pengaduan)
-                             ->with('success', 'Pengaduan disetujui. Silakan tugaskan petugas.');
+        if ($pengaduan->status !== 'menunggu_verifikasi') {
+            return redirect()
+                ->route('supervisor.verifikasi.show', $pengaduan)
+                ->with('error', 'Pengaduan ini sudah diverifikasi sebelumnya.');
         }
 
-        $this->pengaduanService->tolak($pengaduan, $request->alasan_penolakan, auth()->user());
-        return redirect()->route('supervisor.verifikasi.index')->with('success', 'Pengaduan ditolak.');
+        $validated = $request->validated();
+
+        if ($validated['keputusan'] === 'disetujui') {
+            $this->pengaduanService->setujui($pengaduan, auth()->user());
+
+            return redirect()
+                ->route('supervisor.assignment.create', $pengaduan)
+                ->with('success', 'Pengaduan disetujui. Silakan tugaskan petugas.');
+        }
+
+        $this->pengaduanService->tolak($pengaduan, $validated['alasan_penolakan'], auth()->user());
+
+        return redirect()
+            ->route('supervisor.verifikasi.index')
+            ->with('success', 'Pengaduan ditolak dan notifikasi sudah dikirim ke pelapor.');
     }
 }

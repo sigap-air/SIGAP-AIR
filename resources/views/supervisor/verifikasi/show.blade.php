@@ -2,8 +2,12 @@
 <x-app-layout>
     <x-slot name="title">Detail Verifikasi #{{ $pengaduan->nomor_tiket }}</x-slot>
 
-    <div class="mb-4">
-        <a href="{{ route('supervisor.verifikasi.index') }}" class="text-sm text-blue-600 hover:underline">← Kembali ke Antrean</a>
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+        <a href="{{ route('supervisor.dashboard') }}" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#022448]">
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white">←</span>
+            <span>Dashboard Supervisor</span>
+        </a>
+        <a href="{{ route('supervisor.verifikasi.index') }}" class="text-sm text-blue-600 hover:underline">Kembali ke Antrean</a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -12,7 +16,22 @@
             <div class="bg-white rounded-xl shadow p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h1 class="text-xl font-bold text-gray-800">{{ $pengaduan->nomor_tiket }}</h1>
-                    <span class="bg-yellow-100 text-yellow-700 text-sm px-3 py-1 rounded-full font-semibold">Menunggu Verifikasi</span>
+                    @php
+                        $statusClass = match($pengaduan->status) {
+                            'menunggu_verifikasi' => 'bg-yellow-100 text-yellow-700',
+                            'disetujui' => 'bg-green-100 text-green-700',
+                            'ditolak' => 'bg-red-100 text-red-700',
+                            default => 'bg-gray-100 text-gray-700',
+                        };
+
+                        $statusLabel = match($pengaduan->status) {
+                            'menunggu_verifikasi' => 'Menunggu Verifikasi',
+                            'disetujui' => 'Disetujui',
+                            'ditolak' => 'Ditolak',
+                            default => ucfirst(str_replace('_', ' ', $pengaduan->status)),
+                        };
+                    @endphp
+                    <span class="{{ $statusClass }} text-sm px-3 py-1 rounded-full font-semibold">{{ $statusLabel }}</span>
                 </div>
                 <dl class="grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -22,6 +41,10 @@
                     <div>
                         <dt class="text-gray-500 mb-1">Email</dt>
                         <dd class="font-semibold text-gray-800">{{ $pengaduan->pelapor->email }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-gray-500 mb-1">No. Telepon</dt>
+                        <dd class="font-semibold text-gray-800 font-mono">{{ $pengaduan->pelapor?->no_telepon ?? '-' }}</dd>
                     </div>
                     <div>
                         <dt class="text-gray-500 mb-1">Kategori</dt>
@@ -66,58 +89,69 @@
             <div class="bg-white rounded-xl shadow p-6 sticky top-24">
                 <h2 class="font-bold text-gray-700 mb-5">📝 Keputusan Verifikasi</h2>
 
-                <form method="POST" action="{{ route('supervisor.verifikasi.update', $pengaduan) }}" id="formVerifikasi">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="keputusan" id="inputKeputusan" value="">
+                @if (session('error'))
+                    <div class="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{{ session('error') }}</div>
+                @endif
 
-                    {{-- Alasan Penolakan --}}
-                    <div id="fieldAlasan" class="hidden mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Alasan Penolakan <span class="text-red-500">*</span>
-                        </label>
-                        <textarea name="alasan_penolakan" rows="4"
-                            placeholder="Jelaskan alasan penolakan..."
-                            class="w-full border rounded-lg px-3 py-2 text-sm">{{ old('alasan_penolakan') }}</textarea>
-                        @error('alasan_penolakan')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                @if ($pengaduan->status === 'menunggu_verifikasi')
+                    <form method="POST" action="{{ route('supervisor.verifikasi.update', $pengaduan) }}" id="formVerifikasi">
+                        @csrf
+                        @method('PATCH')
+
+                        <div class="space-y-2 mb-4">
+                            <label class="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-green-50 transition has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                                <input type="radio" name="keputusan" value="disetujui" class="mt-1 accent-green-600" {{ old('keputusan') === 'disetujui' ? 'checked' : '' }}>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Setujui Pengaduan</p>
+                                    <p class="text-xs text-gray-500">Pengaduan akan dilanjutkan ke tahap assignment petugas.</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-red-50 transition has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                                <input type="radio" name="keputusan" value="ditolak" class="mt-1 accent-red-600" {{ old('keputusan') === 'ditolak' ? 'checked' : '' }}>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Tolak Pengaduan</p>
+                                    <p class="text-xs text-gray-500">Pelapor akan menerima notifikasi alasan penolakan.</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        @error('keputusan')
+                            <p class="text-red-500 text-xs mb-4">{{ $message }}</p>
                         @enderror
-                    </div>
 
-                    <div class="space-y-3">
-                        <button type="button" onclick="setKeputusan('disetujui')"
-                            class="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition">
-                            ✅ Setujui Pengaduan
-                        </button>
-                        <button type="button" onclick="setKeputusan('ditolak')"
-                            class="w-full bg-red-600 text-white py-2.5 rounded-lg font-semibold hover:bg-red-700 transition">
-                            ❌ Tolak Pengaduan
-                        </button>
-                    </div>
-                </form>
+                        {{-- Alasan Penolakan --}}
+                        <div id="fieldAlasan" class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Alasan Penolakan <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="alasan_penolakan" rows="4"
+                                placeholder="Wajib diisi jika memilih Tolak Pengaduan."
+                                class="w-full border rounded-lg px-3 py-2 text-sm">{{ old('alasan_penolakan') }}</textarea>
+                            <p class="text-xs text-gray-500 mt-1">Kolom ini akan dipakai saat keputusan <strong>ditolak</strong>.</p>
+                            @error('alasan_penolakan')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                @if (session('success'))
-                <div class="mt-3 p-3 bg-green-50 text-green-700 rounded-lg text-sm">{{ session('success') }}</div>
+                        <button type="submit"
+                            class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition">
+                            Simpan Keputusan
+                        </button>
+                    </form>
+                @else
+                    <div class="p-3 bg-gray-50 text-gray-700 rounded-lg text-sm">
+                        Pengaduan ini sudah diproses dan tidak bisa diverifikasi ulang.
+                    </div>
+                @endif
+
+                @if ($pengaduan->status === 'ditolak' && $pengaduan->alasan_penolakan)
+                    <div class="mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                        <p class="font-semibold mb-1">Alasan penolakan</p>
+                        <p>{{ $pengaduan->alasan_penolakan }}</p>
+                    </div>
                 @endif
             </div>
         </div>
     </div>
 
-    @push('scripts')
-    <script>
-        function setKeputusan(nilai) {
-            document.getElementById('inputKeputusan').value = nilai;
-            if (nilai === 'ditolak') {
-                document.getElementById('fieldAlasan').classList.remove('hidden');
-            } else {
-                document.getElementById('fieldAlasan').classList.add('hidden');
-                if (confirm('Apakah Anda yakin menyetujui pengaduan ini?')) {
-                    document.getElementById('formVerifikasi').submit();
-                }
-                return;
-            }
-            document.getElementById('formVerifikasi').submit();
-        }
-    </script>
-    @endpush
 </x-app-layout>

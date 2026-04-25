@@ -1,3 +1,12 @@
+@if (!empty($backToDashboardRoute))
+<div class="mb-4">
+    <a href="{{ route($backToDashboardRoute) }}" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#022448]">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white">←</span>
+        <span>{{ $backToDashboardLabel ?? 'Kembali ke Dashboard' }}</span>
+    </a>
+</div>
+@endif
+
 <h1 class="text-2xl font-bold text-gray-800 mb-5">🔍 {{ $pageTitle }}</h1>
 
 @php

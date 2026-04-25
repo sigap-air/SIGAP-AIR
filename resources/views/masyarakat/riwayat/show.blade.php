@@ -40,7 +40,7 @@
                     {{-- Nomor Telepon --}}
                     <div>
                         <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Telepon</dt>
-                        <dd class="mt-1.5 font-semibold text-gray-900 font-mono">{{ $pengaduan->no_telepon }}</dd>
+                        <dd class="mt-1.5 font-semibold text-gray-900 font-mono">{{ $pengaduan->pelapor?->no_telepon ?? '-' }}</dd>
                     </div>
                 </dl>
 
@@ -203,22 +203,3 @@
     </div>
 
 </x-masyarakat-form-layout>
-
-            {{-- Tombol Rating --}}
-            @if ($pengaduan->status === 'selesai' && !$pengaduan->rating)
-            <a href="{{ route('masyarakat.rating.create', $pengaduan) }}"
-               class="block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-xl transition">
-                ⭐ Beri Penilaian Layanan
-            </a>
-            @elseif ($pengaduan->rating)
-            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                <p class="text-yellow-700 font-semibold">Rating Anda</p>
-                <p class="text-2xl mt-1">{{ str_repeat('⭐', $pengaduan->rating->bintang) }}</p>
-                @if ($pengaduan->rating->komentar)
-                <p class="text-xs text-gray-500 mt-2 italic">"{{ $pengaduan->rating->komentar }}"</p>
-                @endif
-            </div>
-            @endif
-        </div>
-    </div>
-</x-app-layout>
