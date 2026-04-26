@@ -35,7 +35,7 @@ class RatingController extends Controller
         Rating::create([
             'pengaduan_id'  => $pengaduan->id,
             'user_id'       => auth()->id(),
-            'bintang'       => $request->bintang,
+            'rating'        => $request->bintang,
             'komentar'      => $request->komentar,
             'tanggal_rating'=> now(),
         ]);
