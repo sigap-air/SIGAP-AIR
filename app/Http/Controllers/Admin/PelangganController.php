@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Kategori;
 use App\Models\Pelanggan;
 use App\Models\User;
-use App\Models\ZonaWilayah;
+use App\Models\Zona;
 use App\Http\Requests\Admin\StorePelangganRequest;
 use App\Http\Requests\Admin\UpdatePelangganRequest;
 use App\Services\PengaduanService;
@@ -23,14 +23,14 @@ class PelangganController extends Controller
         $pelanggan = Pelanggan::filter($filters)
             ->with(['zona', 'user', 'latestPengaduan.kategori'])
             ->paginate(15);
-        $zonas = ZonaWilayah::where('is_active', true)->get();
+        $zonas = Zona::where('is_active', true)->get();
 
         return view('admin.pelanggan.index', compact('pelanggan', 'zonas', 'filters'));
     }
 
     public function create()
     {
-        $zonas = ZonaWilayah::where('is_active', true)->get();
+        $zonas = Zona::where('is_active', true)->get();
         $kategoris = Kategori::where('is_active', true)->orderBy('nama_kategori')->get();
         return view('admin.pelanggan.create', compact('zonas', 'kategoris'));
     }
@@ -92,7 +92,7 @@ class PelangganController extends Controller
     public function edit($id)
     {
         $pelanggan = Pelanggan::findOrFail($id);
-        $zonas = ZonaWilayah::where('is_active', true)->get();
+        $zonas = Zona::where('is_active', true)->get();
         return view('admin.pelanggan.edit', compact('pelanggan', 'zonas'));
     }
 

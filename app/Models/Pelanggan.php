@@ -27,7 +27,9 @@ class Pelanggan extends Model
 
     public function zona()
     {
-        return $this->belongsTo(ZonaWilayah::class, 'zona_id');
+        // FIX BUG-11: pakai model Zona (canonical), bukan ZonaWilayah
+        // Keduanya merujuk tabel zona_wilayah, tapi Zona adalah model utama.
+        return $this->belongsTo(Zona::class, 'zona_id');
     }
 
     public function user()

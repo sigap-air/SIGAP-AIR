@@ -41,9 +41,11 @@ class Pengaduan extends Model
         'tanggal_pengajuan' => 'datetime',
     ];
 
-    protected $appends = [
-        'tanggal_pengajuan',
-    ];
+    // $appends DIHAPUS (FIX BUG-12):
+    // tanggal_pengajuan adalah kolom DB nyata, bukan computed attribute.
+    // Mendaftarkan kolom DB di $appends menyebabkan konflik dengan $casts:
+    // Laravel mencoba memanggil accessor DAN cast secara bersamaan -> hasil tidak terduga.
+    // $casts sudah cukup untuk serialize datetime ke JSON.
 
     // ========================
     // RELASI
