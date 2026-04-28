@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\{Pengaduan, Assignment, Petugas, Zona, Kategori, Rating};
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
 
 class LaporanService
@@ -13,9 +14,13 @@ class LaporanService
      */
     public function getRekap(array $filter = []): array
     {
+        $tanggalKolom = Schema::hasColumn('pengaduan', 'tanggal_pengajuan')
+            ? 'tanggal_pengajuan'
+            : 'created_at';
+
         $query = Pengaduan::with(['kategori', 'zona', 'assignment', 'sla'])
-            ->when(!empty($filter['dari']), fn($q) => $q->where('tanggal_pengajuan', '>=', $filter['dari']))
-            ->when(!empty($filter['sampai']), fn($q) => $q->where('tanggal_pengajuan', '<=', Carbon::parse($filter['sampai'])->endOfDay()))
+            ->when(!empty($filter['dari']), fn($q) => $q->where($tanggalKolom, '>=', Carbon::parse($filter['dari'])->startOfDay()))
+            ->when(!empty($filter['sampai']), fn($q) => $q->where($tanggalKolom, '<=', Carbon::parse($filter['sampai'])->endOfDay()))
             ->when(!empty($filter['zona_id']), fn($q) => $q->where('zona_id', $filter['zona_id']))
             ->when(!empty($filter['kategori_id']), fn($q) => $q->where('kategori_id', $filter['kategori_id']))
             ->when(!empty($filter['status']), fn($q) => $q->where('status', $filter['status']));
@@ -27,7 +32,11 @@ class LaporanService
 
         // Rata-rata waktu penanganan (jam) — hanya untuk yang selesai
         $rataWaktu = $pengaduans->filter(fn($p) => $p->status === 'selesai' && $p->assignment?->tanggal_selesai)
-            ->map(fn($p) => Carbon::parse($p->tanggal_pengajuan)->diffInHours($p->assignment->tanggal_selesai))
+            ->map(function ($p) {
+                $waktuMulai = $p->tanggal_pengajuan ?? $p->created_at;
+
+                return Carbon::parse($waktuMulai)->diffInHours($p->assignment->tanggal_selesai);
+            })
             ->avg();
 
         return [

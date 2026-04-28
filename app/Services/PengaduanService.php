@@ -44,6 +44,7 @@ class PengaduanService
                 'deskripsi'         => $data['deskripsi'],
                 'foto_bukti'        => $fotoBukti,
                 'status'            => 'menunggu_verifikasi',
+                'tanggal_pengajuan' => now(),
             ]);
 
             // Simpan no telepon terbaru pelapor dari form pengaduan.
