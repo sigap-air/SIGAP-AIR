@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Model Pengaduan — Core model sistem SIGAP-AIR
@@ -117,8 +118,12 @@ class Pengaduan extends Model
      * Kompatibilitas lintas-PBI:
      * beberapa bagian app memakai tanggal_pengajuan, sementara migrasi hanya created_at.
      */
-    public function getTanggalPengajuanAttribute()
+    public function getTanggalPengajuanAttribute($value)
     {
-        return $this->attributes['tanggal_pengajuan'] ?? $this->created_at;
+        if (!empty($value)) {
+            return Carbon::parse($value);
+        }
+
+        return $this->created_at;
     }
 }
