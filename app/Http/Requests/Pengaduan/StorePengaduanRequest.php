@@ -19,7 +19,7 @@ class StorePengaduanRequest extends FormRequest
             'kategori_id' => 'required|exists:kategori_pengaduan,id',
             'zona_id'     => 'required|exists:zona_wilayah,id',
             'lokasi'      => 'required|string|max:500',
-            'no_telepon'  => 'required|string|max:20',
+            'no_telepon'  => 'required|string|regex:/^[0-9]+$/|max:20',
             'deskripsi'   => 'required|string|min:20|max:2000',
             'foto_bukti'  => 'required|image|mimes:jpg,jpeg,png|max:10240', // max 10MB
         ];
@@ -32,6 +32,7 @@ class StorePengaduanRequest extends FormRequest
             'zona_id.required'     => 'Zona wilayah wajib dipilih.',
             'lokasi.required'      => 'Lokasi pengaduan wajib diisi.',
             'no_telepon.required'  => 'Nomor telepon wajib diisi.',
+            'no_telepon.regex'     => 'Nomor telepon hanya boleh berisi angka.',
             'deskripsi.required'   => 'Deskripsi masalah wajib diisi.',
             'deskripsi.min'        => 'Deskripsi minimal 20 karakter.',
             'foto_bukti.required'  => 'Foto bukti wajib diunggah.',

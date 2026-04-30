@@ -21,10 +21,15 @@ class AssignmentController extends Controller
 
     public function create(Pengaduan $pengaduan)
     {
-        // Tampilkan hanya petugas di zona yang sama dengan pengaduan
+        $statusTersediaColumn = \Illuminate\Support\Facades\Schema::hasColumn('petugas', 'status_ketersediaan')
+            ? 'status_ketersediaan'
+            : 'status_tersedia';
+
+        // Tampilkan hanya petugas di zona yang sama dengan pengaduan.
+        // Fallback kolom status disesuaikan dengan skema DB yang aktif.
         $petugas = Petugas::with('user')
-            ->whereHas('zonas', fn($q) => $q->where('zonas.id', $pengaduan->zona_id))
-            ->where('status_ketersediaan', 'tersedia')
+            ->where('zona_id', $pengaduan->zona_id)
+            ->where($statusTersediaColumn, 'tersedia')
             ->get();
 
         return view('supervisor.assignment.create', compact('pengaduan', 'petugas'));

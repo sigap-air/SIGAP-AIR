@@ -65,5 +65,6 @@ class Petugas extends Model
     {
         return $this->hasMany(Assignment::class, 'petugas_id')
             ->whereIn('status_assignment', ['ditugaskan', 'sedang_diproses']);
+
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{Assignment, Pengaduan, Petugas, User};
+use App\Models\{Assignment, Pengaduan, Petugas, StatusLog, User};
 use Illuminate\Support\Facades\DB;
 
 class AssignmentService
@@ -108,18 +108,17 @@ class AssignmentService
     }
 
     /**
-     * Catat perubahan status ke tabel status_log.
+     * Catat perubahan status ke tabel status_log via Eloquent.
      */
     private function catatStatusLog(Pengaduan $pengaduan, User $user, ?string $statusLama, string $statusBaru, ?string $catatan = null): void
     {
-        DB::table('status_log')->insert([
+        StatusLog::create([
             'pengaduan_id' => $pengaduan->id,
             'user_id'      => $user->id,
             'status_lama'  => $statusLama,
             'status_baru'  => $statusBaru,
             'catatan'      => $catatan,
-            'created_at'   => now(),
-            'updated_at'   => now(),
         ]);
     }
 }
+

@@ -47,10 +47,15 @@
             </x-sigap-form-field>
 
             <x-sigap-form-field label="Nomor Telepon" name="no_telepon" :required="true">
-                <input type="text" name="no_telepon" value="{{ old('no_telepon', auth()->user()->no_telepon) }}"
+                <input type="tel" name="no_telepon" value="{{ old('no_telepon') }}"
                     placeholder="Contoh: 08123456789"
+                    inputmode="numeric" pattern="[0-9]*"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                    autocomplete="off"
+                    maxlength="20"
                     class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-500 shadow-sm focus:ring-2 focus:ring-brand"
                     required />
+                <p class="mt-1 text-xs text-gray-500">Hanya angka, tanpa spasi atau huruf.</p>
             </x-sigap-form-field>
 
             <x-sigap-form-field label="Deskripsi Masalah" name="deskripsi" :required="true">

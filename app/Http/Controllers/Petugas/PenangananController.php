@@ -62,7 +62,13 @@ class PenangananController extends Controller
         // Pastikan hanya petugas yang ditugaskan yang bisa lihat
         abort_if($tugas->petugas_id !== auth()->user()->petugas?->id, 403);
 
-        $tugas->load(['pengaduan.kategori', 'pengaduan.zona', 'pengaduan.pelapor', 'pengaduan.sla']);
+        $tugas->load([
+            'pengaduan.kategori',
+            'pengaduan.zona',
+            'pengaduan.pelapor',
+            'pengaduan.sla',
+            'pengaduan.statusLogs.user',
+        ]);
         return view('petugas.tugas.show', compact('tugas'));
     }
 
