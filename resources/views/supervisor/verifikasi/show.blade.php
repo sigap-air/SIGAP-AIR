@@ -75,11 +75,15 @@
 
             {{-- Foto Bukti --}}
             @if ($pengaduan->foto_bukti)
-            <div class="bg-white rounded-xl shadow p-6">
-                <h2 class="font-bold text-gray-700 mb-3">📸 Foto Bukti</h2>
-                <img src="{{ asset('storage/' . $pengaduan->foto_bukti) }}"
-                     alt="Foto Bukti"
-                     class="w-full max-h-80 object-cover rounded-lg border">
+            <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
+                <h3 class="text-base font-semibold text-gray-900 mb-4">Foto Bukti Laporan</h3>
+                <div class="mx-auto w-full max-w-sm">
+                    <img src="{{ asset('storage/' . $pengaduan->foto_bukti) }}"
+                         alt="Foto Bukti"
+                         class="w-full aspect-square object-cover rounded-xl border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
+                         onclick="this.requestFullscreen()">
+                </div>
+                <p class="text-xs text-gray-400 mt-2 text-center">Klik untuk fullscreen</p>
             </div>
             @endif
         </div>

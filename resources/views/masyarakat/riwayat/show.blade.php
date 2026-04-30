@@ -147,8 +147,7 @@
                         } elseif ($sisaDetik === 0) {
                             $teksSisaSla = 'hari ini';
                         } else {
-                            $lewatHari = $deadlineSla ? $deadlineSla->diffInDays($nowLocal) : 0;
-                            $lewatHari = max(1, $lewatHari);
+                            $lewatHari = (int) ceil(abs($sisaDetik) / 86400);
                             $teksSisaSla = 'terlambat ' . $lewatHari . ' hari';
                         }
                     }

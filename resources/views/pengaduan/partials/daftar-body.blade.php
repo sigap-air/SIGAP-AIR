@@ -130,6 +130,12 @@
                     <th class="text-left px-5 py-3 text-gray-600 font-semibold">
                         <a href="{{ $sortLink('tanggal_pengajuan') }}" class="hover:text-blue-700">Tanggal{{ $sortIndicator('tanggal_pengajuan') }}</a>
                     </th>
+                    @if (!empty($showFotoBuktiColumn))
+                    <th class="text-left px-5 py-3 text-gray-600 font-semibold">Foto Bukti</th>
+                    @endif
+                    @if (!empty($showAksiEyeOnly))
+                    <th class="text-center px-5 py-3 text-gray-600 font-semibold">Aksi</th>
+                    @endif
                 </tr>
             </thead>
             <tbody class="divide-y">
@@ -155,9 +161,37 @@
                         @endif
                     </td>
                     <td class="px-5 py-3 text-xs text-gray-500">{{ $p->tanggal_pengajuan->translatedFormat('d M Y') }}</td>
+                    @if (!empty($showFotoBuktiColumn))
+                    <td class="px-5 py-3">
+                        @if($p->foto_bukti)
+                            <a href="{{ asset('storage/' . $p->foto_bukti) }}" target="_blank" class="inline-block">
+                                <img src="{{ asset('storage/' . $p->foto_bukti) }}"
+                                     alt="Foto bukti {{ $p->nomor_tiket }}"
+                                     class="h-10 w-14 rounded-lg border border-gray-200 object-cover hover:opacity-90">
+                            </a>
+                        @else
+                            <span class="text-xs text-gray-400">-</span>
+                        @endif
+                    </td>
+                    @endif
+                    @if (!empty($showAksiEyeOnly))
+                    <td class="px-5 py-3 text-center">
+                        <a href="{{ route($detailRouteName ?? 'supervisor.verifikasi.show', $p) }}"
+                           class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
+                           title="Lihat Detail">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 3C5 3 1.73 7.11.46 9.29a1.35 1.35 0 000 1.42C1.73 12.89 5 17 10 17s8.27-4.11 9.54-6.29a1.35 1.35 0 000-1.42C18.27 7.11 15 3 10 3zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+                            </svg>
+                        </a>
+                    </td>
+                    @endif
                 </tr>
                 @empty
-                <tr><td colspan="8" class="text-center py-10 text-gray-400">Tidak ditemukan data pengaduan</td></tr>
+                <tr>
+                    <td colspan="{{ 8 + (!empty($showFotoBuktiColumn) ? 1 : 0) + (!empty($showAksiEyeOnly) ? 1 : 0) }}" class="text-center py-10 text-gray-400">
+                        Tidak ditemukan data pengaduan
+                    </td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
