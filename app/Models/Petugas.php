@@ -8,38 +8,63 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Model Petugas — Data tambahan untuk user dengan role petugas
  *
- * TANGGUNG JAWAB: Farisha Huwaida Shofha (PBI 17)
+ * PBI-03 — Zona Wilayah & Pemetaan Petugas
+ * TANGGUNG JAWAB: Arthur Budi Maharesi
+ *
+ * Kolom DB (sesuai migration 000003):
+ *   user_id, zona_id (nullable setelah fix migration), nip, status_tersedia
  */
 class Petugas extends Model
 {
     use HasFactory;
+
+    protected $table = 'petugas';
 
     protected $fillable = [
         'user_id',
         'zona_id',
         'nip',
         'status_tersedia',
-        'nomor_pegawai',
-        'status_ketersediaan', // tersedia | sibuk | tidak_aktif
     ];
 
     protected $casts = [
-        'status_tersedia' => 'string',
-        'status_ketersediaan' => 'string',
+        'zona_id' => 'integer',
     ];
 
-    public function user()   { return $this->belongsTo(User::class); }
-    public function zona()   { return $this->belongsTo(Zona::class, 'zona_id'); }
-    public function zonas()  { return $this->belongsTo(Zona::class, 'zona_id'); } // Backward compatibility
-    public function assignments() { return $this->hasMany(Assignment::class); }
+    // ========================
+    // RELASI
+    // ========================
 
-    public function getNomorPegawaiAttribute(): ?string
+    public function user()
     {
-        return $this->attributes['nomor_pegawai'] ?? $this->attributes['nip'] ?? null;
+        return $this->belongsTo(User::class);
     }
 
-    public function getStatusKetersediaanAttribute(): ?string
+    /**
+     * Zona wilayah tempat petugas ditempatkan.
+     * Menggunakan ZonaWilayah (canonical PBI-03 model).
+     */
+    public function zona()
     {
-        return $this->attributes['status_ketersediaan'] ?? $this->attributes['status_tersedia'] ?? null;
+        return $this->belongsTo(ZonaWilayah::class, 'zona_id');
+    }
+
+    /**
+     * Semua assignment yang pernah diberikan kepada petugas ini.
+     */
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class, 'petugas_id');
+    }
+
+    /**
+     * Assignment yang masih aktif (belum selesai).
+     * Digunakan untuk cek sebelum remove petugas dari zona.
+     */
+    public function assignmentsAktif()
+    {
+        return $this->hasMany(Assignment::class, 'petugas_id')
+            ->whereIn('status_assignment', ['ditugaskan', 'sedang_diproses']);
+
     }
 }

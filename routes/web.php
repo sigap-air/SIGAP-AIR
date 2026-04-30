@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\ZonaController;
 use App\Http\Controllers\Admin\DaftarPengaduanController;
 use App\Http\Controllers\Masyarakat\DashboardController as MasyarakatDashboardController;
 use App\Http\Controllers\Masyarakat\NotifikasiController;
@@ -96,6 +97,17 @@ Route::middleware('auth')->group(function () {
         Route::resource('pelanggan', \App\Http\Controllers\Admin\PelangganController::class);
         Route::resource('kategori', \App\Http\Controllers\Admin\KategoriController::class)
             ->except(['show']);
+
+        // PBI-03 — Zona Wilayah & Pemetaan Petugas
+        Route::get('zona',                              [ZonaController::class, 'index'])->name('zona.index');
+        Route::get('zona/create',                       [ZonaController::class, 'create'])->name('zona.create');
+        Route::post('zona',                             [ZonaController::class, 'store'])->name('zona.store');
+        Route::get('zona/{id}',                         [ZonaController::class, 'show'])->name('zona.show');
+        Route::get('zona/{id}/edit',                    [ZonaController::class, 'edit'])->name('zona.edit');
+        Route::put('zona/{id}',                         [ZonaController::class, 'update'])->name('zona.update');
+        Route::delete('zona/{id}',                      [ZonaController::class, 'destroy'])->name('zona.destroy');
+        Route::post('zona/{id}/assign-petugas',         [ZonaController::class, 'assignPetugas'])->name('zona.assign-petugas');
+        Route::delete('zona/{id}/remove-petugas/{petugasId}', [ZonaController::class, 'removePetugas'])->name('zona.remove-petugas');
     });
 
     // Shared: Admin & Supervisor
