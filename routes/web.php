@@ -10,6 +10,9 @@ use App\Http\Controllers\Masyarakat\RiwayatController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Supervisor\AssignmentController;
 use App\Http\Controllers\Supervisor\DashboardController as SupervisorDashboardController;
+use App\Http\Controllers\Admin\LaporanKinerjaController;
+use App\Http\Controllers\Supervisor\FilterPengaduanController;
+use App\Http\Controllers\Supervisor\KinerjaPetugasController;
 use App\Http\Controllers\Supervisor\FilterPengaduanController;
 use App\Http\Controllers\Supervisor\LaporanController;
 use App\Http\Controllers\Supervisor\VerifikasiController;
@@ -86,6 +89,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
         Route::get('/laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
+        Route::get('/kinerja', [KinerjaPetugasController::class, 'index'])->name('kinerja.index');
+        Route::get('/kinerja/export-excel', [KinerjaPetugasController::class, 'exportExcel'])->name('kinerja.export-excel');
     });
 
     // Role: Admin
@@ -93,6 +98,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/pengaduan', [DaftarPengaduanController::class, 'index'])->name('pengaduan.index');
         Route::get('/pengaduan/export-csv', [DaftarPengaduanController::class, 'exportCsv'])->name('pengaduan.export-csv');
+        Route::get('/kinerja', [LaporanKinerjaController::class, 'index'])->name('kinerja.index');
+        Route::get('/kinerja/export-excel', [LaporanKinerjaController::class, 'exportExcel'])->name('kinerja.export-excel');
         // PBI-01,02,03,09,16,17 routes here
         Route::resource('pelanggan', \App\Http\Controllers\Admin\PelangganController::class);
         Route::resource('kategori', \App\Http\Controllers\Admin\KategoriController::class)

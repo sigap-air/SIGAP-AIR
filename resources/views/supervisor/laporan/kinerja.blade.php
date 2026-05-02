@@ -2,9 +2,14 @@
 <x-app-layout>
     <x-slot name="title">Laporan Kinerja Petugas</x-slot>
 
+    @php
+        $kinerjaIndexRoute = auth()->user()->isAdmin() ? 'admin.kinerja.index' : 'supervisor.kinerja.index';
+        $kinerjaExportRoute = auth()->user()->isAdmin() ? 'admin.kinerja.export-excel' : 'supervisor.kinerja.export-excel';
+    @endphp
+
     <div class="flex items-center justify-between mb-5">
         <h1 class="text-2xl font-bold text-gray-800">📊 Laporan Kinerja Petugas</h1>
-        <a href="{{ route('admin.kinerja.export-excel', request()->all()) }}"
+        <a href="{{ route($kinerjaExportRoute, request()->all()) }}"
            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
             📥 Export CSV
         </a>
@@ -30,7 +35,7 @@
             <input type="date" name="sampai" value="{{ request('sampai') }}" class="border rounded-lg px-3 py-2 text-sm">
         </div>
         <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700 transition">Filter</button>
-        <a href="{{ route('admin.kinerja.index') }}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition">Reset</a>
+        <a href="{{ route($kinerjaIndexRoute) }}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition">Reset</a>
     </form>
 
     {{-- Tabel Kinerja --}}

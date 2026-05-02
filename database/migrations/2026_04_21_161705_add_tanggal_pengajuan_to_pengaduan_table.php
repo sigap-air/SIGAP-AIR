@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasColumn('pengaduan', 'tanggal_pengajuan')) {
+            Schema::table('pengaduan', function (Blueprint $table) {
+                // Kolom ini ada di $fillable Pengaduan model tapi terlewat di migration awal
+                $table->timestamp('tanggal_pengajuan')->nullable()->after('alasan_penolakan');
+            });
+        }
         Schema::table('pengaduan', function (Blueprint $table) {
             // Kolom ini ada di $fillable Pengaduan model tapi terlewat di migration awal
             $table->timestamp('tanggal_pengajuan')->nullable()->after('alasan_penolakan');
@@ -22,6 +28,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (Schema::hasColumn('pengaduan', 'tanggal_pengajuan')) {
+            Schema::table('pengaduan', function (Blueprint $table) {
+                $table->dropColumn('tanggal_pengajuan');
+            });
+        }
         Schema::table('pengaduan', function (Blueprint $table) {
             $table->dropColumn('tanggal_pengajuan');
         });
