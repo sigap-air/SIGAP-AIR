@@ -12,6 +12,11 @@ use PHPUnit\Framework\Attributes\BeforeClass;
 
 abstract class DuskTestCase extends BaseTestCase
 {
+    use CreatesApplication;
+
+    /**
+     * Prepare for Dusk test execution.
+     */
     public function createApplication()
     {
         $app = require __DIR__ . '/../bootstrap/app.php';

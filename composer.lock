@@ -4,7 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ea0022902646dff7e0c5abe4f89c2fe4",
+    "content-hash": "7f13c74cf0035644ea1402ffcd95544",
+
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -1602,16 +1603,16 @@
         },
         {
             "name": "laravel/dusk",
-            "version": "v8.5.0",
+            "version": "v8.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/dusk.git",
-                "reference": "f9f75666bed46d1ebca13792447be6e753f4e790"
+                "reference": "e7fd48762c6a82ad2cd311db07587aa2a97ce143"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/dusk/zipball/f9f75666bed46d1ebca13792447be6e753f4e790",
-                "reference": "f9f75666bed46d1ebca13792447be6e753f4e790",
+                "url": "https://api.github.com/repos/laravel/dusk/zipball/e7fd48762c6a82ad2cd311db07587aa2a97ce143",
+                "reference": "e7fd48762c6a82ad2cd311db07587aa2a97ce143",
                 "shasum": ""
             },
             "require": {
@@ -1670,9 +1671,9 @@
             ],
             "support": {
                 "issues": "https://github.com/laravel/dusk/issues",
-                "source": "https://github.com/laravel/dusk/tree/v8.5.0"
+                "source": "https://github.com/laravel/dusk/tree/v8.6.0"
             },
-            "time": "2026-03-21T11:50:49+00:00"
+            "time": "2026-04-15T14:50:40+00:00"
         },
         {
             "name": "laravel/framework",

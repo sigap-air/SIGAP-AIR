@@ -21,27 +21,28 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('assignment', function (Blueprint $table) {
-            $table->renameColumn('assigned_by', 'supervisor_id');
-            $table->renameColumn('catatan_petugas', 'catatan_penanganan');
-            $table->renameColumn('foto_penanganan', 'foto_hasil');
-            $table->renameColumn('timestamp_selesai', 'tanggal_selesai');
-        });
+        // Gunakan raw SQL karena renameColumn() butuh MariaDB 10.5.2+ atau doctrine/dbal
+        DB::statement("ALTER TABLE `assignment`
+            CHANGE `assigned_by`      `supervisor_id`       BIGINT UNSIGNED NOT NULL,
+            CHANGE `catatan_petugas`  `catatan_penanganan`  TEXT NULL,
+            CHANGE `foto_penanganan`  `foto_hasil`          VARCHAR(255) NULL,
+            CHANGE `timestamp_selesai` `tanggal_selesai`    TIMESTAMP NULL
+        ");
 
         // Update enum value: sedang_diproses → diproses
-        // MySQL requires ALTER to change enum values
-        DB::statement("ALTER TABLE assignment MODIFY COLUMN status_assignment ENUM('ditugaskan', 'diproses', 'selesai') DEFAULT 'ditugaskan'");
+        DB::statement("ALTER TABLE `assignment` MODIFY COLUMN `status_assignment` ENUM('ditugaskan', 'diproses', 'selesai') DEFAULT 'ditugaskan'");
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE assignment MODIFY COLUMN status_assignment ENUM('ditugaskan', 'sedang_diproses', 'selesai') DEFAULT 'ditugaskan'");
+        DB::statement("ALTER TABLE `assignment` MODIFY COLUMN `status_assignment` ENUM('ditugaskan', 'sedang_diproses', 'selesai') DEFAULT 'ditugaskan'");
 
-        Schema::table('assignment', function (Blueprint $table) {
-            $table->renameColumn('supervisor_id', 'assigned_by');
-            $table->renameColumn('catatan_penanganan', 'catatan_petugas');
-            $table->renameColumn('foto_hasil', 'foto_penanganan');
-            $table->renameColumn('tanggal_selesai', 'timestamp_selesai');
-        });
+        // Kembalikan nama kolom menggunakan raw SQL
+        DB::statement("ALTER TABLE `assignment`
+            CHANGE `supervisor_id`       `assigned_by`       BIGINT UNSIGNED NOT NULL,
+            CHANGE `catatan_penanganan`  `catatan_petugas`   TEXT NULL,
+            CHANGE `foto_hasil`          `foto_penanganan`   VARCHAR(255) NULL,
+            CHANGE `tanggal_selesai`     `timestamp_selesai` TIMESTAMP NULL
+        ");
     }
 };
