@@ -43,8 +43,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/pengaduan/{pengaduan}/sukses', [PengaduanController::class, 'sukses'])->name('pengaduan.sukses');
 
         // PBI-10 Riwayat Pengaduan
-        Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
-        Route::get('/riwayat/{pengaduan}', [RiwayatController::class, 'show'])->name('riwayat.show');
+        // Routes: GET /masyarakat/pengaduan/riwayat & /masyarakat/pengaduan/riwayat/{nomor_tiket}
+        Route::get('/pengaduan/riwayat', [RiwayatController::class, 'index'])->name('pengaduan.riwayat');
+        Route::get('/pengaduan/riwayat/{nomor_tiket}', [RiwayatController::class, 'show'])->name('pengaduan.riwayat.show');
 
         // PBI-12 Notifikasi
         Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');

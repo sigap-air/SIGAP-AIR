@@ -41,9 +41,21 @@ class Pengaduan extends Model
         'tanggal_pengajuan' => 'datetime',
     ];
 
-    protected $appends = [
-        'tanggal_pengajuan',
-    ];
+    // tanggal_pengajuan tidak dimasukkan ke $appends agar cast datetime tetap bekerja
+    // Accessor di bawah hanya sebagai fallback ke created_at jika kolom null
+
+    // ========================
+    // ROUTE KEY
+    // ========================
+
+    /**
+     * PBI-10: route model binding pakai nomor_tiket bukan id.
+     * Contoh: /riwayat/SIGAP-20250503-0001
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'nomor_tiket';
+    }
 
     // ========================
     // RELASI
@@ -79,6 +91,17 @@ class Pengaduan extends Model
         return $this->hasOne(Sla::class);
     }
 
+    /**
+     * PBI-10: Log perubahan status pengaduan untuk tampilan timeline.
+     * Model StatusLog belum dibuat — fallback ke penggunaan created_at / updated_at.
+     */
+    public function statusLog()
+    {
+        // Jika model StatusLog sudah dibuat, gunakan:
+        // return $this->hasMany(StatusLog::class)->orderBy('created_at');
+        return $this->hasMany(Assignment::class); // placeholder sampai model dibuat
+    }
+
     // ========================
     // SCOPES (Filter Query)
     // ========================
@@ -108,9 +131,14 @@ class Pengaduan extends Model
     /**
      * Kompatibilitas lintas-PBI:
      * beberapa bagian app memakai tanggal_pengajuan, sementara migrasi hanya created_at.
+     * Selalu mengembalikan Carbon instance agar bisa dipanggil ->timezone(), ->format(), dll.
      */
-    public function getTanggalPengajuanAttribute()
+    public function getTanggalPengajuanAttribute(): \Illuminate\Support\Carbon
     {
-        return $this->attributes['tanggal_pengajuan'] ?? $this->created_at;
+        $raw = $this->attributes['tanggal_pengajuan'] ?? null;
+        if ($raw) {
+            return \Illuminate\Support\Carbon::parse($raw);
+        }
+        return $this->created_at ?? now();
     }
 }
