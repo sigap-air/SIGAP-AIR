@@ -13,7 +13,6 @@ use App\Http\Controllers\Supervisor\DashboardController as SupervisorDashboardCo
 use App\Http\Controllers\Admin\LaporanKinerjaController;
 use App\Http\Controllers\Supervisor\FilterPengaduanController;
 use App\Http\Controllers\Supervisor\KinerjaPetugasController;
-use App\Http\Controllers\Supervisor\FilterPengaduanController;
 use App\Http\Controllers\Supervisor\LaporanController;
 use App\Http\Controllers\Supervisor\VerifikasiController;
 use Illuminate\Support\Facades\Route;
