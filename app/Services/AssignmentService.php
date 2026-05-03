@@ -38,20 +38,22 @@ class AssignmentService
             // 5. Notifikasi ke petugas
             if ($petugas && $petugas->user) {
                 $this->notifikasiService->kirim(
-                    $petugas->user,
-                    $pengaduan,
+                    $petugas->user->id,
+                    $pengaduan->id,
                     'Tugas Baru Ditugaskan',
-                    "Anda mendapat tugas baru: pengaduan #{$pengaduan->nomor_tiket} di {$pengaduan->zona->nama_zona}."
+                    "Anda mendapat tugas baru: pengaduan #{$pengaduan->nomor_tiket} di {$pengaduan->zona->nama_zona}.",
+                    'assignment'
                 );
             }
 
             // 6. Notifikasi ke pelapor
             $this->notifikasiService->kirim(
-                $pengaduan->pelapor,
-                $pengaduan,
+                $pengaduan->pelapor->id,
+                $pengaduan->id,
                 'Petugas Sedang Dalam Perjalanan',
                 "Pengaduan #{$pengaduan->nomor_tiket} telah ditugaskan ke petugas. Jadwal penanganan: "
-                    . \Carbon\Carbon::parse($data['jadwal_penanganan'])->translatedFormat('d F Y, H:i') . ' WIB.'
+                    . \Carbon\Carbon::parse($data['jadwal_penanganan'])->translatedFormat('d F Y, H:i') . ' WIB.',
+                'status_berubah'
             );
 
             return $assignment;
