@@ -161,9 +161,6 @@
                         @endif
                     </td>
                     <td class="px-5 py-3 text-xs text-gray-500">{{ $p->tanggal_pengajuan->translatedFormat('d M Y') }}</td>
-                </tr>
-                @empty
-                <tr><td colspan="8" class="text-center py-10 text-gray-400">Tidak ditemukan data pengaduan</td></tr>
                     @if (!empty($showFotoBuktiColumn))
                     <td class="px-5 py-3">
                         @if($p->foto_bukti)
