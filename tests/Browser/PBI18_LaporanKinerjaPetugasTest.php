@@ -2,7 +2,6 @@
 
 namespace Tests\Browser;
 
-use App\Models\Assignment;
 use App\Models\KategoriPengaduan;
 use App\Models\Pengaduan;
 use App\Models\Petugas;
@@ -17,10 +16,12 @@ class PBI18_LaporanKinerjaPetugasTest extends DuskTestCase
 {
     private function buatUser($name, $username, $email, $role)
     {
+        $unique = uniqid();
+
         $id = DB::table('users')->insertGetId([
             'name' => $name,
-            'username' => $username . '_' . uniqid(),
-            'email' => $email . '_' . uniqid() . '@test.com',
+            'username' => $username . '_' . $unique,
+            'email' => $email . '_' . $unique . '@test.com',
             'password' => Hash::make('password'),
             'role' => $role,
             'no_telepon' => '08123456789',
@@ -32,6 +33,18 @@ class PBI18_LaporanKinerjaPetugasTest extends DuskTestCase
         ]);
 
         return User::find($id);
+    }
+
+    private function buatZona($nama = 'Zona Utara PBI18')
+    {
+        return DB::table('zona_wilayah')->insertGetId([
+            'nama_zona' => $nama,
+            'kode_zona' => 'ZU' . uniqid(),
+            'deskripsi' => 'Zona untuk testing PBI 18',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     private function buatDataKinerja()
@@ -57,14 +70,7 @@ class PBI18_LaporanKinerjaPetugasTest extends DuskTestCase
             'petugas'
         );
 
-        $zonaId = DB::table('zona_wilayah')->insertGetId([
-            'nama_zona' => 'Zona Utara PBI18',
-            'kode_zona' => 'ZU' . uniqid(),
-            'deskripsi' => 'Zona untuk testing PBI 18',
-            'is_active' => true,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $zonaId = $this->buatZona('Zona Utara PBI18');
 
         $kategori = KategoriPengaduan::create([
             'nama_kategori' => 'Kebocoran Pipa PBI18 ' . uniqid(),
@@ -110,11 +116,11 @@ class PBI18_LaporanKinerjaPetugasTest extends DuskTestCase
             'komentar' => 'Pelayanan sangat baik',
         ]);
 
-        return [$supervisor, $zonaId];
+        return [$supervisor, $masyarakat, $userPetugas, $zonaId];
     }
 
     /** @test */
-    public function supervisor_dapat_melihat_laporan_kinerja_petugas()
+    public function tc_kinerja_001_menguji_akses_halaman_laporan_kinerja_petugas()
     {
         [$supervisor] = $this->buatDataKinerja();
 
@@ -124,19 +130,20 @@ class PBI18_LaporanKinerjaPetugasTest extends DuskTestCase
                 ->assertPathIs('/supervisor/kinerja')
                 ->assertSee('Laporan Kinerja Petugas')
                 ->assertSee('Export CSV')
+                ->assertSee('Filter')
+                ->assertSee('Reset')
                 ->assertSee('Nama Petugas')
                 ->assertSee('No. Pegawai')
                 ->assertSee('Total Tugas')
                 ->assertSee('Selesai')
-                ->assertSee('Roni Petugas')
-                ->assertSee('1');
+                ->assertSee('Roni Petugas');
         });
     }
 
     /** @test */
-    public function supervisor_dapat_melakukan_filter_laporan_kinerja_petugas()
+    public function tc_kinerja_002_menguji_filter_laporan_berdasarkan_zona_dan_rentang_tanggal()
     {
-        [$supervisor, $zonaId] = $this->buatDataKinerja();
+        [$supervisor, , , $zonaId] = $this->buatDataKinerja();
 
         $this->browse(function (Browser $browser) use ($supervisor, $zonaId) {
             $browser->loginAs($supervisor)
@@ -147,12 +154,88 @@ class PBI18_LaporanKinerjaPetugasTest extends DuskTestCase
                 ->press('Filter')
                 ->assertPathIs('/supervisor/kinerja')
                 ->assertQueryStringHas('zona_id', (string) $zonaId)
+                ->assertSee('Roni Petugas')
+                ->assertSee('Nama Petugas')
+                ->assertSee('No. Pegawai')
+                ->assertSee('Total Tugas')
+                ->assertSee('Selesai');
+        });
+    }
+
+    /** @test */
+    public function tc_kinerja_003_menguji_reset_filter_laporan_kinerja()
+    {
+        [$supervisor, , , $zonaId] = $this->buatDataKinerja();
+
+        $this->browse(function (Browser $browser) use ($supervisor, $zonaId) {
+            $browser->loginAs($supervisor)
+                ->visit('/supervisor/kinerja?zona_id=' . $zonaId . '&dari=' . now()->subDays(7)->format('Y-m-d') . '&sampai=' . now()->format('Y-m-d'))
+                ->assertSee('Laporan Kinerja Petugas')
+                ->assertSee('Roni Petugas')
+                ->clickLink('Reset')
+                ->assertPathIs('/supervisor/kinerja')
+                ->assertSee('Laporan Kinerja Petugas')
+                ->assertSee('Nama Petugas')
                 ->assertSee('Roni Petugas');
         });
     }
 
     /** @test */
-    public function masyarakat_tidak_bisa_mengakses_laporan_kinerja_petugas()
+    public function tc_kinerja_004_menguji_kondisi_laporan_ketika_data_tidak_ditemukan()
+    {
+        [$supervisor] = $this->buatDataKinerja();
+
+        $zonaKosongId = $this->buatZona('Zona Kosong PBI18');
+
+        $url = '/supervisor/kinerja?zona_id=' . $zonaKosongId
+            . '&dari=' . now()->addYear()->format('Y-m-d')
+            . '&sampai=' . now()->addYear()->addDays(7)->format('Y-m-d');
+
+        $this->browse(function (Browser $browser) use ($supervisor, $url) {
+            $browser->loginAs($supervisor)
+                ->visit($url)
+                ->assertPathIs('/supervisor/kinerja')
+                ->assertSee('Laporan Kinerja Petugas')
+                ->assertSee('Nama Petugas')
+                ->assertDontSee('Roni Petugas');
+        });
+    }
+
+    /** @test */
+    public function tc_kinerja_005_menguji_export_laporan_kinerja_ke_csv()
+    {
+        [$supervisor] = $this->buatDataKinerja();
+
+        $response = $this->actingAs($supervisor)
+            ->get('/supervisor/kinerja/export-excel');
+
+        $response->assertOk();
+
+        $this->assertStringContainsString(
+            'attachment',
+            strtolower($response->headers->get('content-disposition'))
+        );
+    }
+
+    /** @test */
+    public function tc_kinerja_006_menguji_export_laporan_setelah_filter_diterapkan()
+    {
+        [$supervisor, , , $zonaId] = $this->buatDataKinerja();
+
+        $response = $this->actingAs($supervisor)
+            ->get('/supervisor/kinerja/export-excel?zona_id=' . $zonaId
+                . '&dari=' . now()->subDays(7)->format('Y-m-d')
+                . '&sampai=' . now()->format('Y-m-d'));
+
+        $response->assertOk();
+
+        $this->assertStringContainsString(
+            'attachment',
+            strtolower($response->headers->get('content-disposition'))
+        );
+    }
+    /** @test */
+    public function tc_kinerja_007_menguji_keamanan_akses_halaman_laporan_kinerja()
     {
         $masyarakat = $this->buatUser(
             'Masyarakat Tidak Boleh Akses',
@@ -164,7 +247,9 @@ class PBI18_LaporanKinerjaPetugasTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($masyarakat) {
             $browser->loginAs($masyarakat)
                 ->visit('/supervisor/kinerja')
-                ->assertDontSee('Laporan Kinerja Petugas');
+                ->assertDontSee('Laporan Kinerja Petugas')
+                ->assertDontSee('Export CSV')
+                ->assertDontSee('Nama Petugas');
         });
     }
 }
