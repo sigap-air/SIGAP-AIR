@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * Model Pengaduan — Core model sistem SIGAP-AIR
@@ -57,6 +58,7 @@ class Pengaduan extends Model
         return 'nomor_tiket';
     }
 
+
     // ========================
     // RELASI
     // ========================
@@ -68,7 +70,8 @@ class Pengaduan extends Model
 
     public function kategori()
     {
-        return $this->belongsTo(Kategori::class);
+        // FIX ERR-1: pakai KategoriPengaduan (PBI-02), bukan model Kategori lama
+        return $this->belongsTo(KategoriPengaduan::class, 'kategori_id');
     }
 
     public function zona()
@@ -100,6 +103,7 @@ class Pengaduan extends Model
         // Jika model StatusLog sudah dibuat, gunakan:
         // return $this->hasMany(StatusLog::class)->orderBy('created_at');
         return $this->hasMany(Assignment::class); // placeholder sampai model dibuat
+
     }
 
     // ========================
@@ -140,5 +144,6 @@ class Pengaduan extends Model
             return \Illuminate\Support\Carbon::parse($raw);
         }
         return $this->created_at ?? now();
+
     }
 }

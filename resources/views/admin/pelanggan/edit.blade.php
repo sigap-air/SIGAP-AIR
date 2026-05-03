@@ -85,8 +85,9 @@
 
             {{-- Nomor Telepon --}}
             <div>
-                <label for="no_telepon" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon <span class="text-red-500">*</span></label>
-                <input type="text" name="no_telepon" id="no_telepon" value="{{ old('no_telepon', $pelanggan->no_telepon) }}" required placeholder="Contoh: 08123456789" class="w-full h-14 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400">
+                <label for="no_telepon" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon</label>
+                <input type="tel" name="no_telepon" id="no_telepon" value="{{ old('no_telepon', $pelanggan->no_telepon) }}" placeholder="Contoh: 08123456789" inputmode="numeric" pattern="[0-9]*" maxlength="15" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="w-full h-14 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200 placeholder:text-gray-400">
+
                 @error('no_telepon')
                     <p class="mt-2 text-sm text-red-600 flex items-center gap-1">
                         <span class="material-symbols-outlined text-sm">error</span>

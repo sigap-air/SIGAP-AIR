@@ -21,15 +21,21 @@ class Notifikasi extends Model
         'pengaduan_id',
         'judul',
         'pesan',
-        'is_read',      // Sudah dibaca atau belum
-        'dibaca_pada',
+        'tipe',
+        'is_read',
     ];
 
     protected $casts = [
-        'is_read'   => 'boolean',
-        'dibaca_pada' => 'datetime',
+        'is_read' => 'boolean',
     ];
 
-    public function user()      { return $this->belongsTo(User::class); }
-    public function pengaduan() { return $this->belongsTo(Pengaduan::class); }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function pengaduan()
+    {
+        return $this->belongsTo(Pengaduan::class);
+    }
 }

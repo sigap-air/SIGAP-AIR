@@ -13,6 +13,7 @@ namespace App\Services;
 
 use App\Models\{Pelanggan, Pengaduan, Sla, User};
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class PengaduanService
 {
@@ -43,6 +44,7 @@ class PengaduanService
                 'deskripsi'         => $data['deskripsi'],
                 'foto_bukti'        => $fotoBukti,
                 'status'            => 'menunggu_verifikasi',
+                'tanggal_pengajuan' => now(),
             ]);
 
             // Simpan no telepon terbaru pelapor dari form pengaduan.
@@ -91,13 +93,25 @@ class PengaduanService
      */
     public function setujui(Pengaduan $pengaduan, User $supervisor): void
     {
-        $pengaduan->update(['status' => 'disetujui']);
-        $this->notifikasiService->kirim(
-            $pengaduan->pelapor,
-            $pengaduan,
-            'Pengaduan Disetujui',
-            "Pengaduan #{$pengaduan->nomor_tiket} telah disetujui dan sedang dicari petugas yang tepat."
-        );
+        DB::transaction(function () use ($pengaduan, $supervisor) {
+            $this->pastikanMenungguVerifikasi($pengaduan);
+
+            $statusLama = $pengaduan->status;
+
+            $pengaduan->update([
+                'status' => 'disetujui',
+                'alasan_penolakan' => null,
+            ]);
+
+            $this->catatStatusLog($pengaduan, $supervisor, $statusLama, 'disetujui', 'Pengaduan disetujui supervisor.');
+
+            $this->notifikasiService->kirim(
+                $pengaduan->pelapor,
+                $pengaduan,
+                'Pengaduan Disetujui',
+                "Pengaduan #{$pengaduan->nomor_tiket} telah disetujui dan sedang dicari petugas yang tepat."
+            );
+        });
     }
 
     /**
@@ -105,12 +119,46 @@ class PengaduanService
      */
     public function tolak(Pengaduan $pengaduan, string $alasan, User $supervisor): void
     {
-        $pengaduan->update(['status' => 'ditolak', 'alasan_penolakan' => $alasan]);
-        $this->notifikasiService->kirim(
-            $pengaduan->pelapor,
-            $pengaduan,
-            'Pengaduan Ditolak',
-            "Pengaduan #{$pengaduan->nomor_tiket} ditolak. Alasan: {$alasan}"
-        );
+        DB::transaction(function () use ($pengaduan, $alasan, $supervisor) {
+            $this->pastikanMenungguVerifikasi($pengaduan);
+
+            $statusLama = $pengaduan->status;
+
+            $pengaduan->update([
+                'status' => 'ditolak',
+                'alasan_penolakan' => $alasan,
+            ]);
+
+            $this->catatStatusLog($pengaduan, $supervisor, $statusLama, 'ditolak', $alasan);
+
+            $this->notifikasiService->kirim(
+                $pengaduan->pelapor,
+                $pengaduan,
+                'Pengaduan Ditolak',
+                "Pengaduan #{$pengaduan->nomor_tiket} ditolak. Alasan: {$alasan}"
+            );
+        });
+    }
+
+    private function pastikanMenungguVerifikasi(Pengaduan $pengaduan): void
+    {
+        if ($pengaduan->status !== 'menunggu_verifikasi') {
+            throw ValidationException::withMessages([
+                'status' => 'Pengaduan ini sudah diverifikasi dan tidak bisa diproses ulang.',
+            ]);
+        }
+    }
+
+    private function catatStatusLog(Pengaduan $pengaduan, User $user, ?string $statusLama, string $statusBaru, ?string $catatan = null): void
+    {
+        DB::table('status_log')->insert([
+            'pengaduan_id' => $pengaduan->id,
+            'user_id' => $user->id,
+            'status_lama' => $statusLama,
+            'status_baru' => $statusBaru,
+            'catatan' => $catatan,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }

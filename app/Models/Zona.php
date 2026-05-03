@@ -14,6 +14,8 @@ class Zona extends Model
 {
     use HasFactory;
 
+
+    // FIX: tabel aktual adalah zona_wilayah, bukan zonas (Laravel default)
     protected $table = 'zona_wilayah';
 
     protected $fillable = [

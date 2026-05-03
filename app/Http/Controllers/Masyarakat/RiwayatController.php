@@ -18,6 +18,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Kategori;          // Model Kategori (table: kategori_pengaduan)
 use App\Models\Pengaduan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class RiwayatController extends Controller
 {
@@ -40,6 +43,7 @@ class RiwayatController extends Controller
         $kategoris = Kategori::where('is_active', true)->get();
 
         return view('masyarakat.riwayat.index', compact('pengaduan', 'kategoris'));
+
     }
 
     /**
@@ -59,7 +63,6 @@ class RiwayatController extends Controller
             'rating',
             'sla',
         ]);
-
         return view('masyarakat.riwayat.show', compact('pengaduan'));
     }
 }

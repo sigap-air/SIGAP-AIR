@@ -1,6 +1,13 @@
 {{-- PBI-14 Laporan Rekap Pengaduan --}}
-<x-app-layout>
+<x-app-supervisor-layout>
     <x-slot name="title">Laporan Rekap Pengaduan</x-slot>
+
+    <div class="mb-4">
+        <a href="{{ route('supervisor.dashboard') }}" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#022448]">
+            <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white">←</span>
+            <span>Kembali ke Dashboard Supervisor</span>
+        </a>
+    </div>
 
     <div class="flex items-center justify-between mb-5">
         <h1 class="text-2xl font-bold text-gray-800">📄 Laporan Rekap Pengaduan</h1>
@@ -99,4 +106,4 @@
             </tbody>
         </table>
     </div>
-</x-app-layout>
+</x-app-supervisor-layout>

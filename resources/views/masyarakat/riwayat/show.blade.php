@@ -40,7 +40,7 @@
                     {{-- Nomor Telepon --}}
                     <div>
                         <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Telepon</dt>
-                        <dd class="mt-1.5 font-semibold text-gray-900 font-mono">{{ $pengaduan->no_telepon }}</dd>
+                        <dd class="mt-1.5 font-semibold text-gray-900 font-mono">{{ $pengaduan->pelapor?->no_telepon ?? '-' }}</dd>
                     </div>
                 </dl>
 
@@ -134,10 +134,29 @@
             @if ($pengaduan->sla)
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
                 <h3 class="text-base font-semibold text-gray-900 mb-4">Batas Waktu (SLA)</h3>
+                @php
+                    $deadlineSla = $pengaduan->sla->deadline?->copy();
+                    $nowLocal = now();
+                    $sisaDetik = $deadlineSla ? $nowLocal->diffInSeconds($deadlineSla, false) : null;
+                    $teksSisaSla = '—';
+
+                    if (!is_null($sisaDetik)) {
+                        if ($sisaDetik > 0) {
+                            $sisaHari = (int) ceil($sisaDetik / 86400);
+                            $teksSisaSla = $sisaHari . ' hari lagi';
+                        } elseif ($sisaDetik === 0) {
+                            $teksSisaSla = 'hari ini';
+                        } else {
+                            $lewatHari = (int) ceil(abs($sisaDetik) / 86400);
+                            $teksSisaSla = 'terlambat ' . $lewatHari . ' hari';
+                        }
+                    }
+                @endphp
                 <div class="space-y-3">
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-gray-600">Deadline:</span>
                         <span class="font-semibold text-gray-900">{{ $pengaduan->sla->deadline->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB</span>
+
                     </div>
                     <div class="pt-3 border-t border-gray-100">
                         @if (($pengaduan->sla->status_sla ?? null) === 'terpenuhi')
@@ -153,7 +172,7 @@
                         @else
                         <div class="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-2 rounded-lg text-xs font-semibold">
                             <span>⏳</span>
-                            <span>{{ $pengaduan->sla->deadline->timezone('Asia/Jakarta')->diffForHumans() }}</span>
+                            <span>{{ $teksSisaSla }}</span>
                         </div>
                         @endif
                     </div>

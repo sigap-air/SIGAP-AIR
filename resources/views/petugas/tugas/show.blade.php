@@ -123,6 +123,84 @@
             </a>
         </div>
         @endif
+
+        {{-- Timeline Riwayat Status --}}
+        @if ($tugas->pengaduan->statusLogs->isNotEmpty())
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6" x-data="{ expanded: false }">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold text-gray-800 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#022448]">timeline</span>
+                    Riwayat Status Pengaduan
+                </h2>
+                @if ($tugas->pengaduan->statusLogs->count() > 4)
+                <button @click="expanded = !expanded" class="text-xs text-[#022448] hover:text-[#1e3a5f] font-medium flex items-center gap-1 transition-colors">
+                    <span x-text="expanded ? 'Sembunyikan' : 'Tampilkan Semua'"></span>
+                    <span class="material-symbols-outlined text-sm transition-transform" :class="expanded ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                @endif
+            </div>
+
+            <div class="relative">
+                {{-- Vertical line --}}
+                <div class="absolute left-[17px] top-2 bottom-2 w-0.5 bg-gray-200"></div>
+
+                <div class="space-y-0">
+                    @foreach ($tugas->pengaduan->statusLogs as $index => $log)
+                    <div class="{{ $index >= 4 ? 'overflow-hidden transition-all duration-300' : '' }}"
+                         {!! $index >= 4 ? 'x-show="expanded" x-transition.opacity.duration.300ms' : '' !!}>
+                        <div class="relative flex gap-3 pb-5 group">
+                            {{-- Icon dot --}}
+                            <div class="relative z-10 flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center {{ $log->color_class }} ring-4 ring-white transition-transform group-hover:scale-110">
+                                <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">{{ $log->icon }}</span>
+                            </div>
+
+                            {{-- Content --}}
+                            <div class="flex-1 min-w-0 pt-0.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">{{ $log->label_status_baru }}</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">
+                                            oleh <span class="font-medium text-gray-700">{{ $log->user->name }}</span>
+                                            · <span class="text-gray-400">{{ $log->user->role ? ucfirst($log->user->role) : '' }}</span>
+                                        </p>
+                                    </div>
+                                    <div class="flex-shrink-0 text-right">
+                                        <p class="text-xs text-gray-400">{{ $log->created_at->translatedFormat('d M Y') }}</p>
+                                        <p class="text-xs text-gray-400">{{ $log->created_at->format('H:i') }} WIB</p>
+                                    </div>
+                                </div>
+
+                                {{-- Catatan --}}
+                                @if ($log->catatan)
+                                <div class="mt-2 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                                    <p class="text-xs text-gray-600 leading-relaxed">{{ $log->catatan }}</p>
+                                </div>
+                                @endif
+
+                                {{-- Waktu relatif --}}
+                                <p class="text-xs text-gray-400 mt-1.5">{{ $log->created_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @else
+        {{-- Empty state ketika belum ada log --}}
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
+            <h2 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#022448]">timeline</span>
+                Riwayat Status Pengaduan
+            </h2>
+            <div class="text-center py-6">
+                <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#022448]/5">
+                    <span class="material-symbols-outlined text-[#022448]/30 text-2xl">history</span>
+                </div>
+                <p class="text-xs text-gray-400">Belum ada riwayat perubahan status.</p>
+            </div>
+        </div>
+        @endif
     </div>
 
     {{-- Col 3: Sidebar --}}

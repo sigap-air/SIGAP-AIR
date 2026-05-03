@@ -14,6 +14,8 @@ class StorePengaduanRequest extends FormRequest
     public function rules(): array
     {
         return [
+
+            // FIX ERR-2: nama tabel sesuai migration (bukan konvensi plural Laravel)
             'kategori_id' => 'required|exists:kategori_pengaduan,id',
             'zona_id'     => 'required|exists:zona_wilayah,id',
             'lokasi'      => 'required|string|max:500',
