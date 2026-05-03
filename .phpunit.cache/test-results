@@ -1,0 +1,1 @@
+{"version":2,"defects":{"Tests\\Browser\\PBI01_LoginTest::testLoginPositif":8,"Tests\\Browser\\PBI02_LoginTest::testLoginKredensialSalah":8},"times":{"Tests\\Browser\\PBI01_LoginTest::testLoginPositif":4.364,"Tests\\Browser\\PBI02_LoginTest::testLoginKredensialSalah":6.099,"Tests\\Browser\\PBI02_LoginTest::testLoginFieldKosong":3.382}}
