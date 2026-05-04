@@ -20,6 +20,7 @@ class Zona extends Model
 
     protected $fillable = [
         'nama_zona',
+        'kode_zona',
         'deskripsi',
         'is_active',
     ];

@@ -24,6 +24,7 @@ class Kategori extends Model
 
     protected $fillable = [
         'nama_kategori',
+        'kode_kategori',
         'deskripsi',
         'sla_jam',      // Batas waktu SLA dalam jam
         'is_active',
