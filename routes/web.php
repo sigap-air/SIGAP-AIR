@@ -106,6 +106,10 @@ Route::middleware('auth')->group(function () {
 
         // PBI-09: Monitor SLA & Alert Overdue
         Route::get('/monitor-sla', [MonitorSlaController::class, 'index'])->name('monitor-sla.index');
+
+        // Monitoring status petugas (Available / On-Duty / Off)
+        Route::get('/monitor-petugas', [\App\Http\Controllers\Supervisor\MonitorPetugasController::class, 'index'])->name('monitor-petugas.index');
+        Route::get('/monitor-petugas/status', [\App\Http\Controllers\Supervisor\MonitorPetugasController::class, 'status'])->name('monitor-petugas.status');
     });
 
     // Role: Admin

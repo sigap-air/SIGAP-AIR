@@ -78,10 +78,11 @@ class PengaduanService
 
             // 4. Kirim notifikasi ke pelapor
             $this->notifikasiService->kirim(
-                $pelapor,
-                $pengaduan,
+                $pelapor->id,
+                $pengaduan->id,
                 'Pengaduan Diterima',
-                "Nomor tiket {$pengaduan->nomor_tiket} telah diterima dan sedang menunggu verifikasi."
+                "Nomor tiket {$pengaduan->nomor_tiket} telah diterima dan sedang menunggu verifikasi.",
+                'status_berubah'
             );
 
             return $pengaduan;
@@ -106,10 +107,11 @@ class PengaduanService
             $this->catatStatusLog($pengaduan, $supervisor, $statusLama, 'disetujui', 'Pengaduan disetujui supervisor.');
 
             $this->notifikasiService->kirim(
-                $pengaduan->pelapor,
-                $pengaduan,
+                $pengaduan->pelapor->id,
+                $pengaduan->id,
                 'Pengaduan Disetujui',
-                "Pengaduan #{$pengaduan->nomor_tiket} telah disetujui dan sedang dicari petugas yang tepat."
+                "Pengaduan #{$pengaduan->nomor_tiket} telah disetujui dan sedang dicari petugas yang tepat.",
+                'status_berubah'
             );
         });
     }
@@ -132,10 +134,11 @@ class PengaduanService
             $this->catatStatusLog($pengaduan, $supervisor, $statusLama, 'ditolak', $alasan);
 
             $this->notifikasiService->kirim(
-                $pengaduan->pelapor,
-                $pengaduan,
+                $pengaduan->pelapor->id,
+                $pengaduan->id,
                 'Pengaduan Ditolak',
-                "Pengaduan #{$pengaduan->nomor_tiket} ditolak. Alasan: {$alasan}"
+                "Pengaduan #{$pengaduan->nomor_tiket} ditolak. Alasan: {$alasan}",
+                'status_berubah'
             );
         });
     }
