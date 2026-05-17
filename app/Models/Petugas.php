@@ -64,7 +64,18 @@ class Petugas extends Model
     public function assignmentsAktif()
     {
         return $this->hasMany(Assignment::class, 'petugas_id')
-            ->whereIn('status_assignment', ['ditugaskan', 'sedang_diproses']);
+            ->whereIn('status_assignment', ['ditugaskan', 'diproses']);
+    }
 
+    public function isOffDuty(): bool
+    {
+        return $this->status_tersedia === 'tidak_aktif';
+    }
+
+    public function isAvailableForAssignment(): bool
+    {
+        return $this->status_tersedia === 'tersedia'
+            && $this->assignmentsAktif()->count() === 0;
     }
 }
+

@@ -3,11 +3,15 @@
 namespace App\Services;
 
 use App\Models\{Assignment, Pengaduan, Petugas, StatusLog, User};
+use App\Services\PetugasMonitoringService;
 use Illuminate\Support\Facades\DB;
 
 class AssignmentService
 {
-    public function __construct(private NotifikasiService $notifikasiService) {}
+    public function __construct(
+        private NotifikasiService $notifikasiService,
+        private PetugasMonitoringService $petugasMonitoringService,
+    ) {}
 
     /**
      * Tugaskan petugas ke pengaduan yang sudah disetujui supervisor.
@@ -32,8 +36,11 @@ class AssignmentService
             // 3. Log perubahan status
             $this->catatStatusLog($pengaduan, $supervisor, $statusLama, 'ditugaskan', 'Ditugaskan ke petugas.');
 
-            // 4. Ambil data petugas dan user-nya untuk notifikasi
+            // 4. Petugas masuk status On-Duty (sibuk)
             $petugas = Petugas::with('user')->find($data['petugas_id']);
+            if ($petugas && $petugas->status_tersedia !== 'tidak_aktif') {
+                $petugas->update(['status_tersedia' => 'sibuk']);
+            }
 
             // 5. Notifikasi ke petugas
             if ($petugas && $petugas->user) {
@@ -104,6 +111,10 @@ class AssignmentService
                 $statusPengaduan,
                 $data['catatan_penanganan'] ?? null
             );
+
+            if ($data['status_assignment'] === 'selesai' && $assignment->petugas) {
+                $this->petugasMonitoringService->syncOperationalStatuses($assignment->petugas->zona_id);
+            }
 
             return $assignment->fresh();
         });
