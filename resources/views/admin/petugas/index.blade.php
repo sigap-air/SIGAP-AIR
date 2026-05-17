@@ -4,6 +4,11 @@
 <div class="mb-8">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
+            <h1 class="text-2xl font-bold text-gray-900 font-headline">Petugas Teknis</h1>
+            <p class="text-sm text-gray-500 mt-1">Kelola data petugas teknis PDAM yang terdaftar dalam sistem.</p>
+        </div>
+        <a href="{{ route('admin.petugas.create') }}"
+           id="btn-tambah-petugas"
             <h1 class="text-2xl font-bold text-gray-900 font-headline">Manajemen Petugas Teknis</h1>
             <p class="text-sm text-gray-500 mt-1">Kelola data petugas dan pemetaan wilayah zona</p>
         </div>
@@ -28,6 +33,87 @@
         {{ session('error') }}
     </div>
 @endif
+
+{{-- Summary Stats --}}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+        <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-[#022448] text-xl">badge</span>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500">Total Petugas</p>
+            <p class="text-xl font-bold text-gray-900">{{ $stats['total'] }}</p>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+        <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-emerald-600 text-xl">check_circle</span>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500">Tersedia</p>
+            <p class="text-xl font-bold text-emerald-700">{{ $stats['tersedia'] }}</p>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+        <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-amber-600 text-xl">pending</span>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500">Sibuk</p>
+            <p class="text-xl font-bold text-amber-700">{{ $stats['sibuk'] }}</p>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+        <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-gray-500 text-xl">cancel</span>
+        </div>
+        <div>
+            <p class="text-xs text-gray-500">Tidak Aktif</p>
+            <p class="text-xl font-bold text-gray-600">{{ $stats['tidak_aktif'] }}</p>
+        </div>
+    </div>
+</div>
+
+{{-- Filter Bar --}}
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
+    <form method="GET" action="{{ route('admin.petugas.index') }}" class="flex flex-wrap gap-3 items-end">
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Cari Petugas</label>
+            <input type="text" name="search" value="{{ request('search') }}"
+                   id="input-search-petugas"
+                   placeholder="Nama, email, atau NIP..."
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448]">
+        </div>
+        <div class="min-w-[160px]">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
+            <select name="status" id="filter-status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448]">
+                <option value="">Semua Status</option>
+                <option value="tersedia"    {{ request('status') === 'tersedia'    ? 'selected' : '' }}>Tersedia</option>
+                <option value="sibuk"       {{ request('status') === 'sibuk'       ? 'selected' : '' }}>Sibuk</option>
+                <option value="tidak_aktif" {{ request('status') === 'tidak_aktif' ? 'selected' : '' }}>Tidak Aktif</option>
+            </select>
+        </div>
+        <div class="min-w-[180px]">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Zona</label>
+            <select name="zona_id" id="filter-zona" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448]">
+                <option value="">Semua Zona</option>
+                @foreach($zonas as $zona)
+                    <option value="{{ $zona->id }}" {{ request('zona_id') == $zona->id ? 'selected' : '' }}>
+                        {{ $zona->nama_zona }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" id="btn-filter-petugas"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#022448] text-white text-sm font-semibold rounded-lg hover:bg-[#033466] transition">
+                <span class="material-symbols-outlined text-base">filter_list</span>
+                Filter
+            </button>
+            @if(request()->hasAny(['search','status','zona_id']))
+                <a href="{{ route('admin.petugas.index') }}"
+                   class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition">
+                    <span class="material-symbols-outlined text-base">close</span>
 @if($errors->has('error'))
     <div class="flex items-center gap-3 p-4 mb-6 bg-red-50 border border-red-200 rounded-xl text-red-800 text-sm">
         <span class="material-symbols-outlined text-red-500 flex-shrink-0">error</span>
@@ -98,6 +184,11 @@
                 </a>
             @endif
         </div>
+    </form>
+</div>
+
+{{-- Data Table --}}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
         {{-- Active Filter Chips --}}
         @if(request()->hasAny(['search', 'zona_id', 'status']))
@@ -163,6 +254,7 @@
                     <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">No</th>
                     <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Petugas</th>
                     <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">NIP</th>
+                    <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Zona</th>
                     <th class="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider text-xs">Zona Wilayah</th>
                     <th class="px-6 py-4 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs">Status</th>
                     <th class="px-6 py-4 text-center font-semibold text-gray-600 uppercase tracking-wider text-xs">Aksi</th>
@@ -171,6 +263,7 @@
             <tbody class="divide-y divide-gray-50">
                 @forelse($petugas as $index => $p)
                     <tr class="hover:bg-blue-50/30 transition-colors duration-150">
+                        <td class="px-6 py-4 text-gray-500 font-medium">{{ $petugas->firstItem() + $index }}</td>
                         {{-- No --}}
                         <td class="px-6 py-4 text-gray-500 font-medium text-sm">
                             {{ $petugas->firstItem() + $index }}
@@ -179,6 +272,19 @@
                         {{-- Petugas Info --}}
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
+                                @if($p->user?->foto_profil)
+                                    <img src="{{ asset('storage/' . $p->user->foto_profil) }}" class="w-9 h-9 rounded-full object-cover border border-gray-200 flex-shrink-0" alt="Foto">
+                                @else
+                                    <div class="w-9 h-9 rounded-full bg-[#022448]/10 flex items-center justify-center flex-shrink-0 border border-transparent">
+                                        <span class="material-symbols-outlined text-[#022448] text-base">person</span>
+                                    </div>
+                                @endif
+                                <div>
+                                    <p class="font-semibold text-gray-900">{{ $p->user?->name ?? '(tanpa nama)' }}</p>
+                                    <p class="text-xs text-gray-400">{{ $p->user?->email ?? '—' }}</p>
+                                    @if($p->user?->no_telepon)
+                                        <p class="text-xs text-gray-400">{{ $p->user->no_telepon }}</p>
+                                    @endif
                                 <div class="w-9 h-9 bg-gradient-to-br from-[#022448] to-[#1e3a5f] rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
                                     <span class="text-white text-xs font-bold">
                                         {{ strtoupper(substr($p->user->name ?? 'P', 0, 1)) }}
@@ -194,6 +300,39 @@
                         {{-- NIP --}}
                         <td class="px-6 py-4">
                             @if($p->nip)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-[#022448] rounded-lg text-xs font-mono font-semibold">
+                                    <span class="material-symbols-outlined text-sm">tag</span>
+                                    {{ $p->nip }}
+                                </span>
+                            @else
+                                <span class="text-gray-400 text-sm">—</span>
+                            @endif
+                        </td>
+
+                        {{-- Zona --}}
+                        <td class="px-6 py-4">
+                            @if($p->zona)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-violet-50 text-violet-700 rounded-lg text-xs font-semibold">
+                                    <span class="material-symbols-outlined text-sm">map</span>
+                                    {{ $p->zona->nama_zona }}
+                                </span>
+                            @else
+                                <span class="text-gray-400 text-sm">Belum ditentukan</span>
+                            @endif
+                        </td>
+
+                        {{-- Status --}}
+                        <td class="px-6 py-4 text-center">
+                            @php
+                                $statusConfig = [
+                                    'tersedia'    => ['bg-emerald-50 text-emerald-700', 'bg-emerald-500', 'Tersedia'],
+                                    'sibuk'       => ['bg-amber-50 text-amber-700',     'bg-amber-500',   'Sibuk'],
+                                    'tidak_aktif' => ['bg-gray-100 text-gray-600',      'bg-gray-400',    'Tidak Aktif'],
+                                ];
+                                [$cls, $dot, $label] = $statusConfig[$p->status_tersedia] ?? ['bg-gray-100 text-gray-600', 'bg-gray-400', ucfirst($p->status_tersedia)];
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 {{ $cls }} rounded-full text-xs font-semibold">
+                                <span class="w-1.5 h-1.5 {{ $dot }} rounded-full"></span>
                                 <span class="font-mono text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded-lg border border-gray-200">
                                     {{ $p->nip }}
                                 </span>
@@ -243,6 +382,48 @@
                         {{-- Aksi --}}
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-center gap-1">
+                                {{-- Detail / Lihat --}}
+                                <a href="{{ route('admin.petugas.show', $p) }}"
+                                   id="btn-detail-petugas-{{ $p->id }}"
+                                   class="p-2 text-[#022448] hover:bg-blue-50 rounded-lg transition-colors" title="Lihat Detail">
+                                    <span class="material-symbols-outlined text-xl">visibility</span>
+                                </a>
+                                {{-- Edit --}}
+                                <a href="{{ route('admin.petugas.edit', $p) }}"
+                                   id="btn-edit-petugas-{{ $p->id }}"
+                                   class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Edit">
+                                    <span class="material-symbols-outlined text-xl">edit</span>
+                                </a>
+                                {{-- Nonaktifkan --}}
+                                @if($p->status_tersedia !== 'tidak_aktif')
+                                    <form id="form-nonaktifkan-{{ $p->id }}"
+                                          action="{{ route('admin.petugas.destroy', $p) }}"
+                                          method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button"
+                                                onclick="if(confirm('Nonaktifkan \'{{ $p->user?->name ?? 'petugas ini' }}\'? Petugas tidak akan bisa login dan tidak akan menerima tugas baru.')) { document.getElementById('form-nonaktifkan-{{ $p->id }}').submit(); }"
+                                                class="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
+                                                title="Nonaktifkan">
+                                            <span class="material-symbols-outlined text-xl" style="pointer-events:none;">person_off</span>
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="p-2 text-gray-300 cursor-not-allowed" title="Sudah nonaktif">
+                                        <span class="material-symbols-outlined text-xl">person_off</span>
+                                    </span>
+                                @endif
+                                {{-- Hapus Permanen --}}
+                                <form id="form-hapus-{{ $p->id }}"
+                                      action="{{ route('admin.petugas.hapus-permanen', $p) }}"
+                                      method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button"
+                                            onclick="if(confirm('⚠️ HAPUS PERMANEN \'{{ $p->user?->name ?? 'petugas ini' }}\'?\n\nTindakan ini tidak dapat dibatalkan!\nPetugas hanya bisa dihapus jika tidak memiliki riwayat tugas.')) { document.getElementById('form-hapus-{{ $p->id }}').submit(); }"
+                                            class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                            title="Hapus Permanen">
+                                        <span class="material-symbols-outlined text-xl" style="pointer-events:none;">delete</span>
                                 {{-- Edit --}}
                                 <a href="{{ route('admin.petugas.edit', $p) }}"
                                    class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
@@ -272,6 +453,14 @@
                                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                                     <span class="material-symbols-outlined text-gray-300 text-3xl">badge</span>
                                 </div>
+                                <p class="text-gray-500 font-medium">Belum ada data petugas</p>
+                                <p class="text-gray-400 text-sm mt-1">
+                                    @if(request()->hasAny(['search','status','zona_id']))
+                                        Tidak ada petugas yang cocok dengan filter saat ini.
+                                    @else
+                                        Klik tombol "Tambah Petugas" untuk mendaftarkan petugas teknis.
+                                    @endif
+                                </p>
                                 @if(request()->hasAny(['search', 'zona_id', 'status']))
                                     <p class="text-gray-500 font-medium">Tidak ada petugas yang sesuai filter</p>
                                     <p class="text-gray-400 text-sm mt-1">Coba ubah kriteria filter atau <a href="{{ route('admin.petugas.index') }}" class="text-[#022448] hover:underline font-medium">tampilkan semua</a></p>

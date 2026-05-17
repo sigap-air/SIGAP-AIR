@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\PetugasController;
 use App\Http\Controllers\Admin\SlaController as AdminSlaController;
 use App\Http\Controllers\Admin\ZonaController;
 use App\Http\Controllers\Admin\DaftarPengaduanController;
+use App\Http\Controllers\Admin\PetugasController as AdminPetugasController;
 use App\Http\Controllers\Masyarakat\DashboardController as MasyarakatDashboardController;
 use App\Http\Controllers\Masyarakat\PengaduanController;
 use App\Http\Controllers\Masyarakat\RiwayatController;
@@ -120,6 +121,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('kategori', \App\Http\Controllers\Admin\KategoriController::class)
             ->except(['show']);
 
+        // PBI-16 — Kelola Data Petugas Teknis
+        Route::resource('petugas', AdminPetugasController::class)->parameters(['petugas' => 'petugas']);
+        // Hapus permanen petugas (hard delete)
+        Route::delete('petugas/{petugas}/hapus-permanen', [AdminPetugasController::class, 'hapusPermanen'])->name('petugas.hapus-permanen');
         // PBI-17 — Manajemen Petugas Teknis
         Route::resource('petugas', PetugasController::class)->except(['show']);
 
@@ -142,3 +147,14 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Route temporary untuk reset data petugas (PBI-16)
+Route::get('/clear-petugas-temp', function () {
+    // Disable foreign key checks untuk SQLite/MySQL
+    \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys=OFF;');
+    \App\Models\Assignment::truncate(); 
+    \App\Models\Petugas::truncate();
+    \App\Models\User::where('role', 'petugas')->delete();
+    \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys=ON;');
+    return 'Semua data petugas berhasil dihapus dan dikosongkan!';
+});
