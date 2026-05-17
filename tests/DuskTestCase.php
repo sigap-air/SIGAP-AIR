@@ -7,10 +7,10 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Collection;
-use Laravel\Dusk\TestCase as BaseTestCase;
+use Laravel\Dusk\TestCase as BaseDuskTestCase;
 use PHPUnit\Framework\Attributes\BeforeClass;
 
-abstract class DuskTestCase extends BaseTestCase
+abstract class DuskTestCase extends BaseDuskTestCase
 {
     use CreatesApplication;
 
@@ -73,6 +73,24 @@ abstract class DuskTestCase extends BaseTestCase
 
     protected function driver(): RemoteWebDriver
     {
+        $options = (new ChromeOptions)->addArguments(
+            collect([
+                $this->shouldStartMaximized()
+                    ? '--start-maximized'
+                    : '--window-size=1920,1080',
+
+                '--disable-search-engine-choice-screen',
+                '--disable-smooth-scrolling',
+            ])->unless(
+                $this->hasHeadlessDisabled(),
+                function (Collection $items) {
+                    return $items->merge([
+                        '--disable-gpu',
+                        '--headless=new',
+                    ]);
+                }
+            )->all()
+        );
         $options = (new ChromeOptions)->addArguments(collect([
             '--window-size=1920,1080',
             '--disable-search-engine-choice-screen',
@@ -84,7 +102,10 @@ abstract class DuskTestCase extends BaseTestCase
         })->all());
 
         return RemoteWebDriver::create(
-            $_ENV['DUSK_DRIVER_URL'] ?? env('DUSK_DRIVER_URL') ?? 'http://localhost:9515',
+            $_ENV['DUSK_DRIVER_URL']
+                ?? env('DUSK_DRIVER_URL')
+                ?? 'http://localhost:9515',
+
             DesiredCapabilities::chrome()->setCapability(
                 ChromeOptions::CAPABILITY,
                 $options
