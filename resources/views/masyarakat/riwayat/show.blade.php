@@ -34,7 +34,7 @@
                     {{-- Tanggal Pengajuan --}}
                     <div>
                         <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal Pengajuan</dt>
-                        <dd class="mt-1.5 font-semibold text-gray-900">{{ $pengaduan->tanggal_pengajuan->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') }} WIB</dd>
+                        <dd class="mt-1.5 font-semibold text-gray-900">{{ $pengaduan->tanggal_pengajuan->timezone('Asia/Jakarta')->format('d F Y, H:i') }} WIB</dd>
                     </div>
 
                     {{-- Nomor Telepon --}}
@@ -155,7 +155,8 @@
                 <div class="space-y-3">
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-gray-600">Deadline:</span>
-                        <span class="font-semibold text-gray-900">{{ $deadlineSla?->translatedFormat('d M Y, H:i') }} WIB</span>
+                        <span class="font-semibold text-gray-900">{{ $pengaduan->sla->deadline->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB</span>
+
                     </div>
                     <div class="pt-3 border-t border-gray-100">
                         @if (($pengaduan->sla->status_sla ?? null) === 'terpenuhi')
@@ -184,7 +185,7 @@
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
                 <h3 class="text-base font-semibold text-gray-900 mb-4">Petugas Penanganan</h3>
                 <p class="font-semibold text-gray-900 text-sm">{{ $pengaduan->assignment->petugas->user->name }}</p>
-                <p class="text-xs text-gray-500 mt-1">Jadwal: {{ $pengaduan->assignment->jadwal_penanganan?->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB</p>
+                <p class="text-xs text-gray-500 mt-1">Jadwal: {{ $pengaduan->assignment->jadwal_penanganan?->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB</p>
             </div>
             @endif
 
@@ -209,7 +210,7 @@
                 </div>
                 <h3 class="font-semibold text-amber-900 mb-1">Berikan Penilaian</h3>
                 <p class="text-xs text-amber-700 mb-4 leading-relaxed">Pengaduan sudah selesai! Bantu kami dengan memberikan penilaian.</p>
-                <a href="{{ route('masyarakat.rating.create', $pengaduan) }}"
+                <a href="{{ route('masyarakat.rating.create', $pengaduan->nomor_tiket) }}"
                    class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white font-semibold rounded-xl hover:bg-amber-600 transition-colors text-sm w-full">
                     <span>⭐</span>
                     Nilai Sekarang

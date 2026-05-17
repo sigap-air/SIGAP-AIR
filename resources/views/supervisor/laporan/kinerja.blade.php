@@ -59,7 +59,7 @@
                 @endphp
                 <tr class="hover:bg-gray-50 transition">
                     <td class="px-5 py-3 font-semibold text-gray-800">{{ $row['petugas']->user->name }}</td>
-                    <td class="px-5 py-3 text-gray-500 font-mono text-xs">{{ $row['petugas']->nomor_pegawai }}</td>
+                    <td class="px-5 py-3 text-gray-500 font-mono text-xs">{{ $row['petugas']->nip }}</td>
                     <td class="px-5 py-3 text-center font-semibold">{{ $row['total_tugas'] }}</td>
                     <td class="px-5 py-3 text-center text-green-700 font-semibold">{{ $row['total_selesai'] }}</td>
                     <td class="px-5 py-3 text-center text-gray-600">{{ $row['rata_waktu_jam'] ?? '—' }}</td>

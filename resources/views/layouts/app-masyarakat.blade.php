@@ -88,8 +88,7 @@
 
                             <!-- Profile Dropdown Menu -->
                             <div x-show="showProfileDropdown" @click.outside="showProfileDropdown = false" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200">Edit Profil</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200">Ganti Password</a>
+                                <a href="{{ route('masyarakat.profil.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200">Edit Profil</a>
                                 <form method="POST" action="{{ route('logout') }}" class="block" data-confirm="Yakin ingin logout dari akun ini?">
                                     @csrf
                                     <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</button>
@@ -160,7 +159,7 @@
                     <span>Riwayat</span>
                 </a>
 
-                <a href="{{ route('profile.edit') }}" :class="isactive('/profil') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
+                <a href="{{ route('masyarakat.profil.edit') }}" :class="isactive('/profil') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                     </svg>

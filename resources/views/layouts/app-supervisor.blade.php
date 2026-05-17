@@ -24,6 +24,9 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+        .bg-navy-gradient {
+            background: linear-gradient(135deg, #022448 0%, #1e3a5f 100%);
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-body text-gray-900 antialiased">
@@ -51,10 +54,10 @@
         isactive(route) {
             return window.location.pathname.includes(route);
         }
-    }" class="min-h-screen flex flex-col">
+    }" class="h-screen flex flex-col overflow-hidden">
 
         <!-- TOPBAR -->
-        <nav class="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <nav class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
             <div class="px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <!-- Left: Hamburger & Logo -->
@@ -65,11 +68,9 @@
                             </svg>
                         </button>
                         <div class="hidden sm:flex items-center gap-2">
-                            <svg class="w-6 h-6 text-[#0F4C81]" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                            </svg>
+                            <span class="material-symbols-outlined text-[#022448] text-2xl" style="font-variation-settings: 'FILL' 1;">water_drop</span>
                             <div>
-                                <h1 class="text-lg font-bold text-gray-900">SIGAP-AIR</h1>
+                                <h1 class="text-lg font-bold text-[#022448] font-headline">SIGAP-AIR</h1>
                                 <p class="text-xs text-gray-500">Panel Supervisor</p>
                             </div>
                         </div>
@@ -83,14 +84,13 @@
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                 </svg>
-                                <!-- Badge -->
                                 <span x-show="unreadCount > 0" class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                                     <span x-text="unreadCount > 99 ? '99+' : unreadCount"></span>
                                 </span>
                             </button>
 
                             <!-- Notification Dropdown -->
-                            <div x-show="showNotifications" @click.outside="showNotifications = false" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div x-show="showNotifications" @click.outside="showNotifications = false" x-transition class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50">
                                 <div class="p-4 border-b border-gray-200">
                                     <h3 class="font-semibold text-gray-900">Notifikasi</h3>
                                 </div>
@@ -101,7 +101,7 @@
                                     </div>
                                 </div>
                                 <div class="p-3 border-t border-gray-200 text-center">
-                                    <a href="#" class="text-sm text-[#0F4C81] hover:text-[#0D3F6E] font-medium">Lihat Semua Notifikasi</a>
+                                    <a href="#" class="text-sm text-[#022448] hover:text-[#1e3a5f] font-medium">Lihat Semua Notifikasi</a>
                                 </div>
                             </div>
                         </div>
@@ -109,20 +109,23 @@
                         <!-- Profile Dropdown -->
                         <div class="relative">
                             <button @click="showProfileDropdown = !showProfileDropdown" class="flex items-center gap-3 p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                                <img src="https://ui-avatars.com/api/?name=Supervisor+SIGAP&background=0F4C81&color=fff" alt="Avatar" class="w-8 h-8 rounded-full">
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=022448&color=fff" alt="Avatar" class="w-8 h-8 rounded-full">
                                 <div class="hidden sm:block text-left">
                                     <p class="text-sm font-medium text-gray-900">{{ Auth::user()->name }}</p>
                                     <p class="text-xs text-gray-500">Supervisor</p>
                                 </div>
                             </button>
 
+                            <div x-show="showProfileDropdown" @click.outside="showProfileDropdown = false" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+                                <a href="{{ route('profile.edit') }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">Edit Profil</a>
+                                <form method="POST" action="{{ route('logout') }}" class="block">
                             <!-- Profile Dropdown Menu -->
                             <div x-show="showProfileDropdown" @click.outside="showProfileDropdown = false" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200">Edit Profil</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200">Edit Profil</a>
                                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200">Ganti Password</a>
                                 <form method="POST" action="{{ route('logout') }}" class="block" data-confirm="Yakin ingin logout dari akun ini?">
                                     @csrf
-                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</button>
+                                    <button type="submit" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50">Logout</button>
                                 </form>
                             </div>
                         </div>
@@ -132,102 +135,97 @@
         </nav>
 
         <!-- MAIN CONTAINER -->
-        <div class="flex flex-1 overflow-hidden">
+        <div class="flex flex-1 overflow-hidden min-h-0">
             <!-- SIDEBAR -->
-            <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="w-60 bg-gray-900 text-white transition-transform duration-300 lg:translate-x-0 fixed lg:relative h-full z-30 overflow-y-auto flex flex-col">
-                
+            <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="w-64 bg-navy-gradient text-white transition-transform duration-300 lg:translate-x-0 fixed lg:relative inset-y-0 left-0 z-30 overflow-y-auto flex flex-col shadow-xl flex-shrink-0">
+
                 <!-- Sidebar Header -->
-                <div class="p-6 border-b border-gray-800">
-                    <div class="flex items-center gap-3 mb-6">
-                        <svg class="w-8 h-8 text-[#0F4C81]" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                        </svg>
+                <div class="p-6 border-b border-white/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                            <span class="material-symbols-outlined text-white text-xl" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+                        </div>
                         <div>
-                            <h2 class="font-bold text-white">SIGAP-AIR</h2>
-                            <p class="text-xs text-gray-400 uppercase tracking-wide">Supervisor</p>
+                            <h2 class="font-bold text-white font-headline">SIGAP-AIR</h2>
+                            <p class="text-xs text-blue-200 uppercase tracking-wide">Panel Supervisor</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Navigation Menu -->
-                <nav class="flex-1 px-4 py-6 space-y-2">
-                    <a href="{{ route('supervisor.dashboard') }}" :class="isactive('/supervisor/dashboard') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-                        </svg>
+                <nav class="flex-1 px-4 py-6 space-y-1">
+                    <p class="text-xs text-blue-300/60 uppercase tracking-wider font-semibold px-4 mb-3">Menu Utama</p>
+
+                    <a href="{{ route('supervisor.dashboard') }}" :class="isactive('/supervisor/dashboard') ? 'bg-white/15 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white'" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200">
+                        <span class="material-symbols-outlined text-xl">dashboard</span>
                         <span>Dashboard</span>
                     </a>
 
-                    <a href="{{ route('supervisor.verifikasi.index') }}" :class="isactive('/supervisor/verifikasi') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors relative">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2.5 1A1.5 1.5 0 001 2.5v15A1.5 1.5 0 002.5 19h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0017.5 1h-15zM7 9a2 2 0 11-4 0 2 2 0 014 0zM7 13a6 6 0 11-12 0 6 6 0 0112 0z" />
-                        </svg>
+                    <a href="{{ route('supervisor.verifikasi.index') }}" :class="isactive('/supervisor/verifikasi') ? 'bg-white/15 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white'" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 relative">
+                        <span class="material-symbols-outlined text-xl">fact_check</span>
                         <span>Verifikasi Tiket</span>
-                        <span x-show="verifikasiCount > 0" class="absolute -right-2 -top-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold" x-text="verifikasiCount"></span>
+                        <span x-show="verifikasiCount > 0" x-text="verifikasiCount" class="ml-auto min-w-[20px] h-5 px-1 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"></span>
                     </a>
 
-                    <a href="{{ route('supervisor.filter.index') }}" :class="isactive('/supervisor/filter') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z" />
-                        </svg>
+                    <a href="{{ route('supervisor.filter.index') }}" :class="isactive('/supervisor/filter') ? 'bg-white/15 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white'" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200">
+                        <span class="material-symbols-outlined text-xl">filter_alt</span>
                         <span>Semua Pengaduan</span>
                     </a>
 
-                    <a href="#" :class="isactive('/supervisor/assignment') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
+                    <a href="#" :class="isactive('/supervisor/assignment') ? 'bg-white/15 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white'" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200">
+                        <span class="material-symbols-outlined text-xl">assignment_ind</span>
+                        <span>Assignment</span>
+                    <a href="{{ route('supervisor.monitor-petugas.index') }}" :class="isactive('/supervisor/monitor-petugas') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                         </svg>
-                        <span>Assignment</span>
+                        <span>Monitor Petugas</span>
                     </a>
 
-                    <a href="{{ route('supervisor.laporan.index') }}" :class="isactive('/supervisor/laporan') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm0 4a1 1 0 100 2h6a1 1 0 100-2H7zm0 4a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
-                        </svg>
+                    <p class="text-xs text-blue-300/60 uppercase tracking-wider font-semibold px-4 mt-6 mb-3">Laporan & Monitor</p>
+
+                    <a href="{{ route('supervisor.laporan.index') }}" :class="isactive('/supervisor/laporan') ? 'bg-white/15 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white'" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200">
+                        <span class="material-symbols-outlined text-xl">picture_as_pdf</span>
                         <span>Laporan PDF</span>
                     </a>
 
-                    <a href="{{ route('supervisor.monitor-sla.index') }}" :class="isactive('/supervisor/monitor-sla') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                        </svg>
+                    <a href="{{ route('supervisor.monitor-sla.index') }}" :class="isactive('/supervisor/monitor-sla') ? 'bg-white/15 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white'" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200">
+                        <span class="material-symbols-outlined text-xl">timer</span>
                         <span>Monitor SLA</span>
                     </a>
 
-                    <a href="{{ route('supervisor.kinerja.index') }}" :class="isactive('/supervisor/kinerja') ? 'bg-[#0F4C81] text-white' : 'text-gray-300 hover:bg-gray-800'" class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                        </svg>
+                    <a href="{{ route('supervisor.kinerja.index') }}" :class="isactive('/supervisor/kinerja') ? 'bg-white/15 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white'" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200">
+                        <span class="material-symbols-outlined text-xl">leaderboard</span>
                         <span>Kinerja Petugas</span>
                     </a>
                 </nav>
 
                 <!-- Sidebar Footer: User Info -->
-                <div class="p-4 border-t border-gray-800 mt-auto">
-                    <div class="flex items-center gap-3 p-3 bg-gray-800 rounded-lg">
-                        <img src="https://ui-avatars.com/api/?name=Supervisor+SIGAP&background=0F4C81&color=fff" alt="Avatar" class="w-10 h-10 rounded-full">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-white">{{ Auth::user()->name }}</p>
-                            <span class="inline-block px-2 py-1 bg-[#0F4C81] text-white text-xs rounded font-semibold mt-1">Supervisor</span>
+                <div class="p-4 border-t border-white/10 mt-auto">
+                    <div class="flex items-center gap-3 p-3 bg-white/10 rounded-xl backdrop-blur-sm">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=1e3a5f&color=fff" alt="Avatar" class="w-10 h-10 rounded-full ring-2 ring-white/20">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>
+                            <span class="inline-block px-2 py-0.5 bg-white/20 text-blue-100 text-xs rounded-md font-semibold mt-1">Supervisor</span>
                         </div>
                     </div>
                 </div>
             </aside>
 
             <!-- MAIN CONTENT -->
-            <main class="flex-1 overflow-y-auto">
-                <div class="p-6 lg:p-8">
+            <main class="flex-1 overflow-y-auto flex flex-col">
+                <div class="flex-1 p-6 lg:p-8">
                     {{ $slot }}
                 </div>
+                <!-- FOOTER -->
+                <footer class="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-500 flex-shrink-0">
+                    <p>&copy; 2026 SIGAP-AIR v1.0 — Sistem Informasi Gerak Cepat Pengaduan Air</p>
+                </footer>
             </main>
         </div>
-
-        <!-- FOOTER -->
-        <footer class="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-600">
-            <p>&copy; 2026 SIGAP-AIR v1.0 - Sistem Informasi Gerak Cepat Pengaduan Air</p>
-        </footer>
     </div>
 
     @include('layouts.partials.flash-message')
+    @stack('scripts')
 </body>
 </html>

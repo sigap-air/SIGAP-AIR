@@ -42,11 +42,22 @@ class Pengaduan extends Model
         'tanggal_pengajuan' => 'datetime',
     ];
 
-    // $appends DIHAPUS (FIX BUG-12):
-    // tanggal_pengajuan adalah kolom DB nyata, bukan computed attribute.
-    // Mendaftarkan kolom DB di $appends menyebabkan konflik dengan $casts:
-    // Laravel mencoba memanggil accessor DAN cast secara bersamaan -> hasil tidak terduga.
-    // $casts sudah cukup untuk serialize datetime ke JSON.
+    // tanggal_pengajuan tidak dimasukkan ke $appends agar cast datetime tetap bekerja
+    // Accessor di bawah hanya sebagai fallback ke created_at jika kolom null
+
+    // ========================
+    // ROUTE KEY
+    // ========================
+
+    /**
+     * PBI-10: route model binding pakai nomor_tiket bukan id.
+     * Contoh: /riwayat/SIGAP-20250503-0001
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'nomor_tiket';
+    }
+
 
     // ========================
     // RELASI
@@ -83,9 +94,16 @@ class Pengaduan extends Model
         return $this->hasOne(Sla::class);
     }
 
-    public function statusLogs()
+    /**
+     * PBI-10: Log perubahan status pengaduan untuk tampilan timeline.
+     * Model StatusLog belum dibuat — fallback ke penggunaan created_at / updated_at.
+     */
+    public function statusLog()
     {
-        return $this->hasMany(StatusLog::class)->latest();
+        // Jika model StatusLog sudah dibuat, gunakan:
+        // return $this->hasMany(StatusLog::class)->orderBy('created_at');
+        return $this->hasMany(Assignment::class); // placeholder sampai model dibuat
+
     }
 
     // ========================
@@ -117,13 +135,15 @@ class Pengaduan extends Model
     /**
      * Kompatibilitas lintas-PBI:
      * beberapa bagian app memakai tanggal_pengajuan, sementara migrasi hanya created_at.
+     * Selalu mengembalikan Carbon instance agar bisa dipanggil ->timezone(), ->format(), dll.
      */
-    public function getTanggalPengajuanAttribute($value)
+    public function getTanggalPengajuanAttribute(): \Illuminate\Support\Carbon
     {
-        if (!empty($value)) {
-            return Carbon::parse($value);
+        $raw = $this->attributes['tanggal_pengajuan'] ?? null;
+        if ($raw) {
+            return \Illuminate\Support\Carbon::parse($raw);
         }
+        return $this->created_at ?? now();
 
-        return $this->created_at;
     }
 }

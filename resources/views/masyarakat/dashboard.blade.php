@@ -31,7 +31,7 @@
                 <p class="mt-2 text-lg font-bold">Buat Pengaduan Baru</p>
                 <p class="mt-1 text-sm text-blue-100">Laporkan masalah air Anda sekarang.</p>
             </a>
-            <a href="{{ route('masyarakat.riwayat.index') }}"
+            <a href="{{ route('masyarakat.pengaduan.riwayat') }}"
                class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:bg-gray-50">
                 <p class="text-xs uppercase tracking-wide text-gray-500">Aksi Cepat</p>
                 <p class="mt-2 text-lg font-bold text-gray-800">Riwayat Pengaduan</p>
@@ -43,13 +43,13 @@
         <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
             <h2 class="mb-4 font-bold text-gray-700">Pengaduan Terakhir</h2>
             @forelse ($pengaduanTerakhir as $p)
-            <a href="{{ route('masyarakat.riwayat.show', $p) }}"
+            <a href="{{ route('masyarakat.pengaduan.riwayat.show', $p->nomor_tiket) }}"
                class="flex items-center justify-between rounded-lg border-b p-3 transition last:border-b-0 hover:bg-gray-50">
                 <div>
                     <p class="text-sm font-semibold text-gray-800">{{ $p->nomor_tiket }}</p>
                     <p class="text-xs text-gray-500">
-                        {{ $p->kategori->nama_kategori }}
-                        · {{ $p->tanggal_pengajuan->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
+                        {{ $p->kategori?->nama_kategori ?? '-' }}
+                        · {{ $p->tanggal_pengajuan->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB
                     </p>
                 </div>
                 <x-badge-status :status="$p->status" />

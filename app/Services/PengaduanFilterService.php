@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * Filter Dashboard — Filter untuk Supervisor dan Admin
+ * TANGGUNG JAWAB: Imanuel Karmelio V. Liuw (PBI 13)
+ */
 namespace App\Services;
 
 use App\Models\{Kategori, Pengaduan, Petugas, Zona};

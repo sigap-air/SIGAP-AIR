@@ -57,8 +57,8 @@ class LaporanService
     public function getKinerja(array $filter = []): array
     {
         $query = Petugas::with(['user', 'assignments.pengaduan.sla', 'assignments.pengaduan.rating'])
-            ->when(!empty($filter['zona_id']), fn($q) => $q->whereHas('zonas', fn($z) => $z->where('zonas.id', $filter['zona_id'])))
-            ->when(!empty($filter['status']), fn($q) => $q->where('status_ketersediaan', $filter['status']));
+            ->when(!empty($filter['zona_id']), fn($q) => $q->where('zona_id', $filter['zona_id']))
+->when(!empty($filter['status']), fn($q) => $q->where('status_tersedia', $filter['status']));
 
         $petugas = $query->get()->map(function ($p) use ($filter) {
             $assignments = $p->assignments

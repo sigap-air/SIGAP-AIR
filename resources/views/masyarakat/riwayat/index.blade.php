@@ -1,6 +1,6 @@
 {{-- PBI-10 Riwayat Pengaduan Masyarakat --}}
 <x-masyarakat-form-layout title="Riwayat Pengaduan" :back-url="route('masyarakat.dashboard')">
-    
+
     {{-- Header dengan CTA --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
@@ -58,14 +58,14 @@
             {{-- Tanggal Dari --}}
             <div class="flex-1 min-w-40">
                 <label class="block text-xs font-semibold text-gray-600 mb-2">Dari Tanggal</label>
-                <input type="date" name="dari" value="{{ request('dari') }}"
+                <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#022448] focus:border-transparent transition-all">
             </div>
 
             {{-- Tanggal Sampai --}}
             <div class="flex-1 min-w-40">
                 <label class="block text-xs font-semibold text-gray-600 mb-2">Sampai Tanggal</label>
-                <input type="date" name="sampai" value="{{ request('sampai') }}"
+                <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#022448] focus:border-transparent transition-all">
             </div>
 
@@ -78,7 +78,7 @@
                     </svg>
                     Terapkan Filter
                 </button>
-                <a href="{{ route('masyarakat.riwayat.index') }}"
+                <a href="{{ route('masyarakat.pengaduan.riwayat') }}"
                     class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 1119.414 4.414c-.195-.196-.46-.293-.707-.293h-.121l.83-.83a1 1 0 00-1.414-1.414l-2.5 2.5a1 1 0 000 1.414l2.5 2.5a1 1 0 001.414-1.414l-.83-.83h.121A9.002 9.002 0 005.049 5.209V7a1 1 0 11-2 0V3a1 1 0 011-1z" clip-rule="evenodd" />
@@ -91,7 +91,7 @@
 
     {{-- Table Section --}}
     <div class="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-        @if ($pengaduans->isEmpty())
+        @if ($pengaduan->isEmpty())
             {{-- Empty State --}}
             <div class="flex flex-col items-center justify-center py-16 px-6">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -119,7 +119,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @foreach ($pengaduans as $p)
+                        @foreach ($pengaduan as $p)
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             {{-- No. Tiket --}}
                             <td class="px-6 py-4">
@@ -146,13 +146,13 @@
 
                             {{-- Tanggal --}}
                             <td class="px-6 py-4 text-gray-600 text-xs whitespace-nowrap">
-                                {{ $p->tanggal_pengajuan->timezone('Asia/Jakarta')->translatedFormat('d M Y') }}
+                                {{ $p->tanggal_pengajuan->timezone('Asia/Jakarta')->format('d M Y') }}
                             </td>
 
                             {{-- Aksi --}}
                             <td class="px-6 py-4 text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <a href="{{ route('masyarakat.riwayat.show', $p) }}"
+                                    <a href="{{ route('masyarakat.pengaduan.riwayat.show', $p->nomor_tiket) }}"
                                        title="Lihat Detail"
                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,7 +179,7 @@
 
             {{-- Pagination --}}
             <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
-                {{ $pengaduans->withQueryString()->links() }}
+                {{ $pengaduan->links() }}
             </div>
         @endif
     </div>
