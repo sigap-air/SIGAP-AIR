@@ -198,6 +198,11 @@
                         <span class="material-symbols-outlined text-xl">leaderboard</span>
                         <span>Kinerja Petugas</span>
                     </a>
+
+                    <a href="{{ route('supervisor.zona.index') }}" :class="isactive('/supervisor/zona') ? 'bg-white/15 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white'" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200">
+                        <span class="material-symbols-outlined text-xl">map</span>
+                        <span>Zona Wilayah</span>
+                    </a>
                 </nav>
 
                 <!-- Sidebar Footer: User Info -->

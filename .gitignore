@@ -1,3 +1,4 @@
+
 /node_modules
 /public/hot
 /public/storage
@@ -6,6 +7,7 @@
 .env
 .env.backup
 .env.production
+.env.dusk.local
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -23,3 +25,7 @@ storage/framework/cache/*
 !storage/framework/sessions/.gitkeep
 !storage/framework/views/.gitkeep
 !storage/framework/cache/.gitkeep
+
+# Claude Dev / Claude Code session directories
+/.claude-flow/
+docs/LOGIN_UI_CHEATSHEET.md
