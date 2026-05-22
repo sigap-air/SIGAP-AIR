@@ -17,6 +17,7 @@ use App\Http\Controllers\Supervisor\FilterPengaduanController;
 use App\Http\Controllers\Supervisor\KinerjaPetugasController;
 use App\Http\Controllers\Supervisor\LaporanController;
 use App\Http\Controllers\Supervisor\VerifikasiController;
+use App\Http\Controllers\Supervisor\ZonaController as SupervisorZonaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -103,6 +104,10 @@ Route::middleware('auth')->group(function () {
 
         // PBI-09: Monitor SLA & Alert Overdue
         Route::get('/monitor-sla', [MonitorSlaController::class, 'index'])->name('monitor-sla.index');
+
+        // PBI-21: Zona Wilayah (read-only untuk Supervisor)
+        Route::get('/zona',       [SupervisorZonaController::class, 'index'])->name('zona.index');
+        Route::get('/zona/{id}',  [SupervisorZonaController::class, 'show'])->name('zona.show');
     });
 
     // Role: Admin
