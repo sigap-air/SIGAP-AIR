@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\PetugasController;
 use App\Http\Controllers\Admin\SlaController as AdminSlaController;
 use App\Http\Controllers\Admin\ZonaController;
 use App\Http\Controllers\Admin\DaftarPengaduanController;
+use App\Http\Controllers\Admin\PetugasController as AdminPetugasController;
 use App\Http\Controllers\Masyarakat\DashboardController as MasyarakatDashboardController;
 use App\Http\Controllers\Masyarakat\PengaduanController;
 use App\Http\Controllers\Masyarakat\RiwayatController;
@@ -41,10 +42,6 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
     // PBI-12 Notifikasi (Global for all authenticated users)
     Route::get('/notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifikasi.index');
     Route::get('/notifikasi/count', [\App\Http\Controllers\NotifikasiController::class, 'count'])->name('notifikasi.count');
@@ -54,6 +51,12 @@ Route::middleware('auth')->group(function () {
     // Role: Masyarakat
     Route::middleware(['role:masyarakat'])->prefix('masyarakat')->name('masyarakat.')->group(function () {
         Route::get('/dashboard', [MasyarakatDashboardController::class, 'index'])->name('dashboard');
+
+        // PBI-08: Kelola Profil Masyarakat
+        Route::get('/profil', [ProfileController::class, 'edit'])->name('profil.edit');
+        Route::patch('/profil', [ProfileController::class, 'update'])->name('profil.update');
+        Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profil.update-password');
+        Route::delete('/profil', [ProfileController::class, 'destroy'])->name('profil.destroy');
 
         // PBI-04 Pengajuan Pengaduan Digital
         Route::get('/pengaduan/create', [PengaduanController::class, 'create'])->name('pengaduan.create');
@@ -66,9 +69,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/pengaduan/riwayat/{nomor_tiket}', [RiwayatController::class, 'show'])->name('pengaduan.riwayat.show');
 
         // PBI-12 Notifikasi
-        Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
-        Route::patch('/notifikasi/{id}/read', [NotifikasiController::class, 'markRead'])->name('notifikasi.read');
-        Route::patch('/notifikasi/read-all', [NotifikasiController::class, 'markAllRead'])->name('notifikasi.read-all');
+        Route::get('/notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifikasi.index');
+        Route::patch('/notifikasi/{id}/read', [\App\Http\Controllers\NotifikasiController::class, 'markRead'])->name('notifikasi.read');
+        Route::patch('/notifikasi/read-all', [\App\Http\Controllers\NotifikasiController::class, 'markAllRead'])->name('notifikasi.read-all');
 
     });
 
@@ -108,6 +111,9 @@ Route::middleware('auth')->group(function () {
         // PBI-21: Zona Wilayah (read-only untuk Supervisor)
         Route::get('/zona',       [SupervisorZonaController::class, 'index'])->name('zona.index');
         Route::get('/zona/{id}',  [SupervisorZonaController::class, 'show'])->name('zona.show');
+        // Monitoring status petugas (Available / On-Duty / Off)
+        Route::get('/monitor-petugas', [\App\Http\Controllers\Supervisor\MonitorPetugasController::class, 'index'])->name('monitor-petugas.index');
+        Route::get('/monitor-petugas/status', [\App\Http\Controllers\Supervisor\MonitorPetugasController::class, 'status'])->name('monitor-petugas.status');
     });
 
     // Role: Admin
@@ -125,6 +131,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('kategori', \App\Http\Controllers\Admin\KategoriController::class)
             ->except(['show']);
 
+        // PBI-16 — Kelola Data Petugas Teknis
+        Route::resource('petugas', AdminPetugasController::class)->parameters(['petugas' => 'petugas']);
+        // Hapus permanen petugas (hard delete)
+        Route::delete('petugas/{petugas}/hapus-permanen', [AdminPetugasController::class, 'hapusPermanen'])->name('petugas.hapus-permanen');
         // PBI-17 — Manajemen Petugas Teknis
         Route::resource('petugas', PetugasController::class)->except(['show']);
 
@@ -147,3 +157,14 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Route temporary untuk reset data petugas (PBI-16)
+Route::get('/clear-petugas-temp', function () {
+    // Disable foreign key checks untuk SQLite/MySQL
+    \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys=OFF;');
+    \App\Models\Assignment::truncate(); 
+    \App\Models\Petugas::truncate();
+    \App\Models\User::where('role', 'petugas')->delete();
+    \Illuminate\Support\Facades\DB::statement('PRAGMA foreign_keys=ON;');
+    return 'Semua data petugas berhasil dihapus dan dikosongkan!';
+});

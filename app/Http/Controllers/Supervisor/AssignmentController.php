@@ -5,6 +5,7 @@
  *
  * Fitur:
  * - Pilih petugas berdasarkan zona wilayah pengaduan
+ * - Monitoring status Available / On-Duty / Off sebelum assignment
  * - Input instruksi khusus + jadwal penanganan
  * - Trigger notifikasi ke petugas + pelapor setelah assignment
  */
@@ -13,26 +14,34 @@ namespace App\Http\Controllers\Supervisor;
 use App\Http\Controllers\Controller;
 use App\Models\{Pengaduan, Petugas};
 use App\Services\AssignmentService;
+use App\Services\PetugasMonitoringService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class AssignmentController extends Controller
 {
-    public function __construct(private AssignmentService $assignmentService) {}
+    public function __construct(
+        private AssignmentService $assignmentService,
+        private PetugasMonitoringService $monitoringService,
+    ) {}
 
     public function create(Pengaduan $pengaduan)
     {
-        $statusTersediaColumn = \Illuminate\Support\Facades\Schema::hasColumn('petugas', 'status_ketersediaan')
-            ? 'status_ketersediaan'
-            : 'status_tersedia';
+        $pengaduan->load(['kategori', 'zona']);
 
-        // Tampilkan hanya petugas di zona yang sama dengan pengaduan.
-        // Fallback kolom status disesuaikan dengan skema DB yang aktif.
-        $petugas = Petugas::with('user')
-            ->where('zona_id', $pengaduan->zona_id)
-            ->where($statusTersediaColumn, 'tersedia')
-            ->get();
+        $petugasRows = $this->monitoringService
+            ->getMonitorList($pengaduan->zona_id)
+            ->values();
 
-        return view('supervisor.assignment.create', compact('pengaduan', 'petugas'));
+        $petugasTersedia = $petugasRows->where('dapat_dipilih', true)->count();
+        $monitorSummary = $this->monitoringService->getSummary($pengaduan->zona_id);
+
+        return view('supervisor.assignment.create', compact(
+            'pengaduan',
+            'petugasRows',
+            'petugasTersedia',
+            'monitorSummary',
+        ));
     }
 
     public function store(Request $request, Pengaduan $pengaduan)
@@ -43,8 +52,25 @@ class AssignmentController extends Controller
             'jadwal_penanganan' => 'required|date|after:now',
         ]);
 
-        // TODO SANITRA: Delegasikan ke AssignmentService + kirim notifikasi
+        $petugas = Petugas::with('user')->findOrFail($request->petugas_id);
+
+        if ($petugas->zona_id !== $pengaduan->zona_id) {
+            throw ValidationException::withMessages([
+                'petugas_id' => 'Petugas harus berada di zona yang sama dengan pengaduan.',
+            ]);
+        }
+
+        $this->monitoringService->syncOperationalStatuses($pengaduan->zona_id);
+
+        if (! $this->monitoringService->isSelectableForAssignment($petugas->fresh())) {
+            throw ValidationException::withMessages([
+                'petugas_id' => 'Petugas tidak Available. Hanya petugas berstatus Available yang dapat dipilih (Off dan On-Duty tidak dapat dipilih).',
+            ]);
+        }
+
         $this->assignmentService->tugaskan($pengaduan, $request->validated(), auth()->user());
-        return redirect()->route('supervisor.verifikasi.index')->with('success', 'Petugas berhasil ditugaskan.');
+
+        return redirect()->route('supervisor.verifikasi.index')
+            ->with('success', 'Petugas berhasil ditugaskan.');
     }
 }
