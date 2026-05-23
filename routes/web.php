@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DaftarPengaduanController;
 use App\Http\Controllers\Admin\PetugasController as AdminPetugasController;
 use App\Http\Controllers\Masyarakat\DashboardController as MasyarakatDashboardController;
 use App\Http\Controllers\Masyarakat\PengaduanController;
+use App\Http\Controllers\Masyarakat\RatingController;
 use App\Http\Controllers\Masyarakat\RiwayatController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Supervisor\AssignmentController;
@@ -67,6 +68,10 @@ Route::middleware('auth')->group(function () {
         // Routes: GET /masyarakat/pengaduan/riwayat & /masyarakat/pengaduan/riwayat/{nomor_tiket}
         Route::get('/pengaduan/riwayat', [RiwayatController::class, 'index'])->name('pengaduan.riwayat');
         Route::get('/pengaduan/riwayat/{nomor_tiket}', [RiwayatController::class, 'show'])->name('pengaduan.riwayat.show');
+
+        // PBI-11 Rating & Feedback (hanya setelah pengaduan selesai)
+        Route::get('/pengaduan/{nomor_tiket}/rating', [RatingController::class, 'create'])->name('rating.create');
+        Route::post('/pengaduan/{nomor_tiket}/rating', [RatingController::class, 'store'])->name('rating.store');
 
         // PBI-12 Notifikasi
         Route::get('/notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifikasi.index');
