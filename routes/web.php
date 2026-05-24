@@ -106,6 +106,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/filter', [FilterPengaduanController::class, 'index'])->name('filter.index');
         Route::get('/filter/export-csv', [FilterPengaduanController::class, 'exportCsv'])->name('filter.export-csv');
+        Route::get('/pengaduan/{pengaduan}', [FilterPengaduanController::class, 'show'])->name('pengaduan.show');
 
         Route::get('/assignment/{pengaduan}/create', [AssignmentController::class, 'create'])->name('assignment.create');
         Route::post('/assignment/{pengaduan}', [AssignmentController::class, 'store'])->name('assignment.store');
@@ -121,13 +122,11 @@ Route::middleware('auth')->group(function () {
         // PBI-21: Zona Wilayah (read-only untuk Supervisor)
         Route::get('/zona',       [SupervisorZonaController::class, 'index'])->name('zona.index');
         Route::get('/zona/{id}',  [SupervisorZonaController::class, 'show'])->name('zona.show');
-        // Monitoring status petugas (Available / On-Duty / Off)
-        Route::get('/monitor-petugas', [\App\Http\Controllers\Supervisor\MonitorPetugasController::class, 'index'])->name('monitor-petugas.index');
-        Route::get('/monitor-petugas/status', [\App\Http\Controllers\Supervisor\MonitorPetugasController::class, 'status'])->name('monitor-petugas.status');
-
         // PBI-17 — Manajemen Petugas Teknis (Supervisor)
+        Route::get('/petugas/status', [ManajemenPetugasController::class, 'status'])->name('petugas.status');
         Route::get('/petugas', [ManajemenPetugasController::class, 'index'])->name('petugas.index');
         Route::get('/petugas/{petugas}', [ManajemenPetugasController::class, 'show'])->name('petugas.show');
+        Route::post('/petugas/{petugas}/assign', [ManajemenPetugasController::class, 'assign'])->name('petugas.assign');
         Route::patch('/petugas/{petugas}/status', [PetugasController::class, 'updateStatus'])->name('petugas.update-status');
     });
 

@@ -86,6 +86,30 @@
                 <p class="text-xs text-gray-400 mt-2 text-center">Klik untuk fullscreen</p>
             </div>
             @endif
+
+            @if ($pengaduan->assignment)
+                <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                    <h3 class="mb-4 text-base font-semibold text-gray-900">Penugasan & Instruksi</h3>
+                    <dl class="mb-4 grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <dt class="text-gray-500">Petugas</dt>
+                            <dd class="font-semibold">{{ $pengaduan->assignment->petugas?->user?->name ?? '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-500">Supervisor</dt>
+                            <dd class="font-semibold">{{ $pengaduan->assignment->supervisor?->name ?? '—' }}</dd>
+                        </div>
+                    </dl>
+                    <x-instruksi-supervisor :assignment="$pengaduan->assignment" />
+                    @unless ($pengaduan->assignment->instruksi)
+                        <p class="mt-3 text-sm text-gray-500">Belum ada catatan assignment.</p>
+                    @endunless
+                    <a href="{{ route('supervisor.pengaduan.show', $pengaduan) }}"
+                       class="mt-4 inline-block text-sm font-semibold text-[#0F4C81] hover:underline">
+                        Lihat detail lengkap pengaduan →
+                    </a>
+                </div>
+            @endif
         </div>
 
         {{-- Form Keputusan --}}
@@ -142,10 +166,22 @@
                             Simpan Keputusan
                         </button>
                     </form>
+                @elseif ($pengaduan->status === 'disetujui' && ! $pengaduan->assignment)
+                    <a href="{{ route('supervisor.assignment.create', $pengaduan) }}"
+                       class="flex w-full items-center justify-center gap-2 rounded-lg bg-[#022448] py-2.5 text-sm font-semibold text-white hover:bg-[#1e3a5f]">
+                        Tugaskan Petugas
+                    </a>
+                    <p class="mt-2 text-xs text-gray-500">Tambahkan catatan assignment sebelum memilih petugas.</p>
                 @else
-                    <div class="p-3 bg-gray-50 text-gray-700 rounded-lg text-sm">
+                    <div class="rounded-lg bg-gray-50 p-3 text-sm text-gray-700">
                         Pengaduan ini sudah diproses dan tidak bisa diverifikasi ulang.
                     </div>
+                    @if ($pengaduan->assignment)
+                        <a href="{{ route('supervisor.pengaduan.show', $pengaduan) }}"
+                           class="mt-3 inline-block text-sm font-semibold text-[#0F4C81] hover:underline">
+                            Detail pengaduan & instruksi →
+                        </a>
+                    @endif
                 @endif
 
                 @if ($pengaduan->status === 'ditolak' && $pengaduan->alasan_penolakan)

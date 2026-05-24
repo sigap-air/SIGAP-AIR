@@ -63,6 +63,13 @@
             </div>
             @endif
 
+            @if ($pengaduan->assignment?->instruksi)
+            <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
+                <h3 class="text-base font-semibold text-gray-900 mb-4">Instruksi Penanganan</h3>
+                <x-instruksi-supervisor :assignment="$pengaduan->assignment" compact />
+            </div>
+            @endif
+
             {{-- Card: Foto Hasil Penanganan --}}
             @if ($pengaduan->assignment && $pengaduan->assignment->foto_hasil)
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">

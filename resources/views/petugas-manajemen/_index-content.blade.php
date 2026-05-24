@@ -26,6 +26,25 @@
     </div>
 @endif
 
+@if (!empty($showCatatanInfo))
+    <div class="mb-6 flex gap-4 rounded-2xl border border-blue-100 bg-blue-50/80 p-5">
+        <span class="material-symbols-outlined shrink-0 text-3xl text-[#0F4C81]">info</span>
+        <div class="text-sm text-gray-700">
+            <p class="font-bold text-gray-900">Cara menambah catatan assignment</p>
+            <p class="mt-1 leading-relaxed">
+                Catatan untuk petugas <strong>tidak diisi di tabel ini</strong>, melainkan saat Anda menugaskan petugas ke suatu <strong>pengaduan</strong>.
+            </p>
+            <ol class="mt-2 list-decimal space-y-1 pl-5">
+                <li>Klik ikon <strong>mata (Detail)</strong> pada baris petugas berstatus <span class="font-semibold text-emerald-700">Tersedia</span>.</li>
+                <li>Di halaman detail, isi <strong>Catatan Assignment</strong>, pilih pengaduan, lalu klik <strong>Simpan & Tugaskan</strong>.</li>
+            </ol>
+            <p class="mt-2 text-xs text-gray-500">
+                Alternatif: menu Verifikasi Tiket → setujui pengaduan → form Tugaskan Petugas.
+            </p>
+        </div>
+    </div>
+@endif
+
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
         <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
@@ -160,9 +179,14 @@
                         </td>
                         <td class="px-6 py-5 whitespace-nowrap text-center">
                             <div class="flex items-center justify-center gap-3">
-                                <a href="{{ route($routePrefix . '.show', $p) }}" class="text-[#022448] hover:text-blue-700 transition" title="Detail">
+                                <a href="{{ route($routePrefix . '.show', $p) }}" class="text-[#022448] hover:text-blue-700 transition" title="{{ $routePrefix === 'supervisor.petugas' ? 'Detail & catatan assignment' : 'Detail' }}">
                                     <span class="material-symbols-outlined text-[20px]">visibility</span>
                                 </a>
+                                @if ($routePrefix === 'supervisor.petugas' && $p->status_tersedia === 'tersedia')
+                                    <a href="{{ route($routePrefix . '.show', $p) }}#tugaskan-petugas" class="text-amber-600 hover:text-amber-800 transition" title="Tugaskan + catatan">
+                                        <span class="material-symbols-outlined text-[20px]">edit_note</span>
+                                    </a>
+                                @endif
                                 {{-- Toggle Status: tersedia untuk Admin dan Supervisor --}}
                                 @php
                                     $isActive = in_array($p->status_tersedia, ['tersedia', 'sibuk']);

@@ -4,18 +4,18 @@
  * TANGGUNG JAWAB: Sanitra Savitri
  *
  * Fitur:
+ * - Catatan / instruksi perbaikan sebelum assignment
  * - Pilih petugas berdasarkan zona wilayah pengaduan
- * - Monitoring status Available / On-Duty / Off sebelum assignment
- * - Input instruksi khusus + jadwal penanganan
- * - Trigger notifikasi ke petugas + pelapor setelah assignment
+ * - Monitoring status Tersedia / Sibuk / Tidak Aktif sebelum assignment
+ * - Jadwal penanganan + notifikasi ke petugas & pelapor
  */
 namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Supervisor\StoreAssignmentRequest;
 use App\Models\{Pengaduan, Petugas};
 use App\Services\AssignmentService;
 use App\Services\PetugasMonitoringService;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class AssignmentController extends Controller
@@ -27,6 +27,18 @@ class AssignmentController extends Controller
 
     public function create(Pengaduan $pengaduan)
     {
+        if ($pengaduan->assignment) {
+            return redirect()
+                ->route('supervisor.pengaduan.show', $pengaduan)
+                ->with('error', 'Pengaduan ini sudah memiliki petugas yang ditugaskan.');
+        }
+
+        if ($pengaduan->status !== 'disetujui') {
+            return redirect()
+                ->route('supervisor.pengaduan.show', $pengaduan)
+                ->with('error', 'Pengaduan tidak dalam status yang dapat ditugaskan.');
+        }
+
         $pengaduan->load(['kategori', 'zona']);
 
         $petugasRows = $this->monitoringService
@@ -44,15 +56,16 @@ class AssignmentController extends Controller
         ));
     }
 
-    public function store(Request $request, Pengaduan $pengaduan)
+    public function store(StoreAssignmentRequest $request, Pengaduan $pengaduan)
     {
-        $request->validate([
-            'petugas_id'        => 'required|exists:petugas,id',
-            'instruksi'         => 'nullable|string|max:500',
-            'jadwal_penanganan' => 'required|date|after:now',
-        ]);
+        if ($pengaduan->assignment) {
+            throw ValidationException::withMessages([
+                'petugas_id' => 'Pengaduan ini sudah memiliki petugas yang ditugaskan.',
+            ]);
+        }
 
-        $petugas = Petugas::with('user')->findOrFail($request->petugas_id);
+        $data = $request->validated();
+        $petugas = Petugas::with('user')->findOrFail($data['petugas_id']);
 
         if ($petugas->zona_id !== $pengaduan->zona_id) {
             throw ValidationException::withMessages([
@@ -64,13 +77,14 @@ class AssignmentController extends Controller
 
         if (! $this->monitoringService->isSelectableForAssignment($petugas->fresh())) {
             throw ValidationException::withMessages([
-                'petugas_id' => 'Petugas tidak Available. Hanya petugas berstatus Available yang dapat dipilih (Off dan On-Duty tidak dapat dipilih).',
+                'petugas_id' => 'Petugas tidak Tersedia. Hanya petugas berstatus Tersedia yang dapat dipilih. Petugas Tidak Aktif tidak dapat dipilih.',
             ]);
         }
 
-        $this->assignmentService->tugaskan($pengaduan, $request->validated(), auth()->user());
+        $this->assignmentService->tugaskan($pengaduan, $data, auth()->user());
 
-        return redirect()->route('supervisor.verifikasi.index')
-            ->with('success', 'Petugas berhasil ditugaskan.');
+        return redirect()
+            ->route('supervisor.pengaduan.show', $pengaduan)
+            ->with('success', 'Petugas berhasil ditugaskan. Catatan assignment telah disimpan.');
     }
 }

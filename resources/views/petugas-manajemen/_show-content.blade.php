@@ -137,6 +137,9 @@
                         <tr class="text-xs text-gray-500 uppercase border-b border-gray-100">
                             <th class="py-2 text-left">Tiket</th>
                             <th class="py-2 text-left">Kategori</th>
+                            @if ($routePrefix === 'supervisor.petugas')
+                                <th class="py-2 text-left">Catatan Assignment</th>
+                            @endif
                             <th class="py-2 text-center">Status</th>
                             <th class="py-2 text-left">Tanggal</th>
                         </tr>
@@ -162,6 +165,15 @@
                                 <td class="py-3 text-gray-600">
                                     {{ $assignment->pengaduan?->kategori?->nama_kategori ?? '—' }}
                                 </td>
+                                @if ($routePrefix === 'supervisor.petugas')
+                                    <td class="max-w-[200px] py-3 text-xs text-gray-600">
+                                        @if ($assignment->instruksi)
+                                            <span title="{{ $assignment->instruksi }}">{{ Str::limit($assignment->instruksi, 50) }}</span>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
+                                    </td>
+                                @endif
                                 <td class="py-3 text-center">
                                     <span class="px-2 py-0.5 rounded-full text-xs font-semibold {{ $asnCfg[$assignment->status_assignment] ?? 'bg-gray-100 text-gray-600' }}">
                                         {{ $asnLbl[$assignment->status_assignment] ?? $assignment->status_assignment }}

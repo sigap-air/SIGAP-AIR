@@ -59,6 +59,7 @@ class RiwayatController extends Controller
             'kategori',
             'zona',
             'assignment.petugas.user',
+            'assignment.supervisor',
             'statusLog.user',   // untuk timeline (relasi placeholder sampai model StatusLog dibuat)
             'rating',
             'sla',
