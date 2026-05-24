@@ -5,9 +5,9 @@ use App\Http\Controllers\Admin\PetugasController;
 use App\Http\Controllers\Admin\SlaController as AdminSlaController;
 use App\Http\Controllers\Admin\ZonaController;
 use App\Http\Controllers\Admin\DaftarPengaduanController;
-use App\Http\Controllers\Admin\PetugasController as AdminPetugasController;
 use App\Http\Controllers\Masyarakat\DashboardController as MasyarakatDashboardController;
 use App\Http\Controllers\Masyarakat\PengaduanController;
+use App\Http\Controllers\Masyarakat\RatingController;
 use App\Http\Controllers\Masyarakat\RiwayatController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Supervisor\AssignmentController;
@@ -18,6 +18,8 @@ use App\Http\Controllers\Supervisor\FilterPengaduanController;
 use App\Http\Controllers\Supervisor\KinerjaPetugasController;
 use App\Http\Controllers\Supervisor\LaporanController;
 use App\Http\Controllers\Supervisor\VerifikasiController;
+use App\Http\Controllers\Supervisor\ZonaController as SupervisorZonaController;
+use App\Http\Controllers\Supervisor\ManajemenPetugasController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -45,7 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifikasi.index');
     Route::get('/notifikasi/count', [\App\Http\Controllers\NotifikasiController::class, 'count'])->name('notifikasi.count');
     Route::post('/notifikasi/baca-semua', [\App\Http\Controllers\NotifikasiController::class, 'markAllRead'])->name('notifikasi.baca-semua');
-    Route::post('/notifikasi/{id}/baca', [\App\Http\Controllers\NotifikasiController::class, 'markRead'])->name('notifikasi.baca');
+    Route::get('/notifikasi/{id}/baca', [\App\Http\Controllers\NotifikasiController::class, 'markRead'])->name('notifikasi.baca');
 
     // Role: Masyarakat
     Route::middleware(['role:masyarakat'])->prefix('masyarakat')->name('masyarakat.')->group(function () {
@@ -66,6 +68,10 @@ Route::middleware('auth')->group(function () {
         // Routes: GET /masyarakat/pengaduan/riwayat & /masyarakat/pengaduan/riwayat/{nomor_tiket}
         Route::get('/pengaduan/riwayat', [RiwayatController::class, 'index'])->name('pengaduan.riwayat');
         Route::get('/pengaduan/riwayat/{nomor_tiket}', [RiwayatController::class, 'show'])->name('pengaduan.riwayat.show');
+
+        // PBI-11 Rating & Feedback (hanya setelah pengaduan selesai)
+        Route::get('/pengaduan/{nomor_tiket}/rating', [RatingController::class, 'create'])->name('rating.create');
+        Route::post('/pengaduan/{nomor_tiket}/rating', [RatingController::class, 'store'])->name('rating.store');
 
         // PBI-12 Notifikasi
         Route::get('/notifikasi', [\App\Http\Controllers\NotifikasiController::class, 'index'])->name('notifikasi.index');
@@ -110,6 +116,18 @@ Route::middleware('auth')->group(function () {
 
         // PBI-09: Monitor SLA & Alert Overdue
         Route::get('/monitor-sla', [MonitorSlaController::class, 'index'])->name('monitor-sla.index');
+
+        // PBI-21: Zona Wilayah (read-only untuk Supervisor)
+        Route::get('/zona',       [SupervisorZonaController::class, 'index'])->name('zona.index');
+        Route::get('/zona/{id}',  [SupervisorZonaController::class, 'show'])->name('zona.show');
+        // Monitoring status petugas (Available / On-Duty / Off)
+        Route::get('/monitor-petugas', [\App\Http\Controllers\Supervisor\MonitorPetugasController::class, 'index'])->name('monitor-petugas.index');
+        Route::get('/monitor-petugas/status', [\App\Http\Controllers\Supervisor\MonitorPetugasController::class, 'status'])->name('monitor-petugas.status');
+
+        // PBI-17 — Manajemen Petugas Teknis (Supervisor)
+        Route::get('/petugas', [ManajemenPetugasController::class, 'index'])->name('petugas.index');
+        Route::get('/petugas/{petugas}', [ManajemenPetugasController::class, 'show'])->name('petugas.show');
+        Route::patch('/petugas/{petugas}/status', [PetugasController::class, 'updateStatus'])->name('petugas.update-status');
     });
 
     // Role: Admin
@@ -127,12 +145,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('kategori', \App\Http\Controllers\Admin\KategoriController::class)
             ->except(['show']);
 
-        // PBI-16 — Kelola Data Petugas Teknis
-        Route::resource('petugas', AdminPetugasController::class)->parameters(['petugas' => 'petugas']);
-        // Hapus permanen petugas (hard delete)
-        Route::delete('petugas/{petugas}/hapus-permanen', [AdminPetugasController::class, 'hapusPermanen'])->name('petugas.hapus-permanen');
-        // PBI-17 — Manajemen Petugas Teknis
-        Route::resource('petugas', PetugasController::class)->except(['show']);
+        // PBI-16 / PBI-17 — Kelola & Manajemen Petugas Teknis
+        Route::resource('petugas', PetugasController::class)->parameters(['petugas' => 'petugas']);
+        Route::patch('petugas/{petugas}/status', [PetugasController::class, 'updateStatus'])->name('petugas.update-status');
+        Route::delete('petugas/{petugas}/hapus-permanen', [PetugasController::class, 'hapusPermanen'])->name('petugas.hapus-permanen');
 
         // PBI-03 — Zona Wilayah & Pemetaan Petugas
         Route::get('zona',                              [ZonaController::class, 'index'])->name('zona.index');

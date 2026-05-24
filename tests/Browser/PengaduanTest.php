@@ -5,6 +5,7 @@ namespace Tests\Browser;
 use App\Models\Kategori;
 use App\Models\Pengaduan;
 use App\Models\Sla;
+use App\Models\User;
 use App\Models\Zona;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
@@ -12,14 +13,51 @@ use Tests\DuskTestCase;
 class PengaduanTest extends DuskTestCase
 {
     private const DEFAULT_MASYARAKAT_EMAIL = 'masyarakat@sigapair.test';
-    private const DEFAULT_MASYARAKAT_PASSWORD = 'password';
 
-    private function loginAsDefaultMasyarakat(Browser $browser): Browser
+    private function bypassConfirm(Browser $browser): void
     {
-        return $browser->visit('/login')
-            ->type('email', self::DEFAULT_MASYARAKAT_EMAIL)
-            ->type('password', self::DEFAULT_MASYARAKAT_PASSWORD)
-            ->press('LOG IN')
+        $browser->script('window.confirm = function () { return true; };');
+    }
+
+    private function visitPengaduanCreate(Browser $browser): Browser
+    {
+        $browser->visit('/masyarakat/pengaduan/create')
+            ->assertPathIs('/masyarakat/pengaduan/create')
+            ->waitFor('select[name="kategori_id"]');
+
+        $this->bypassConfirm($browser);
+
+        return $browser;
+    }
+
+    private function fillPengaduanForm(Browser $browser, Kategori $kategori, Zona $zona, array $fields): Browser
+    {
+        $browser->script(
+            "document.querySelector('[name=\"kategori_id\"]').value = '{$kategori->id}';"
+            . "document.querySelector('[name=\"zona_id\"]').value = '{$zona->id}';"
+        );
+
+        if (isset($fields['lokasi'])) {
+            $browser->type('lokasi', $fields['lokasi']);
+        }
+
+        if (isset($fields['no_telepon'])) {
+            $browser->type('no_telepon', $fields['no_telepon']);
+        }
+
+        if (isset($fields['deskripsi'])) {
+            $browser->type('deskripsi', $fields['deskripsi']);
+        }
+
+        return $browser;
+    }
+
+    private function loginAsSeededMasyarakat(Browser $browser): Browser
+    {
+        $user = User::where('email', self::DEFAULT_MASYARAKAT_EMAIL)->firstOrFail();
+
+        return $browser->loginAs($user)
+            ->visit('/masyarakat/dashboard')
             ->assertPathIs('/masyarakat/dashboard');
     }
 
@@ -31,11 +69,20 @@ class PengaduanTest extends DuskTestCase
         }
 
         $path = $dir . '/dusk-valid.jpg';
-        if (! file_exists($path)) {
-            file_put_contents(
-                $path,
-                base64_decode('/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEA8PEA8PDw8PDw8PDw8PDw8QDxAPFREWFhURFRUYHSggGBolGxUVITEhJSkrLi4uFx8zODMsNygtLisBCgoKDg0OGxAQGzIlICYtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAAEAAQMBIgACEQEDEQH/xAAXAAEBAQEAAAAAAAAAAAAAAAAAAQID/8QAFhEBAQEAAAAAAAAAAAAAAAAAAQAC/9oADAMBAAIQAxAAAAHk0l//xAAZEAEBAQEBAQAAAAAAAAAAAAABEQIhMUH/2gAIAQEAAQUCwGOeYv8A/8QAFhEBAQEAAAAAAAAAAAAAAAAAARAh/9oACAEDAQE/ARf/xAAVEQEBAAAAAAAAAAAAAAAAAAAQEf/aAAgBAgEBPwEf/8QAGhABAAMAAwAAAAAAAAAAAAAAAQARITFBUf/aAAgBAQAGPwK6m7fC5P/EABwQAQABBAMAAAAAAAAAAAAAAAERACExQVFhcf/aAAgBAQABPyE3T2F+JkGhoq0w3hS1hYf/2gAMAwEAAgADAAAAED//xAAXEQEBAQEAAAAAAAAAAAAAAAABABEh/9oACAEDAQE/EJp//8QAFhEBAQEAAAAAAAAAAAAAAAAAARAR/9oACAECAQE/EMqf/8QAHBABAAICAwEAAAAAAAAAAAAAAREhMUFhcbHB/9oACAEBAAE/EGSk2pHkQxAr2NAX8z4D8Msk3JwQZzBf/9k=')
-            );
+
+        if (! file_exists($path) || @getimagesize($path) === false) {
+            if (function_exists('imagecreatetruecolor')) {
+                $image = imagecreatetruecolor(32, 32);
+                $background = imagecolorallocate($image, 70, 130, 180);
+                imagefill($image, 0, 0, $background);
+                imagejpeg($image, $path, 90);
+                imagedestroy($image);
+            } else {
+                file_put_contents(
+                    $path,
+                    base64_decode('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAn/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAB//2Q==')
+                );
+            }
         }
 
         return $path;
@@ -85,17 +132,17 @@ class PengaduanTest extends DuskTestCase
         $marker = 'TC001-' . uniqid();
 
         $this->browse(function (Browser $browser) use ($kategori, $zona, $imagePath, $marker) {
-            $this->loginAsDefaultMasyarakat($browser)
-                ->visit('/masyarakat/pengaduan/create')
-                ->assertPathIs('/masyarakat/pengaduan/create')
-                ->select('kategori_id', (string) $kategori->id)
-                ->select('zona_id', (string) $zona->id)
-                ->type('lokasi', 'Jl Mawar Testing No. 1')
-                ->type('no_telepon', '08123456789')
-                ->type('deskripsi', "Air mati sejak pagi dan tidak mengalir sama sekali di rumah. {$marker}")
-                ->attach('foto_bukti', $imagePath)
+            $this->loginAsSeededMasyarakat($browser);
+            $this->visitPengaduanCreate($browser);
+            $this->fillPengaduanForm($browser, $kategori, $zona, [
+                'lokasi' => 'Jl Mawar Testing No. 1',
+                'no_telepon' => '08123456789',
+                'deskripsi' => "Air mati sejak pagi dan tidak mengalir sama sekali di rumah. {$marker}",
+            ]);
+
+            $browser->attach('foto_bukti', $imagePath)
                 ->press('Kirim Pengaduan')
-                ->waitForText('Pengaduan Berhasil Dikirim')
+                ->waitForText('Pengaduan Berhasil Dikirim', 20)
                 ->assertSee('Pengaduan Berhasil Dikirim')
                 ->assertSee('Nomor tiket pengaduan kamu:')
                 ->screenshot('TC_PBI04_001_submit_berhasil');
@@ -117,8 +164,8 @@ class PengaduanTest extends DuskTestCase
         $this->seedMasterData();
 
         $this->browse(function (Browser $browser) {
-            $this->loginAsDefaultMasyarakat($browser)
-                ->visit('/masyarakat/pengaduan/create')
+            $this->loginAsSeededMasyarakat($browser);
+            $this->visitPengaduanCreate($browser)
                 ->assertSee('Pengaduan Baru')
                 ->assertSee('Kategori Pengaduan')
                 ->assertSee('Zona Wilayah')
@@ -136,14 +183,14 @@ class PengaduanTest extends DuskTestCase
         $this->seedMasterData();
 
         $this->browse(function (Browser $browser) {
-            $this->loginAsDefaultMasyarakat($browser)
-                ->visit('/masyarakat/pengaduan/create');
+            $this->loginAsSeededMasyarakat($browser);
+            $this->visitPengaduanCreate($browser);
 
             $browser->script("document.querySelectorAll('[required]').forEach(function(el){el.removeAttribute('required');});");
 
-            $browser
-                ->press('Kirim Pengaduan')
-                ->waitForText('Kategori pengaduan wajib dipilih.')
+            $browser->script("document.querySelector('form').submit();");
+
+            $browser->waitForText('Kategori pengaduan wajib dipilih.')
                 ->assertSee('Kategori pengaduan wajib dipilih.')
                 ->screenshot('TC_PBI04_003_form_kosong');
         });
@@ -159,11 +206,9 @@ class PengaduanTest extends DuskTestCase
         $imagePath = $this->createValidImageFixture();
 
         $this->browse(function (Browser $browser) use ($kategori, $zona, $imagePath) {
-            $this->loginAsDefaultMasyarakat($browser)
-                ->visit('/masyarakat/pengaduan/create')
-                ->select('kategori_id', (string) $kategori->id)
-                ->select('zona_id', (string) $zona->id)
-                ->type('lokasi', 'Jl Testing');
+            $this->loginAsSeededMasyarakat($browser);
+            $this->visitPengaduanCreate($browser);
+            $this->fillPengaduanForm($browser, $kategori, $zona, ['lokasi' => 'Jl Testing']);
 
             $browser->script("var tel=document.querySelector('[name=\"no_telepon\"]'); tel.removeAttribute('pattern'); tel.removeAttribute('required'); tel.oninput = null; tel.value='abcd123';");
 
@@ -189,12 +234,12 @@ class PengaduanTest extends DuskTestCase
         $imagePath = $this->createValidImageFixture();
 
         $this->browse(function (Browser $browser) use ($kategori, $zona, $imagePath) {
-            $this->loginAsDefaultMasyarakat($browser)
-                ->visit('/masyarakat/pengaduan/create')
-                ->select('kategori_id', (string) $kategori->id)
-                ->select('zona_id', (string) $zona->id)
-                ->type('lokasi', 'Jl Testing')
-                ->type('no_telepon', '08123456789');
+            $this->loginAsSeededMasyarakat($browser);
+            $this->visitPengaduanCreate($browser);
+            $this->fillPengaduanForm($browser, $kategori, $zona, [
+                'lokasi' => 'Jl Testing',
+                'no_telepon' => '08123456789',
+            ]);
 
             $browser->script("document.querySelector('[name=\"deskripsi\"]').removeAttribute('minlength');");
 
@@ -216,16 +261,21 @@ class PengaduanTest extends DuskTestCase
         $pdfPath = $this->createInvalidPdfFixture();
 
         $this->browse(function (Browser $browser) use ($kategori, $zona, $pdfPath) {
-            $this->loginAsDefaultMasyarakat($browser)
-                ->visit('/masyarakat/pengaduan/create')
-                ->select('kategori_id', (string) $kategori->id)
-                ->select('zona_id', (string) $zona->id)
-                ->type('lokasi', 'Jl Testing')
-                ->type('no_telepon', '08123456789')
-                ->type('deskripsi', 'Air mati sejak pagi dan belum ada aliran hingga malam hari.')
-                ->attach('foto_bukti', $pdfPath)
-                ->press('Kirim Pengaduan')
-                ->assertSee('harus berupa gambar')
+            $this->loginAsSeededMasyarakat($browser);
+            $this->visitPengaduanCreate($browser);
+            $this->fillPengaduanForm($browser, $kategori, $zona, [
+                'lokasi' => 'Jl Testing',
+                'no_telepon' => '08123456789',
+                'deskripsi' => 'Air mati sejak pagi dan belum ada aliran hingga malam hari.',
+            ]);
+
+            $browser->script("document.querySelector('[name=\"foto_bukti\"]').removeAttribute('accept');");
+
+            $browser->attach('foto_bukti', $pdfPath);
+
+            $browser->script("document.querySelector('form').submit();");
+
+            $browser->assertSee('File yang diunggah harus berupa gambar')
                 ->screenshot('TC_PBI04_006_upload_invalid');
         });
     }

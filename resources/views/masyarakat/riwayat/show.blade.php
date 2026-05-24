@@ -195,9 +195,9 @@
                 <h3 class="text-base font-semibold text-gray-900 mb-3">Penilaian Anda</h3>
                 <div class="flex items-center gap-1 mb-3">
                     @for ($i = 1; $i <= 5; $i++)
-                    <span class="text-xl {{ $i <= $pengaduan->rating->bintang ? 'text-amber-400' : 'text-gray-200' }}">★</span>
+                    <span class="text-xl {{ $i <= $pengaduan->rating->rating ? 'text-amber-400' : 'text-gray-200' }}">★</span>
                     @endfor
-                    <span class="ml-2 text-sm font-semibold text-gray-700">{{ $pengaduan->rating->bintang }}/5</span>
+                    <span class="ml-2 text-sm font-semibold text-gray-700">{{ $pengaduan->rating->rating }}/5</span>
                 </div>
                 @if ($pengaduan->rating->komentar)
                 <p class="text-sm text-gray-700 italic">{{ $pengaduan->rating->komentar }}</p>

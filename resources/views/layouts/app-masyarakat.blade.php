@@ -11,6 +11,7 @@
         showMobileMenu: false,
         showNotifications: false,
         unreadCount: 0,
+        notifications: [],
         showProfileDropdown: false,
         init() {
             this.fetchNotifications();
@@ -18,9 +19,10 @@
         },
         async fetchNotifications() {
             try {
-                const response = await fetch('/api/notifikasi/count');
+                const response = await fetch('/notifikasi/count');
                 const data = await response.json();
                 this.unreadCount = data.unread_count || 0;
+                this.notifications = data.notifications || [];
             } catch (error) {
                 console.error('Failed to fetch notifications:', error);
             }
@@ -60,18 +62,23 @@
                             </button>
 
                             <!-- Notification Dropdown -->
-                            <div x-show="showNotifications" @click.outside="showNotifications = false" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                <div class="p-4 border-b border-gray-200">
+                            <div x-show="showNotifications" @click.outside="showNotifications = false" style="display: none;" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
                                     <h3 class="font-semibold text-gray-900">Notifikasi</h3>
                                 </div>
                                 <div class="max-h-96 overflow-y-auto">
-                                    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
-                                        <p class="text-sm font-medium text-gray-900">Pengaduan Anda telah diproses</p>
-                                        <p class="text-xs text-gray-500 mt-1">Pengaduan #PRL202601 sedang ditindaklanjuti</p>
+                                    <template x-for="notif in notifications" :key="notif.id">
+                                        <a :href="'/notifikasi/' + notif.id + '/baca'" class="block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left">
+                                            <p class="text-sm font-medium text-gray-900" x-text="notif.judul"></p>
+                                            <p class="text-xs text-gray-500 mt-1" x-text="notif.pesan"></p>
+                                        </a>
+                                    </template>
+                                    <div x-show="notifications.length === 0" class="p-4 text-center text-sm text-gray-500">
+                                        Belum ada notifikasi baru
                                     </div>
                                 </div>
                                 <div class="p-3 border-t border-gray-200 text-center">
-                                    <a href="#" class="text-sm text-[#2563EB] hover:text-[#1D4ED8] font-medium">Lihat Semua</a>
+                                    <a href="{{ route('notifikasi.index') }}" class="text-sm text-[#2563EB] hover:text-[#1D4ED8] font-medium">Lihat Semua</a>
                                 </div>
                             </div>
                         </div>

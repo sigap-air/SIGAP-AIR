@@ -22,10 +22,19 @@ class NotifikasiController extends Controller
     public function count()
     {
         // Untuk AJAX polling — tidak perlu middleware khusus, sudah di group auth
-        $count = Notifikasi::where('user_id', auth()->id())
+        $unreadCount = Notifikasi::where('user_id', auth()->id())
             ->where('is_read', false)->count();
             
-        return response()->json(['count' => $count]);
+        $notifications = Notifikasi::where('user_id', auth()->id())
+            ->where('is_read', false)
+            ->orderByDesc('created_at')
+            ->take(5)
+            ->get();
+            
+        return response()->json([
+            'unread_count' => $unreadCount,
+            'notifications' => $notifications
+        ]);
     }
 
     public function markAllRead()

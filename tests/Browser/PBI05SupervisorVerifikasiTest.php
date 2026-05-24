@@ -16,7 +16,7 @@ class PBI05SupervisorVerifikasiTest extends DuskTestCase
 
     private function bypassConfirm(Browser $browser): void
     {
-        $browser->script("document.querySelectorAll('form[data-confirm]').forEach(function(form){ form.dataset.confirmed = 'true'; });");
+        $browser->script('window.confirm = function () { return true; };');
     }
 
     private function loginAsDefaultSupervisor(Browser $browser): Browser

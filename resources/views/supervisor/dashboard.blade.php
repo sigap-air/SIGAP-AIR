@@ -39,6 +39,15 @@
             </div>
         </div>
 
+        {{-- Monitor Petugas (realtime) --}}
+        <div class="mb-6">
+            <x-supervisor-petugas-monitor
+                :petugas-list="$petugasMonitorList"
+                :summary="$petugasMonitorSummary"
+                :compact="true"
+            />
+        </div>
+
         {{-- Quick Action + Antrean --}}
         <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
             <a href="{{ route('supervisor.verifikasi.index') }}"
