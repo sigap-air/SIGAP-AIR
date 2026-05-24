@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     // Role: Supervisor
     Route::middleware(['role:supervisor'])->prefix('supervisor')->name('supervisor.')->group(function () {
         Route::get('/dashboard', [SupervisorDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/stats', [SupervisorDashboardController::class, 'stats'])->name('dashboard.stats');
 
         Route::get('/verifikasi', [VerifikasiController::class, 'index'])->name('verifikasi.index');
         Route::get('/verifikasi/{pengaduan}', [VerifikasiController::class, 'show'])->name('verifikasi.show');

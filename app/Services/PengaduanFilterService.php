@@ -56,7 +56,7 @@ class PengaduanFilterService
 
         if ($request->filled('status')) {
             if ($request->status === 'diproses') {
-                $query->whereIn('status', ['diproses', 'sedang_diproses']);
+                $query->whereIn('status', ['disetujui', 'ditugaskan', 'diproses', 'sedang_diproses']);
             } else {
                 $query->where('status', $request->status);
             }

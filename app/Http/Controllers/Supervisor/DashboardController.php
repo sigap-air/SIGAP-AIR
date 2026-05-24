@@ -25,10 +25,11 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $kpi        = $this->dashboardService->getKpi();
-        $perKategori= $this->dashboardService->getPerKategori();
-        $perZona    = $this->dashboardService->getPerZona();
-        $trenBulanan= $this->dashboardService->getTrenBulanan();
+        $stats = $this->dashboardService->getAllStats();
+        $kpi         = $stats['kpi'];
+        $perKategori = $stats['per_kategori'];
+        $perZona     = $stats['per_zona'];
+        $trenBulanan = $stats['tren_bulanan'];
         $antrean    = Pengaduan::byStatus('menunggu_verifikasi')->latest()->take(10)->get();
         $petugasMonitorList = $this->petugasMonitoringService->getMonitorList();
         $petugasMonitorSummary = $this->petugasMonitoringService->getSummary();
@@ -42,5 +43,11 @@ class DashboardController extends Controller
             'petugasMonitorList',
             'petugasMonitorSummary',
         ));
+    }
+
+    /** JSON endpoint untuk refresh KPI & grafik tanpa reload halaman */
+    public function stats()
+    {
+        return response()->json($this->dashboardService->getAllStats());
     }
 }
