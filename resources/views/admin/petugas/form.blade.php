@@ -10,7 +10,7 @@
             {{ isset($petugas) ? '✏️ Edit Petugas' : '➕ Tambah Petugas Baru' }}
         </h1>
 
-        <form method="POST"
+        <form method="POST" enctype="multipart/form-data" id="{{ isset($petugas) ? 'form-edit-petugas' : '' }}"
               action="{{ isset($petugas) ? route('admin.petugas.update', $petugas) : route('admin.petugas.store') }}">
             @csrf
             @if (isset($petugas)) @method('PUT') @endif
@@ -29,15 +29,40 @@
                     @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Username <span class="text-red-500">*</span></label>
+                    <input type="text" name="username" value="{{ old('username', $petugas?->user->username) }}"
+                           class="w-full border rounded-lg px-3 py-2" required>
+                    @error('username') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon</label>
                     <input type="text" name="no_telepon" value="{{ old('no_telepon', $petugas?->user->no_telepon) }}"
                            class="w-full border rounded-lg px-3 py-2">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Pegawai <span class="text-red-500">*</span></label>
-                    <input type="text" name="nomor_pegawai" value="{{ old('nomor_pegawai', $petugas?->nomor_pegawai) }}"
-                           placeholder="PTG-0001" class="w-full border rounded-lg px-3 py-2" required>
-                    @error('nomor_pegawai') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NIP <span class="text-xs text-gray-400 font-normal">(Auto Generated)</span></label>
+                    @if(isset($petugas))
+                        <div class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed">{{ $petugas->nip ?? '—' }}</div>
+                        <input type="hidden" name="nip" value="{{ $petugas->nip }}">
+                    @else
+                        <input type="text" name="nip" value="{{ old('nip', $autoNip ?? '') }}"
+                               class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed" readonly tabindex="-1">
+                    @endif
+                    @error('nip') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto Profil</label>
+                    <input type="file" name="foto_profil" accept="image/png, image/jpeg, image/jpg, image/webp"
+                           class="w-full border rounded-lg px-3 py-2">
+                    @error('foto_profil') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    @if(isset($petugas) && $petugas->user?->foto_profil)
+                        <div class="mt-2 flex items-center gap-3">
+                            <img src="{{ asset('storage/' . $petugas->user->foto_profil) }}" alt="Foto Petugas" class="w-16 h-16 rounded-xl object-cover">
+                            <label class="flex items-center gap-2 text-sm text-gray-600">
+                                <input type="checkbox" name="hapus_foto" value="1" class="rounded"> Hapus Foto Saat Ini
+                            </label>
+                        </div>
+                    @endif
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Password {{ isset($petugas) ? '(kosongkan jika tidak diubah)' : '' }} <span class="text-red-500">{{ !isset($petugas) ? '*' : '' }}</span></label>
@@ -61,17 +86,16 @@
 
             {{-- Assignment Zona --}}
             <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Zona Wilayah <span class="text-gray-400">(bisa pilih lebih dari satu)</span></label>
-                <div class="grid grid-cols-2 gap-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Zona Wilayah</label>
+                <select name="zona_id" class="w-full border rounded-lg px-3 py-2">
+                    <option value="">-- Pilih Zona Wilayah --</option>
                     @foreach ($zonas as $zona)
-                    <label class="flex items-center gap-2 cursor-pointer p-2 border rounded-lg hover:bg-blue-50 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
-                        <input type="checkbox" name="zona_ids[]" value="{{ $zona->id }}"
-                               {{ in_array($zona->id, old('zona_ids', $petugas?->zonas->pluck('id')->toArray() ?? [])) ? 'checked':'' }}
-                               class="accent-blue-600">
-                        <span class="text-sm text-gray-700">{{ $zona->nama_zona }}</span>
-                    </label>
+                        <option value="{{ $zona->id }}" {{ old('zona_id', $petugas?->zona_id) == $zona->id ? 'selected' : '' }}>
+                            {{ $zona->nama_zona }}
+                        </option>
                     @endforeach
-                </div>
+                </select>
+                @error('zona_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="flex gap-3">
