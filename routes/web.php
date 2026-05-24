@@ -89,6 +89,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/tugas/{tugas}', [\App\Http\Controllers\Petugas\PenangananController::class, 'show'])->name('tugas.show');
         Route::patch('/tugas/{tugas}', [\App\Http\Controllers\Petugas\PenangananController::class, 'update'])->name('tugas.update');
         Route::get('/riwayat', [\App\Http\Controllers\Petugas\PenangananController::class, 'riwayat'])->name('riwayat');
+
+        // PBI-24: Profil & Status Petugas
+        Route::get('/profil', [\App\Http\Controllers\Petugas\ProfilController::class, 'edit'])->name('profil.edit');
+        Route::patch('/profil', [\App\Http\Controllers\Petugas\ProfilController::class, 'update'])->name('profil.update');
     });
 
     // Role: Supervisor
