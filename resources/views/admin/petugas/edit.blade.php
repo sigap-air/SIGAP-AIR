@@ -203,16 +203,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     {{-- NIP --}}
                     <div>
-                        <label for="nip" class="block text-sm font-medium text-gray-700 mb-1.5">NIP</label>
-                        <input type="text" name="nip" id="nip"
-                               value="{{ old('nip', $petugas->nip) }}"
-                               placeholder="Contoh: PEG-2024-001"
-                               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('nip') ? 'border-red-400 bg-red-50' : '' }}">
-                        @error('nip')
-                            <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">error</span> {{ $message }}
-                            </p>
-                        @enderror
+                        <label for="nip" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            NIP <span class="text-xs text-gray-400 font-normal">(Auto Generated)</span>
+                        </label>
+                        <div class="w-full border border-gray-200 bg-gray-100 text-gray-500 rounded-xl px-4 py-2.5 text-sm font-mono cursor-not-allowed">
+                            {{ $petugas->nip ?? '—' }}
+                        </div>
+                        <input type="hidden" name="nip" value="{{ $petugas->nip }}">
                     </div>
 
                     {{-- Status Tersedia --}}
@@ -262,23 +259,21 @@
         {{-- Kolom Kanan: Aksi & Info --}}
         <div class="space-y-6">
             {{-- Tombol Aksi --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
-                <button type="submit" id="btn-update-petugas"
-                        class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-navy-gradient text-white font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-                    <span class="material-symbols-outlined text-xl">save</span>
-                    Simpan Perubahan
-                </button>
-                <a href="{{ route('admin.petugas.show', $petugas) }}"
-                   class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-[#022448] font-semibold rounded-xl hover:bg-blue-100 transition">
-                    <span class="material-symbols-outlined text-xl">visibility</span>
-                    Lihat Detail
-                </a>
-                <a href="{{ route('admin.petugas.index') }}"
-                   class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">
-                    <span class="material-symbols-outlined text-xl">arrow_back</span>
-                    Kembali
-                </a>
-            </div>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
+    <button type="button" onclick="openStatusModal({{ $petugas->id }}, @js($petugas->user?->name ?? 'Petugas'), @js($petugas->status_tersedia))" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 text-amber-700 font-semibold rounded-xl hover:bg-amber-100 transition">
+        <span class="material-symbols-outlined text-xl">person_off</span>
+        Ubah Status
+    </button>
+    <a href="{{ route('admin.petugas.index') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">
+        <span class="material-symbols-outlined text-xl">arrow_back</span>
+        Kembali
+    </a>
+    <button type="submit" form="form-edit-petugas" id="btn-update-petugas"
+            class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#022448] text-white font-semibold rounded-xl hover:bg-[#033466] transition">
+        <span class="material-symbols-outlined text-xl">save</span>
+        Simpan
+    </button>
+</div>
 
             {{-- Info Akun Saat Ini --}}
             <div class="bg-gray-50 border border-gray-100 rounded-2xl p-5">
@@ -322,6 +317,40 @@
                     </form>
                 </div>
             @endif
+
+{{-- Status Modal (same as index) --}}
+<div id="status-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40" onclick="closeStatusModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-lg font-bold text-gray-900">Ubah Status Ketersediaan</h3>
+            <p class="text-sm text-gray-500 mb-4" id="status-modal-name"></p>
+            <form id="status-modal-form" method="POST">
+                @csrf
+                @method('PATCH')
+                <select name="status_tersedia" id="status-modal-select" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4">
+                    <option value="tersedia">✅ Tersedia</option>
+                    <option value="sibuk">🕐 Sibuk</option>
+                    <option value="tidak_aktif">❌ Tidak Aktif</option>
+                </select>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" onclick="closeStatusModal()" class="px-4 py-2 text-sm bg-gray-100 rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-[#022448] text-white rounded-lg">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    const statusRoute = "{{ route('admin.petugas.update-status', $petugas) }}";
+    function openStatusModal(id, name, status) {
+        document.getElementById('status-modal').classList.remove('hidden');
+        document.getElementById('status-modal-name').textContent = name;
+        document.getElementById('status-modal-select').value = status;
+        document.getElementById('status-modal-form').action = statusRoute;
+    }
+    function closeStatusModal() { document.getElementById('status-modal').classList.add('hidden'); }
+</script>
         </div>
 
     </div>

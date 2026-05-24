@@ -26,9 +26,9 @@
                             onclick="setRating({{ $i }})">★</button>
                         @endfor
                     </div>
-                    <input type="hidden" name="bintang" id="bintangInput" value="{{ old('bintang') }}" required>
+                    <input type="hidden" name="rating" id="ratingInput" value="{{ old('rating') }}" required>
                     <p class="text-center text-xs text-gray-400 mt-2" id="ratingLabel">Klik bintang untuk memberi nilai</p>
-                    @error('bintang') <p class="text-center text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    @error('rating') <p class="text-center text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 {{-- Komentar --}}
@@ -54,7 +54,7 @@
     <script>
         const labels = ['', 'Sangat Buruk', 'Buruk', 'Cukup', 'Baik', 'Sangat Baik'];
         function setRating(val) {
-            document.getElementById('bintangInput').value = val;
+            document.getElementById('ratingInput').value = val;
             document.getElementById('ratingLabel').textContent = labels[val];
             document.querySelectorAll('.star-btn').forEach((btn, i) => {
                 btn.classList.toggle('text-yellow-400', i < val);

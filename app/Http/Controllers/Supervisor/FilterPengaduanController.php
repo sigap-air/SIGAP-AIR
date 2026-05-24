@@ -6,6 +6,7 @@
 namespace App\Http\Controllers\Supervisor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pengaduan;
 use App\Services\PengaduanFilterService;
 use Illuminate\Http\Request;
 
@@ -23,15 +24,31 @@ class FilterPengaduanController extends Controller
         $dropdown = $this->pengaduanFilterService->dropdownData();
 
         return view('supervisor.pengaduan.daftar', [
-            'pengaduans'     => $pengaduans,
-            'zonas'          => $dropdown['zonas'],
-            'kategoris'      => $dropdown['kategoris'],
-            'statuses'       => $dropdown['statuses'],
-            'petugasList'    => $dropdown['petugas'],
-            'indexRoute'     => 'supervisor.filter.index',
-            'exportCsvRoute' => 'supervisor.filter.export-csv',
-            'pageTitle'      => 'Filter Pengaduan',
+            'pengaduans'       => $pengaduans,
+            'zonas'            => $dropdown['zonas'],
+            'kategoris'        => $dropdown['kategoris'],
+            'statuses'         => $dropdown['statuses'],
+            'petugasList'      => $dropdown['petugas'],
+            'indexRoute'       => 'supervisor.filter.index',
+            'exportCsvRoute'   => 'supervisor.filter.export-csv',
+            'pageTitle'        => 'Filter Pengaduan',
+            'detailRouteName'  => 'supervisor.pengaduan.show',
+            'showAksiEyeOnly'  => true,
         ]);
+    }
+
+    public function show(Pengaduan $pengaduan)
+    {
+        $pengaduan->load([
+            'pelapor',
+            'kategori',
+            'zona',
+            'sla',
+            'assignment.petugas.user',
+            'assignment.supervisor',
+        ]);
+
+        return view('supervisor.pengaduan.show', compact('pengaduan'));
     }
 
     public function exportCsv(Request $request)

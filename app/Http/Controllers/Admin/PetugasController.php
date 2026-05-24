@@ -2,6 +2,7 @@
 
 /**
  * PBI-16 — Kelola Data Petugas Teknis
+ * PBI-17 — Manajemen Petugas Teknis (status ketersediaan & histori penugasan)
  * Admin dapat melihat, menambah, mengedit, dan menonaktifkan petugas teknis.
  *
  * TANGGUNG JAWAB: Farisha Huwaida Shofha
@@ -21,10 +22,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StorePetugasRequest;
 use App\Http\Requests\Admin\UpdatePetugasRequest;
+use App\Http\Requests\Admin\UpdatePetugasStatusRequest;
 use App\Models\Petugas;
 use App\Models\User;
 use App\Models\ZonaWilayah;
-use App\Models\{User, Petugas, Zona, ZonaWilayah};
+use App\Services\PetugasManajemenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -32,6 +34,10 @@ use Illuminate\Support\Facades\Storage;
 
 class PetugasController extends Controller
 {
+    public function __construct(
+        private PetugasManajemenService $manajemenService
+    ) {}
+
     /**
      * Generate NIP otomatis dengan format PEG-YYYY-XXXX.
      * Contoh: PEG-2026-0001
@@ -54,38 +60,6 @@ class PetugasController extends Controller
         }
 
         return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
-    public function index(Request $request)
-    {
-        // Ambil semua zona aktif untuk dropdown filter
-        $zonas = ZonaWilayah::where('is_active', true)->orderBy('nama_zona')->get();
-
-        // Query petugas dengan filter
-        $query = Petugas::with(['user', 'zona'])
-            ->join('users', 'petugas.user_id', '=', 'users.id')
-            ->select('petugas.*');
-
-        // Filter: Zona Wilayah
-        if ($request->filled('zona_id')) {
-            $query->where('petugas.zona_id', $request->zona_id);
-        }
-
-        // Filter: Status Ketersediaan
-        if ($request->filled('status')) {
-            $query->where('petugas.status_tersedia', $request->status);
-        }
-
-        // Filter: Pencarian nama / nip
-        if ($request->filled('search')) {
-            $search = '%' . $request->search . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('users.name', 'like', $search)
-                  ->orWhere('petugas.nip', 'like', $search);
-            });
-        }
-
-        $petugas = $query->orderBy('users.name')->paginate(15)->withQueryString();
-
-        return view('admin.petugas.index', compact('petugas', 'zonas'));
     }
 
     /**
@@ -93,40 +67,12 @@ class PetugasController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Petugas::with(['user', 'zona'])
-            ->latest();
+        $data = $this->manajemenService->indexData($request);
 
-        // Filter pencarian berdasarkan nama atau NIP
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            })->orWhere('nip', 'like', "%{$search}%");
-        }
-
-        // Filter berdasarkan status
-        if ($request->filled('status')) {
-            $query->where('status_tersedia', $request->status);
-        }
-
-        // Filter berdasarkan zona
-        if ($request->filled('zona_id')) {
-            $query->where('zona_id', $request->zona_id);
-        }
-
-        $petugas = $query->paginate(15)->withQueryString();
-        $zonas   = ZonaWilayah::where('is_active', true)->orderBy('nama_zona')->get();
-
-        // Summary stats
-        $stats = [
-            'total'       => Petugas::count(),
-            'tersedia'    => Petugas::where('status_tersedia', 'tersedia')->count(),
-            'sibuk'       => Petugas::where('status_tersedia', 'sibuk')->count(),
-            'tidak_aktif' => Petugas::where('status_tersedia', 'tidak_aktif')->count(),
-        ];
-
-        return view('admin.petugas.index', compact('petugas', 'zonas', 'stats'));
+        return view('admin.petugas.index', array_merge($data, [
+            'readOnly'    => false,
+            'routePrefix' => 'admin.petugas',
+        ]));
     }
 
     /**
@@ -185,8 +131,46 @@ class PetugasController extends Controller
      */
     public function show(Petugas $petugas)
     {
-        $petugas->load(['user', 'zona', 'assignments.pengaduan']);
-        return view('admin.petugas.show', compact('petugas'));
+        $petugas->load(['user', 'zona']);
+
+        $histori = $petugas->assignments()
+            ->with(['pengaduan.kategori', 'pengaduan.rating'])
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $kinerja = $this->manajemenService->getKinerjaPetugas($petugas);
+
+        return view('admin.petugas.show', compact('petugas', 'histori', 'kinerja') + [
+            'readOnly'    => false,
+            'routePrefix' => 'admin.petugas',
+        ]);
+    }
+
+    /**
+     * Ubah status ketersediaan petugas (PBI-17).
+     */
+    public function updateStatus(UpdatePetugasStatusRequest $request, Petugas $petugas)
+    {
+        $petugas->load('user');
+
+        DB::transaction(function () use ($request, $petugas) {
+            $petugas->update(['status_tersedia' => $request->status_tersedia]);
+
+            if ($petugas->user) {
+                $petugas->user->update([
+                    'is_active' => $request->status_tersedia !== 'tidak_aktif',
+                ]);
+            }
+        });
+
+        $redirectRoute = auth()->user()->isSupervisor()
+            ? 'supervisor.petugas.index'
+            : 'admin.petugas.index';
+
+        return redirect()
+            ->route($redirectRoute)
+            ->with('success', 'Status ketersediaan petugas berhasil diperbarui.');
     }
 
     /**

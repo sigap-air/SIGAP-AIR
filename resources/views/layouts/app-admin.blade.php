@@ -218,5 +218,6 @@
     </div>
 
     @include('layouts.partials.flash-message')
+    @stack('scripts')
 </body>
 </html>

@@ -8,20 +8,20 @@ use Illuminate\Support\Collection;
 /**
  * Monitoring status petugas untuk supervisor (sebelum & saat assignment).
  *
- * Label UI: Available | On-Duty | Off
- * DB: tersedia | sibuk | tidak_aktif
+ * Status sama dengan admin: tersedia | sibuk | tidak_aktif
  */
 class PetugasMonitoringService
 {
-    public const STATUS_AVAILABLE = 'available';
-    public const STATUS_ON_DUTY = 'on_duty';
-    public const STATUS_OFF = 'off';
+    public const STATUS_TERSEDIA = 'tersedia';
+    public const STATUS_SIBUK = 'sibuk';
+    public const STATUS_TIDAK_AKTIF = 'tidak_aktif';
 
     /** @var list<string> */
     public const ACTIVE_ASSIGNMENT_STATUSES = ['ditugaskan', 'diproses'];
 
     /**
-     * Sinkronkan status_tersedia berdasarkan assignment aktif.
+     * Jika petugas punya tugas aktif, paksa status Sibuk.
+     * Tidak menimpa status manual (Sibuk/Tersedia) ketika tidak ada tugas aktif.
      */
     public function syncOperationalStatuses(?int $zonaId = null): void
     {
@@ -36,16 +36,33 @@ class PetugasMonitoringService
         }
 
         foreach ($query->get() as $petugas) {
-            if ($petugas->status_tersedia === 'tidak_aktif') {
+            if ($petugas->status_tersedia === self::STATUS_TIDAK_AKTIF) {
                 continue;
             }
 
             $hasActive = ($petugas->tugas_aktif_count ?? 0) > 0;
-            $target = $hasActive ? 'sibuk' : 'tersedia';
 
-            if ($petugas->status_tersedia !== $target) {
-                $petugas->update(['status_tersedia' => $target]);
+            if ($hasActive && $petugas->status_tersedia !== self::STATUS_SIBUK) {
+                $petugas->update(['status_tersedia' => self::STATUS_SIBUK]);
             }
+        }
+    }
+
+    /**
+     * Setelah semua tugas selesai, kembalikan petugas ke Tersedia (hanya petugas terkait).
+     */
+    public function releaseIfNoActiveAssignments(Petugas $petugas): void
+    {
+        if ($petugas->status_tersedia === self::STATUS_TIDAK_AKTIF) {
+            return;
+        }
+
+        $activeCount = $petugas->assignments()
+            ->whereIn('status_assignment', self::ACTIVE_ASSIGNMENT_STATUSES)
+            ->count();
+
+        if ($activeCount === 0 && $petugas->status_tersedia === self::STATUS_SIBUK) {
+            $petugas->update(['status_tersedia' => self::STATUS_TERSEDIA]);
         }
     }
 
@@ -54,8 +71,6 @@ class PetugasMonitoringService
      */
     public function getMonitorList(?int $zonaId = null): Collection
     {
-        $this->syncOperationalStatuses($zonaId);
-
         $query = Petugas::query()
             ->with(['user:id,name,email', 'zona:id,nama_zona,kode_zona'])
             ->withCount([
@@ -74,41 +89,34 @@ class PetugasMonitoringService
     }
 
     /**
-     * @return array{available: int, on_duty: int, off: int, total: int}
+     * @return array{tersedia: int, sibuk: int, tidak_aktif: int, total: int}
      */
     public function getSummary(?int $zonaId = null): array
     {
         $rows = $this->getMonitorList($zonaId);
 
         return [
-            'available' => $rows->where('status_key', self::STATUS_AVAILABLE)->count(),
-            'on_duty'   => $rows->where('status_key', self::STATUS_ON_DUTY)->count(),
-            'off'       => $rows->where('status_key', self::STATUS_OFF)->count(),
-            'total'     => $rows->count(),
+            'tersedia'    => $rows->where('status_key', self::STATUS_TERSEDIA)->count(),
+            'sibuk'       => $rows->where('status_key', self::STATUS_SIBUK)->count(),
+            'tidak_aktif' => $rows->where('status_key', self::STATUS_TIDAK_AKTIF)->count(),
+            'total'       => $rows->count(),
         ];
     }
 
     public function resolveStatusKey(Petugas $petugas): string
     {
-        if ($petugas->status_tersedia === 'tidak_aktif') {
-            return self::STATUS_OFF;
+        $status = $petugas->status_tersedia ?? self::STATUS_TIDAK_AKTIF;
+
+        if (! in_array($status, [self::STATUS_TERSEDIA, self::STATUS_SIBUK, self::STATUS_TIDAK_AKTIF], true)) {
+            return self::STATUS_TIDAK_AKTIF;
         }
 
-        $activeCount = $petugas->tugas_aktif_count
-            ?? $petugas->assignments()
-                ->whereIn('status_assignment', self::ACTIVE_ASSIGNMENT_STATUSES)
-                ->count();
-
-        if ($activeCount > 0 || $petugas->status_tersedia === 'sibuk') {
-            return self::STATUS_ON_DUTY;
-        }
-
-        return self::STATUS_AVAILABLE;
+        return $status;
     }
 
     public function isSelectableForAssignment(Petugas $petugas): bool
     {
-        return $this->resolveStatusKey($petugas) === self::STATUS_AVAILABLE;
+        return $this->resolveStatusKey($petugas) === self::STATUS_TERSEDIA;
     }
 
     /**
@@ -117,19 +125,19 @@ class PetugasMonitoringService
     public static function statusMeta(string $statusKey): array
     {
         return match ($statusKey) {
-            self::STATUS_ON_DUTY => [
-                'label' => 'On-Duty',
-                'badge' => 'bg-amber-50 text-amber-800 border-amber-200',
+            self::STATUS_SIBUK => [
+                'label' => 'Sibuk',
+                'badge' => 'bg-amber-50 text-amber-700',
                 'dot'   => 'bg-amber-500',
             ],
-            self::STATUS_OFF => [
-                'label' => 'Off',
-                'badge' => 'bg-gray-100 text-gray-600 border-gray-200',
+            self::STATUS_TIDAK_AKTIF => [
+                'label' => 'Tidak Aktif',
+                'badge' => 'bg-gray-100 text-gray-600',
                 'dot'   => 'bg-gray-400',
             ],
             default => [
-                'label' => 'Available',
-                'badge' => 'bg-emerald-50 text-emerald-800 border-emerald-200',
+                'label' => 'Tersedia',
+                'badge' => 'bg-emerald-50 text-emerald-700',
                 'dot'   => 'bg-emerald-500',
             ],
         };
@@ -155,7 +163,7 @@ class PetugasMonitoringService
             'status_dot'         => $meta['dot'],
             'status_tersedia'    => $petugas->status_tersedia,
             'tugas_aktif'        => (int) ($petugas->tugas_aktif_count ?? 0),
-            'dapat_dipilih'      => $statusKey === self::STATUS_AVAILABLE,
+            'dapat_dipilih'      => $statusKey === self::STATUS_TERSEDIA,
         ];
     }
 }

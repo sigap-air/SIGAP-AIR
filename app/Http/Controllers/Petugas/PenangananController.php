@@ -63,6 +63,7 @@ class PenangananController extends Controller
         abort_if($tugas->petugas_id !== auth()->user()->petugas?->id, 403);
 
         $tugas->load([
+            'supervisor',
             'pengaduan.kategori',
             'pengaduan.zona',
             'pengaduan.pelapor',
