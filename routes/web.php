@@ -67,9 +67,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/pengaduan/{pengaduan}/sukses', [PengaduanController::class, 'sukses'])->name('pengaduan.sukses');
 
         // PBI-10 Riwayat Pengaduan
-        // Routes: GET /masyarakat/pengaduan/riwayat & /masyarakat/pengaduan/riwayat/{nomor_tiket}
+        // Routes: GET /masyarakat/pengaduan/riwayat & /masyarakat/pengaduan/riwayat/{pengaduan}
         Route::get('/pengaduan/riwayat', [RiwayatController::class, 'index'])->name('pengaduan.riwayat');
-        Route::get('/pengaduan/riwayat/{nomor_tiket}', [RiwayatController::class, 'show'])->name('pengaduan.riwayat.show');
+        Route::get('/pengaduan/riwayat/{pengaduan}', [RiwayatController::class, 'show'])->name('pengaduan.riwayat.show');
 
         // PBI-11 Rating & Feedback (hanya setelah pengaduan selesai)
         Route::get('/pengaduan/{nomor_tiket}/rating', [RatingController::class, 'create'])->name('rating.create');
