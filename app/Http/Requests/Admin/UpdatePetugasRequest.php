@@ -33,6 +33,8 @@ class UpdatePetugasRequest extends FormRequest
             'username'   => ['required', 'string', 'max:100', "unique:users,username,{$userId}"],
             'password'   => ['nullable', 'string', 'min:8', 'confirmed'],
             'no_telepon' => ['nullable', 'numeric'],
+            'foto_profil'=> ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'hapus_foto' => ['nullable', 'boolean'],
 
             // Data Petugas
             'nip'             => ['nullable', 'string', 'max:50', "unique:petugas,nip,{$petugasId}"],

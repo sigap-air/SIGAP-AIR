@@ -12,7 +12,7 @@ class FilterPengaduanController extends Controller
     private const FILTER_KEYS = [
         'nomor_tiket', 'q', 'status', 'zona_id', 'kategori_id', 'petugas_id',
         'dari', 'sampai', 'overdue', 'sort', 'direction',
-    ];z
+    ];
 
     public function __construct(private DashboardService $dashboardService) {}
 

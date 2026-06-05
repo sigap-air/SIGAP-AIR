@@ -16,6 +16,11 @@ use Illuminate\Http\Request;
 
 class RatingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('role:masyarakat');
+    }
     public function create(Pengaduan $pengaduan)
     {
         abort_if($pengaduan->user_id !== auth()->id(), 403);
@@ -27,20 +32,19 @@ class RatingController extends Controller
     public function store(Request $request, Pengaduan $pengaduan)
     {
         $request->validate([
-            'bintang'  => 'required|integer|between:1,5',
+            'rating'   => 'required|integer|between:1,5',
             'komentar' => 'nullable|string|max:500',
         ]);
 
-        // TODO AMANDA: Simpan rating + link ke pengaduan
         Rating::create([
             'pengaduan_id'  => $pengaduan->id,
             'user_id'       => auth()->id(),
-            'rating'        => $request->bintang,
+            'rating'        => $request->rating,
             'komentar'      => $request->komentar,
             'tanggal_rating'=> now(),
         ]);
 
-        return redirect()->route('masyarakat.riwayat.show', $pengaduan)
+        return redirect()->route('masyarakat.pengaduan.riwayat.show', $pengaduan)
                          ->with('success', 'Terima kasih atas penilaian Anda!');
     }
 }

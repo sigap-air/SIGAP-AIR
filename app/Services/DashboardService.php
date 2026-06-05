@@ -23,7 +23,9 @@ class DashboardService
         return [
             'total_masuk'         => Pengaduan::count(),
             'menunggu_verifikasi' => Pengaduan::byStatus('menunggu_verifikasi')->count(),
-            'diproses'            => Pengaduan::whereIn('status', ['diproses', 'sedang_diproses'])->count(),
+            'diproses'            => Pengaduan::whereIn('status', [
+                'disetujui', 'ditugaskan', 'diproses', 'sedang_diproses',
+            ])->count(),
             'selesai'             => Pengaduan::byStatus('selesai')->count(),
             'overdue'             => Pengaduan::overdue()->count(),
             'total_petugas'       => Petugas::where($statusPetugasColumn, 'tersedia')->count(),
@@ -71,6 +73,18 @@ class DashboardService
                     ->count(),
             ];
         })->toArray();
+    }
+
+    /** Payload lengkap untuk dashboard real-time (KPI + grafik) */
+    public function getAllStats(): array
+    {
+        return [
+            'kpi'          => $this->getKpi(),
+            'per_kategori' => $this->getPerKategori(),
+            'per_zona'     => $this->getPerZona(),
+            'tren_bulanan' => $this->getTrenBulanan(),
+            'updated_at'   => now()->toIso8601String(),
+        ];
     }
 
     /** Statistik khusus untuk dashboard admin */

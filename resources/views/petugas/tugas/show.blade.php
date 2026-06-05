@@ -221,16 +221,7 @@
         </div>
         @endif
 
-        {{-- Instruksi Supervisor --}}
-        @if ($tugas->instruksi)
-        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="material-symbols-outlined text-amber-600 text-lg">description</span>
-                <p class="font-semibold text-sm text-amber-700">Instruksi Supervisor</p>
-            </div>
-            <p class="text-xs text-amber-800 mt-1">{{ $tugas->instruksi }}</p>
-        </div>
-        @endif
+        <x-instruksi-supervisor :assignment="$tugas" class="mb-4" />
 
         {{-- Form Update --}}
         @if ($tugas->status_assignment !== 'selesai')

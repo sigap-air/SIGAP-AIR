@@ -33,8 +33,11 @@ class AssignmentService
             $statusLama = $pengaduan->status;
             $pengaduan->update(['status' => 'ditugaskan']);
 
-            // 3. Log perubahan status
-            $this->catatStatusLog($pengaduan, $supervisor, $statusLama, 'ditugaskan', 'Ditugaskan ke petugas.');
+            // 3. Log perubahan status (sertakan catatan assignment jika ada)
+            $catatanLog = filled($data['instruksi'] ?? null)
+                ? 'Ditugaskan ke petugas. Instruksi: ' . $data['instruksi']
+                : 'Ditugaskan ke petugas.';
+            $this->catatStatusLog($pengaduan, $supervisor, $statusLama, 'ditugaskan', $catatanLog);
 
             // 4. Petugas masuk status On-Duty (sibuk)
             $petugas = Petugas::with('user')->find($data['petugas_id']);
@@ -42,13 +45,18 @@ class AssignmentService
                 $petugas->update(['status_tersedia' => 'sibuk']);
             }
 
-            // 5. Notifikasi ke petugas
+            // 5. Notifikasi ke petugas (termasuk ringkasan instruksi jika ada)
             if ($petugas && $petugas->user) {
+                $pesanPetugas = "Anda mendapat tugas baru: pengaduan #{$pengaduan->nomor_tiket} di {$pengaduan->zona->nama_zona}.";
+                if (filled($data['instruksi'] ?? null)) {
+                    $ringkas = \Illuminate\Support\Str::limit($data['instruksi'], 120);
+                    $pesanPetugas .= " Instruksi perbaikan: {$ringkas}";
+                }
                 $this->notifikasiService->kirim(
                     $petugas->user->id,
                     $pengaduan->id,
                     'Tugas Baru Ditugaskan',
-                    "Anda mendapat tugas baru: pengaduan #{$pengaduan->nomor_tiket} di {$pengaduan->zona->nama_zona}.",
+                    $pesanPetugas,
                     'assignment'
                 );
             }
@@ -113,7 +121,7 @@ class AssignmentService
             );
 
             if ($data['status_assignment'] === 'selesai' && $assignment->petugas) {
-                $this->petugasMonitoringService->syncOperationalStatuses($assignment->petugas->zona_id);
+                $this->petugasMonitoringService->releaseIfNoActiveAssignments($assignment->petugas);
             }
 
             return $assignment->fresh();
