@@ -36,10 +36,10 @@ class AssignmentService
             // 3. Log perubahan status
             $this->catatStatusLog($pengaduan, $supervisor, $statusLama, 'ditugaskan', 'Ditugaskan ke petugas.');
 
-            // 4. Petugas masuk status On-Duty (sibuk)
+            // 4. Sinkronisasi status petugas berdasarkan jumlah tugas aktif
             $petugas = Petugas::with('user')->find($data['petugas_id']);
             if ($petugas && $petugas->status_tersedia !== 'tidak_aktif') {
-                $petugas->update(['status_tersedia' => 'sibuk']);
+                $this->syncStatusOtomatis($petugas);
             }
 
             // 5. Notifikasi ke petugas
@@ -114,6 +114,11 @@ class AssignmentService
 
             if ($data['status_assignment'] === 'selesai' && $assignment->petugas) {
                 $this->petugasMonitoringService->syncOperationalStatuses($assignment->petugas->zona_id);
+                // Sinkronisasi ulang status otomatis setelah tugas selesai
+                $assignment->petugas->refresh();
+                if ($assignment->petugas->status_tersedia !== 'tidak_aktif') {
+                    $this->syncStatusOtomatis($assignment->petugas);
+                }
             }
 
             return $assignment->fresh();
@@ -132,6 +137,31 @@ class AssignmentService
             'status_baru'  => $statusBaru,
             'catatan'      => $catatan,
         ]);
+    }
+
+    /**
+     * Sinkronisasi status petugas secara otomatis berdasarkan jumlah tugas aktif.
+     *
+     * Aturan:
+     *   - 0 tugas aktif  → tersedia
+     *   - 1–3 tugas aktif → sibuk
+     *   - > 3 tugas aktif → sibuk (wajib, sesuai ketentuan bisnis)
+     *
+     * Status 'tidak_aktif' tidak pernah diubah oleh logika ini.
+     */
+    public function syncStatusOtomatis(Petugas $petugas): void
+    {
+        if ($petugas->status_tersedia === 'tidak_aktif') {
+            return; // tidak boleh mengubah petugas yang nonaktif
+        }
+
+        $jumlahTugasAktif = $petugas->assignmentsAktif()->count();
+
+        $statusBaru = $jumlahTugasAktif > 3 ? 'sibuk' : 'tersedia';
+
+        if ($petugas->status_tersedia !== $statusBaru) {
+            $petugas->update(['status_tersedia' => $statusBaru]);
+        }
     }
 }
 

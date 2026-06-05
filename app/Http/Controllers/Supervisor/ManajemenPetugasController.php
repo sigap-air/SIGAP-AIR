@@ -16,16 +16,24 @@ class ManajemenPetugasController extends Controller
         private PetugasManajemenService $manajemenService
     ) {}
 
+    /**
+     * Daftar petugas untuk Supervisor.
+     * readOnly=true: sembunyikan tombol Tambah/Edit/Hapus, tapi Ubah Status tetap aktif.
+     */
     public function index(Request $request)
     {
         $data = $this->manajemenService->indexData($request);
 
         return view('supervisor.petugas.index', array_merge($data, [
-            'readOnly'     => true,
-            'routePrefix'  => 'supervisor.petugas',
+            'readOnly'    => true,           // sembunyikan Edit & Hapus
+            'routePrefix' => 'supervisor.petugas',
         ]));
     }
 
+    /**
+     * Detail petugas untuk Supervisor.
+     * Supervisor dapat melihat histori & mengubah status ketersediaan.
+     */
     public function show(Petugas $petugas)
     {
         $petugas->load(['user', 'zona']);
@@ -39,7 +47,7 @@ class ManajemenPetugasController extends Controller
         $kinerja = $this->manajemenService->getKinerjaPetugas($petugas);
 
         return view('supervisor.petugas.show', compact('petugas', 'histori', 'kinerja') + [
-            'readOnly'    => true,
+            'readOnly'    => true,           // sembunyikan tombol Edit Data
             'routePrefix' => 'supervisor.petugas',
         ]);
     }
