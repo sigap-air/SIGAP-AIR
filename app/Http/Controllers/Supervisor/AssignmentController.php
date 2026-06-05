@@ -46,7 +46,7 @@ class AssignmentController extends Controller
 
     public function store(Request $request, Pengaduan $pengaduan)
     {
-        $request->validate([
+        $validated = $request->validate([
             'petugas_id'        => 'required|exists:petugas,id',
             'instruksi'         => 'nullable|string|max:500',
             'jadwal_penanganan' => 'required|date|after:now',
@@ -54,7 +54,11 @@ class AssignmentController extends Controller
 
         $petugas = Petugas::with('user')->findOrFail($request->petugas_id);
 
-        if ($petugas->zona_id !== $pengaduan->zona_id) {
+        // Cek apakah petugas terpetakan ke zona pengaduan (via many-to-many zones() atau fallback zona_id)
+        $isMappedToZone = $petugas->zones()->where('zona_wilayah.id', $pengaduan->zona_id)->exists()
+            || $petugas->zona_id === $pengaduan->zona_id;
+
+        if (!$isMappedToZone) {
             throw ValidationException::withMessages([
                 'petugas_id' => 'Petugas harus berada di zona yang sama dengan pengaduan.',
             ]);
@@ -68,7 +72,7 @@ class AssignmentController extends Controller
             ]);
         }
 
-        $this->assignmentService->tugaskan($pengaduan, $request->validated(), auth()->user());
+        $this->assignmentService->tugaskan($pengaduan, $validated, auth()->user());
 
         return redirect()->route('supervisor.verifikasi.index')
             ->with('success', 'Petugas berhasil ditugaskan.');

@@ -39,11 +39,19 @@ class ZonaWilayah extends Model
     // ========================
 
     /**
-     * Petugas yang ditempatkan di zona ini (FK zona_id pada tabel petugas).
+     * Petugas yang ditempatkan di zona ini (Many-to-Many).
      */
     public function petugas()
     {
-        return $this->hasMany(Petugas::class, 'zona_id');
+        return $this->belongsToMany(Petugas::class, 'officer_zone', 'zone_id', 'officer_id');
+    }
+
+    /**
+     * Petugas yang ditempatkan di zona ini (alias untuk technical notes).
+     */
+    public function officers()
+    {
+        return $this->belongsToMany(Petugas::class, 'officer_zone', 'zone_id', 'officer_id');
     }
 
     /**

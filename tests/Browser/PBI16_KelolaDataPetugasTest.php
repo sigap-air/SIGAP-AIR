@@ -132,6 +132,7 @@ class PBI16_KelolaDataPetugasTest extends DuskTestCase
                 ->select('#status_tersedia', 'tersedia')
                 ->select('#zona_id', $zonaId)
                 ->click('#btn-simpan-petugas')
+                ->waitForLocation('/admin/petugas')
                 ->assertPathIs('/admin/petugas')
                 ->assertSee('Petugas berhasil ditambahkan')
                 ->assertSee('Rudi Teknisi PBI16');
@@ -180,6 +181,7 @@ class PBI16_KelolaDataPetugasTest extends DuskTestCase
                 ->clear('#name')
                 ->type('#name', 'Petugas Edit PBI16 Updated')
                 ->click('#btn-update-petugas')
+                ->waitForLocation('/admin/petugas')
                 ->assertPathIs('/admin/petugas')
                 ->assertSee('Data petugas berhasil diperbarui')
                 ->assertSee('Petugas Edit PBI16 Updated');
@@ -202,6 +204,7 @@ class PBI16_KelolaDataPetugasTest extends DuskTestCase
                 ->assertSee('Edit Data Petugas')
                 ->select('#status_tersedia', 'sibuk')
                 ->click('#btn-update-petugas')
+                ->waitForLocation('/admin/petugas')
                 ->assertPathIs('/admin/petugas')
                 ->assertSee('Data petugas berhasil diperbarui');
         });
@@ -254,6 +257,7 @@ class PBI16_KelolaDataPetugasTest extends DuskTestCase
                 ->assertSee('Nonaktifkan')
                 ->click('#btn-nonaktifkan-dari-edit')
                 ->acceptDialog()
+                ->waitForLocation('/admin/petugas')
                 ->assertPathIs('/admin/petugas')
                 ->assertSee('Petugas berhasil dinonaktifkan');
         });

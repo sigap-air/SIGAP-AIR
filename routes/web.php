@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
         // PBI-04 Pengajuan Pengaduan Digital
         Route::get('/pengaduan/create', [PengaduanController::class, 'create'])->name('pengaduan.create');
         Route::post('/pengaduan', [PengaduanController::class, 'store'])->name('pengaduan.store');
+        Route::post('/pengaduan/validate-zona', [PengaduanController::class, 'validateZona'])->name('pengaduan.validate-zona');
         Route::get('/pengaduan/{pengaduan}/sukses', [PengaduanController::class, 'sukses'])->name('pengaduan.sukses');
 
         // PBI-10 Riwayat Pengaduan
@@ -131,12 +132,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('kategori', \App\Http\Controllers\Admin\KategoriController::class)
             ->except(['show']);
 
-        // PBI-16 — Kelola Data Petugas Teknis
+        // PBI-16 — Kelola Data Petugas Teknis & PBI-17 — Manajemen Petugas Teknis
         Route::resource('petugas', AdminPetugasController::class)->parameters(['petugas' => 'petugas']);
         // Hapus permanen petugas (hard delete)
         Route::delete('petugas/{petugas}/hapus-permanen', [AdminPetugasController::class, 'hapusPermanen'])->name('petugas.hapus-permanen');
-        // PBI-17 — Manajemen Petugas Teknis
-        Route::resource('petugas', PetugasController::class)->except(['show']);
 
         // PBI-03 — Zona Wilayah & Pemetaan Petugas
         Route::get('zona',                              [ZonaController::class, 'index'])->name('zona.index');

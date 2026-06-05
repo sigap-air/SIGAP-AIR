@@ -22,6 +22,9 @@ class Sla extends Model
         'status_sla',       // berjalan | terpenuhi | overdue
         'is_flagged',
         'resolved_at',
+        'deadline',
+        'is_overdue',
+        'is_fulfilled',
     ];
 
     protected $casts = [
@@ -38,6 +41,29 @@ class Sla extends Model
     public function getDeadlineAttribute()
     {
         return $this->batas_waktu;
+    }
+
+    public function setDeadlineAttribute($value)
+    {
+        $this->attributes['batas_waktu'] = $value;
+    }
+
+    public function setIsOverdueAttribute($value)
+    {
+        if ($value) {
+            $this->attributes['status_sla'] = 'overdue';
+        } else if (($this->attributes['status_sla'] ?? null) === 'overdue') {
+            $this->attributes['status_sla'] = 'berjalan';
+        }
+    }
+
+    public function setIsFulfilledAttribute($value)
+    {
+        if ($value) {
+            $this->attributes['status_sla'] = 'terpenuhi';
+        } else if (($this->attributes['status_sla'] ?? null) === 'terpenuhi') {
+            $this->attributes['status_sla'] = 'berjalan';
+        }
     }
 
     /**

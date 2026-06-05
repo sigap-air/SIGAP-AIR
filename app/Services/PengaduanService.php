@@ -35,11 +35,14 @@ class PengaduanService
             }
 
             // 2. Buat pengaduan
+            $isZonaValid = app(\App\Services\ZonaValidationService::class)->validateLokasi($data['lokasi'], $data['zona_id']);
+
             $pengaduan = Pengaduan::create([
                 'nomor_tiket'       => Pengaduan::generateNomorTiket(),
                 'user_id'           => $pelapor->id,
                 'kategori_id'       => $data['kategori_id'],
                 'zona_id'           => $data['zona_id'],
+                'is_zona_valid'     => $isZonaValid,
                 'lokasi'            => $data['lokasi'],
                 'deskripsi'         => $data['deskripsi'],
                 'foto_bukti'        => $fotoBukti,

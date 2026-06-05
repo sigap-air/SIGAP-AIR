@@ -19,7 +19,12 @@ class UpdatePetugasRequest extends FormRequest
     public function rules(): array
     {
         $petugas = $this->route('petugas');
-        $userId  = $petugas->user_id;
+        if (is_numeric($petugas)) {
+            $petugas = \App\Models\Petugas::find($petugas);
+        }
+        
+        $petugasId = $petugas ? $petugas->id : null;
+        $userId  = $petugas ? $petugas->user_id : null;
 
         return [
             // Data User
@@ -30,7 +35,7 @@ class UpdatePetugasRequest extends FormRequest
             'no_telepon' => ['nullable', 'numeric'],
 
             // Data Petugas
-            'nip'             => ['nullable', 'string', 'max:50', "unique:petugas,nip,{$petugas->id}"],
+            'nip'             => ['nullable', 'string', 'max:50', "unique:petugas,nip,{$petugasId}"],
             'zona_id'         => ['nullable', 'exists:zona_wilayah,id'],
             'status_tersedia' => ['required', 'in:tersedia,sibuk,tidak_aktif'],
         ];

@@ -32,7 +32,12 @@ class PetugasMonitoringService
         ]);
 
         if ($zonaId !== null) {
-            $query->where('zona_id', $zonaId);
+            $query->where(function ($q) use ($zonaId) {
+                $q->where('zona_id', $zonaId)
+                  ->orWhereHas('zones', function ($z) use ($zonaId) {
+                      $z->where('zona_wilayah.id', $zonaId);
+                  });
+            });
         }
 
         foreach ($query->get() as $petugas) {
@@ -67,7 +72,12 @@ class PetugasMonitoringService
             ->orderBy('id');
 
         if ($zonaId !== null) {
-            $query->where('zona_id', $zonaId);
+            $query->where(function ($q) use ($zonaId) {
+                $q->where('zona_id', $zonaId)
+                  ->orWhereHas('zones', function ($z) use ($zonaId) {
+                      $z->where('zona_wilayah.id', $zonaId);
+                  });
+            });
         }
 
         return $query->get()->map(fn (Petugas $petugas) => $this->formatPetugasRow($petugas));

@@ -310,22 +310,25 @@
                         <h3 class="text-sm font-semibold text-red-700">Nonaktifkan Petugas</h3>
                     </div>
                     <p class="text-xs text-red-600 mb-3">Petugas tidak dapat dinonaktifkan jika masih memiliki tugas aktif.</p>
-                    <form action="{{ route('admin.petugas.destroy', $petugas) }}" method="POST"
-                          onsubmit="return confirm('Yakin nonaktifkan petugas ini? Status akan berubah menjadi Tidak Aktif.')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" id="btn-nonaktifkan-dari-edit"
-                                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-700 transition">
-                            <span class="material-symbols-outlined text-base">person_off</span>
-                            Nonaktifkan
-                        </button>
-                    </form>
+                    <button type="submit" form="form-nonaktifkan-petugas" id="btn-nonaktifkan-dari-edit"
+                            class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-700 transition">
+                        <span class="material-symbols-outlined text-base">person_off</span>
+                        Nonaktifkan
+                    </button>
                 </div>
             @endif
         </div>
 
     </div>
 </form>
+
+@if($petugas->status_tersedia !== 'tidak_aktif')
+    <form id="form-nonaktifkan-petugas" action="{{ route('admin.petugas.destroy', $petugas) }}" method="POST" class="hidden"
+          onsubmit="return confirm('Yakin nonaktifkan petugas ini? Status akan berubah menjadi Tidak Aktif.')">
+        @csrf
+        @method('DELETE')
+    </form>
+@endif
 
 {{-- Script Preview Foto --}}
 <script>

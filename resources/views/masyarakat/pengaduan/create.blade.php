@@ -27,7 +27,7 @@
             </x-sigap-form-field>
 
             <x-sigap-form-field label="Zona Wilayah" name="zona_id" :required="true">
-                <select name="zona_id"
+                <select name="zona_id" id="zona_id"
                     class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:ring-2 focus:ring-brand"
                     required>
                     <option value="" disabled {{ old('zona_id') ? '' : 'selected' }}>Pilih zona</option>
@@ -40,10 +40,14 @@
             </x-sigap-form-field>
 
             <x-sigap-form-field label="Lokasi" name="lokasi" :required="true">
-                <input type="text" name="lokasi" value="{{ old('lokasi') }}"
+                <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}"
                     placeholder="Alamat atau patokan lokasi"
                     class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-500 shadow-sm focus:ring-2 focus:ring-brand"
                     required />
+                <div id="zona-validation-alert" class="hidden mt-2 p-3 rounded-xl border text-sm font-medium flex items-start gap-2 transition-all">
+                    <span class="material-symbols-outlined text-lg alert-icon">info</span>
+                    <span class="alert-message">Memeriksa kesesuaian wilayah...</span>
+                </div>
             </x-sigap-form-field>
 
             <x-sigap-form-field label="Nomor Telepon" name="no_telepon" :required="true">
@@ -72,4 +76,68 @@
             </div>
         </form>
     </div>
+
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lokasiInput = document.getElementById('lokasi');
+            const zonaSelect = document.getElementById('zona_id');
+            const alertBox = document.getElementById('zona-validation-alert');
+            const alertIcon = alertBox.querySelector('.alert-icon');
+            const alertMessage = alertBox.querySelector('.alert-message');
+            
+            let debounceTimer;
+
+            function validateZona() {
+                const lokasi = lokasiInput.value.trim();
+                const zonaId = zonaSelect.value;
+
+                if (lokasi.length < 3 || !zonaId) {
+                    alertBox.classList.add('hidden');
+                    return;
+                }
+
+                // Tampilkan state loading
+                alertBox.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-700', 'bg-amber-50', 'border-amber-200', 'text-amber-700', 'bg-red-50', 'border-red-200', 'text-red-700');
+                alertBox.classList.add('bg-blue-50', 'border-blue-200', 'text-blue-700');
+                alertIcon.textContent = 'hourglass_empty';
+                alertMessage.textContent = 'Memeriksa kesesuaian wilayah...';
+
+                fetch('{{ route('masyarakat.pengaduan.validate-zona') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ lokasi, zona_id: zonaId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alertBox.classList.remove('bg-blue-50', 'border-blue-200', 'text-blue-700');
+                    if (data.is_valid) {
+                        alertBox.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-700');
+                        alertIcon.textContent = 'check_circle';
+                        alertMessage.textContent = data.message;
+                    } else {
+                        alertBox.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-700');
+                        alertIcon.textContent = 'warning';
+                        alertMessage.textContent = data.message;
+                    }
+                })
+                .catch(error => {
+                    alertBox.classList.remove('bg-blue-50', 'border-blue-200', 'text-blue-700');
+                    alertBox.classList.add('hidden');
+                });
+            }
+
+            lokasiInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(validateZona, 500);
+            });
+
+            zonaSelect.addEventListener('change', validateZona);
+        });
+    </script>
+    @endpush
 </x-masyarakat-form-layout>

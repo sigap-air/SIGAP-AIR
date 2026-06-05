@@ -191,22 +191,18 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {{-- NIP — AUTO GENERATED, read-only --}}
+                    {{-- NIP — AUTO GENERATED --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label for="nip" class="block text-sm font-medium text-gray-700 mb-1.5">
                             NIP
                             <span class="ml-1 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">
                                 <span class="material-symbols-outlined text-xs">auto_awesome</span>
                                 Auto-Generate
                             </span>
                         </label>
-                        {{-- Hidden field agar NIP tetap terkirim via form --}}
-                        <input type="hidden" name="nip" value="{{ $autoNip }}">
-                        <div class="w-full border border-emerald-200 bg-emerald-50/50 rounded-xl px-4 py-2.5 text-sm font-mono text-emerald-800 flex items-center gap-2">
-                            <span class="material-symbols-outlined text-emerald-500 text-base">tag</span>
-                            <span>{{ $autoNip }}</span>
-                        </div>
-                        <p class="text-xs text-gray-400 mt-1">NIP dibuat otomatis oleh sistem.</p>
+                        <input type="text" name="nip" id="nip" value="{{ old('nip', $autoNip) }}"
+                               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('nip') ? 'border-red-400 bg-red-50' : '' }}">
+                        <p class="text-xs text-gray-400 mt-1">NIP dibuat otomatis oleh sistem jika kosong.</p>
                     </div>
 
                     {{-- Status Tersedia --}}

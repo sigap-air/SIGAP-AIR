@@ -52,7 +52,18 @@
                     </div>
                     <div>
                         <dt class="text-gray-500 mb-1">Zona</dt>
-                        <dd class="font-semibold text-gray-800">{{ $pengaduan->zona->nama_zona }}</dd>
+                        <dd class="font-semibold text-gray-800 flex items-center flex-wrap gap-2">
+                            {{ $pengaduan->zona->nama_zona }}
+                            @if($pengaduan->is_zona_valid === 1)
+                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700" title="Validasi otomatis: Sesuai">
+                                    <span class="material-symbols-outlined text-[14px]">verified</span> Valid
+                                </span>
+                            @elseif($pengaduan->is_zona_valid === 0)
+                                <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700" title="Validasi otomatis: Peringatan (Mungkin tidak sesuai)">
+                                    <span class="material-symbols-outlined text-[14px]">warning</span> Warning
+                                </span>
+                            @endif
+                        </dd>
                     </div>
                     <div class="col-span-2">
                         <dt class="text-gray-500 mb-1">Lokasi</dt>
