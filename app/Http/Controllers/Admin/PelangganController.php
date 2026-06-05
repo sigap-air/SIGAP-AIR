@@ -40,9 +40,11 @@ class PelangganController extends Controller
         $validated = $request->validated();
 
         DB::transaction(function () use ($request, $validated, $pengaduanService) {
-            // Akun masyarakat (diperlukan agar pengaduan punya user_id seperti gform).
-            $email    = 'plg_' . Str::lower(Str::random(14)) . '@sigapair.local';
-            $username = 'plg_' . Str::lower(Str::random(12));
+            // Akun masyarakat: menggunakan nama pelanggan + angka acak agar unik
+            $baseName = Str::slug($validated['nama_pelanggan'], '');
+            $uniqueId = rand(100, 999);
+            $email    = $baseName . $uniqueId . '@sigapair.com';
+            $username = $baseName . $uniqueId;
 
             $user = User::create([
                 'name'        => $validated['nama_pelanggan'],
