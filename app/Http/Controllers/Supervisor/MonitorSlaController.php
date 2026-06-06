@@ -17,7 +17,7 @@ class MonitorSlaController extends Controller
         $filterKategori = $request->get('kategori_id');
         $search         = $request->get('search');
 
-        $query = Pengaduan::with(['kategori', 'zona', 'pelapor', 'sla', 'assignment.petugasRelasi'])
+        $query = Pengaduan::with(['kategori', 'zona', 'pelapor', 'sla', 'assignment.petugas'])
             ->whereHas('sla');
 
         if ($filterSla && $filterSla !== 'semua') {
