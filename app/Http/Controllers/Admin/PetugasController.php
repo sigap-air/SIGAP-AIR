@@ -203,7 +203,7 @@ class PetugasController extends Controller
             : 'admin.petugas.index';
 
         return redirect()
-            ->route($redirectRoute)
+            ->back()
             ->with('success', 'Status ketersediaan petugas berhasil diperbarui.');
     }
 
@@ -271,16 +271,20 @@ class PetugasController extends Controller
 
     /**
      * Nonaktifkan petugas (soft-delete via status).
-     * Tidak dapat dilakukan jika petugas masih memiliki tugas aktif.
+     * Tidak dapat dilakukan jika petugas masih memiliki tugas yang belum terselesaikan.
      */
     public function destroy(Petugas $petugas)
     {
-        // Eager load relasi user
         $petugas->load('user');
 
-        // Admin dapat menonaktifkan petugas kapanpun.
-        // Tugas yang sedang berjalan tetap tercatat di database,
-        // namun petugas tidak dapat menerima tugas baru setelah dinonaktifkan.
+        // Cek tugas aktif (belum selesai) sebelum nonaktifkan
+        $tugasAktif = $petugas->assignmentsAktif()->count();
+        if ($tugasAktif > 0) {
+            return redirect()
+                ->back()
+                ->with('error', "Petugas {$petugas->user?->name} tidak dapat dinonaktifkan karena masih memiliki {$tugasAktif} tugas yang belum terselesaikan.");
+        }
+
         DB::transaction(function () use ($petugas) {
             $petugas->update(['status_tersedia' => 'tidak_aktif']);
 
@@ -296,12 +300,22 @@ class PetugasController extends Controller
 
     /**
      * Hapus permanen petugas dari database (hard delete).
-     * Hanya bisa dilakukan jika petugas TIDAK memiliki riwayat tugas apapun.
+     * Diblokir jika petugas masih memiliki tugas yang belum terselesaikan.
      */
     public function hapusPermanen(Petugas $petugas)
     {
+        $petugas->load('user');
+
+        // Cek tugas aktif — hapus permanen DILARANG jika masih ada tugas belum selesai
+        $tugasAktif = $petugas->assignmentsAktif()->count();
+        if ($tugasAktif > 0) {
+            return redirect()
+                ->back()
+                ->with('error', "Petugas {$petugas->user?->name} tidak dapat dihapus karena masih memiliki {$tugasAktif} tugas yang belum terselesaikan.");
+        }
+
         DB::transaction(function () use ($petugas) {
-            // Hapus semua riwayat tugas agar tidak terjadi error foreign key constraint
+            // Hapus semua riwayat tugas (yang sudah selesai) agar tidak ada FK conflict
             $petugas->assignments()->delete();
 
             $user = $petugas->user;
