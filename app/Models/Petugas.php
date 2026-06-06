@@ -50,6 +50,22 @@ class Petugas extends Model
     }
 
     /**
+     * Zona-zona wilayah tempat petugas ditempatkan (Many-to-Many).
+     */
+    public function zones()
+    {
+        return $this->belongsToMany(ZonaWilayah::class, 'officer_zone', 'officer_id', 'zone_id');
+    }
+
+    /**
+     * Alias untuk zones() agar kompatibel dengan PBI06 Dusk Test.
+     */
+    public function zonas()
+    {
+        return $this->belongsToMany(ZonaWilayah::class, 'officer_zone', 'officer_id', 'zone_id');
+    }
+
+    /**
      * Semua assignment yang pernah diberikan kepada petugas ini.
      */
     public function assignments()

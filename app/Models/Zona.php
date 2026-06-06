@@ -30,7 +30,12 @@ class Zona extends Model
     public function petugas()
     {
         // Relasi many-to-many: zona bisa punya banyak petugas
-        return $this->belongsToMany(Petugas::class, 'zona_petugas');
+        return $this->belongsToMany(Petugas::class, 'officer_zone', 'zone_id', 'officer_id');
+    }
+
+    public function officers()
+    {
+        return $this->belongsToMany(Petugas::class, 'officer_zone', 'zone_id', 'officer_id');
     }
 
     public function pengaduans()

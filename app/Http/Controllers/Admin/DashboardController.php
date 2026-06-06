@@ -12,15 +12,30 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $kpi         = $this->dashboardService->getKpi();
+        $stats = $this->dashboardService->getAllStats();
+        $kpi         = $stats['kpi'];
+        $perKategori = $stats['per_kategori'];
+        $perZona     = $stats['per_zona'];
+        $trenBulanan = $stats['tren_bulanan'];
         $adminStats  = $this->dashboardService->getAdminStats();
-        $perKategori = $this->dashboardService->getPerKategori();
-        $trenBulanan = $this->dashboardService->getTrenBulanan();
         $pengaduanTerbaru = Pengaduan::with(['pelapor', 'kategori', 'zona'])
             ->latest()
             ->take(8)
             ->get();
 
-        return view('admin.dashboard', compact('kpi', 'adminStats', 'perKategori', 'trenBulanan', 'pengaduanTerbaru'));
+        return view('admin.dashboard', compact(
+            'kpi',
+            'adminStats',
+            'perKategori',
+            'perZona',
+            'trenBulanan',
+            'pengaduanTerbaru',
+        ));
+    }
+
+    /** JSON endpoint untuk refresh KPI & grafik tanpa reload halaman */
+    public function stats()
+    {
+        return response()->json($this->dashboardService->getAllStats());
     }
 }

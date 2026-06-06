@@ -58,15 +58,19 @@ class PBI06_AssignmentPetugasTest extends DuskTestCase
             $jadwal = now()->addHours(2)->format('Y-m-d\TH:i');
 
             $browser->loginAs($supervisor)
-                    ->visit('/supervisor/assignment/' . $pengaduan->id . '/create')
+                    ->visit('/supervisor/assignment/' . $pengaduan->nomor_tiket . '/create')
                     ->assertSee($pengaduan->nomor_tiket)
                     ->assertSee('Tugaskan Petugas')
-                    ->radio('petugas_id', $petugas->id)
-                    ->type('jadwal_penanganan', $jadwal)
-                    ->type('instruksi', 'Bawa peralatan standar dan segera tindak lanjuti.')
+                    ->radio('petugas_id', $petugas->id);
+
+            $browser->script("document.querySelector('input[name=\"jadwal_penanganan\"]').value = '{$jadwal}';");
+            $browser->pause(1000);
+
+            $browser->type('instruksi', 'Bawa peralatan standar dan segera tindak lanjuti.')
+                    ->pause(500)
                     ->press('Tugaskan Petugas')
-                    ->assertPathContains('verifikasi')
-                    ->assertSee('berhasil ditugaskan');
+                    ->waitForText('Petugas berhasil ditugaskan')
+                    ->assertPathContains('verifikasi');
         });
 
         $pengaduanFresh = $pengaduan->fresh();

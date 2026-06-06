@@ -18,16 +18,33 @@ class RedirectIfAuthenticated
      */
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
+        // Quick database connectivity check using socket timeout
+        $dbHost = config('database.connections.mysql.host', '127.0.0.1');
+        $dbPort = config('database.connections.mysql.port', 3306);
+        $dbAvailable = @fsockopen($dbHost, $dbPort, $errno, $errstr, 1);
+        if ($dbAvailable) {
+            fclose($dbAvailable);
+        } else {
+            // Database not available, skip auth check
+            return $next($request);
+        }
+
         $guards = empty($guards) ? [null] : $guards;
 
         foreach ($guards as $guard) {
-            if (Auth::guard($guard)->check()) {
-                $user = Auth::guard($guard)->user();
-                $dashboardPath = $user instanceof User
-                    ? $user->dashboardPath()
-                    : RouteServiceProvider::HOME;
+            try {
+                if (Auth::guard($guard)->check()) {
+                    $user = Auth::guard($guard)->user();
+                    $dashboardPath = $user instanceof User
+                        ? $user->dashboardPath()
+                        : RouteServiceProvider::HOME;
 
-                return redirect($dashboardPath);
+                    return redirect($dashboardPath);
+                }
+            } catch (\Exception $e) {
+                // Fallback jika database error
+                \Log::warning('Auth check failed: ' . $e->getMessage());
+                continue;
             }
         }
 

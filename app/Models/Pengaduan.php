@@ -30,6 +30,7 @@ class Pengaduan extends Model
         'user_id',
         'kategori_id',
         'zona_id',
+        'is_zona_valid',
         'lokasi',
         'deskripsi',
         'foto_bukti',

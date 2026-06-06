@@ -154,26 +154,35 @@
                 @if($petugasTanpaZona->count() > 0)
                     <form action="{{ route('admin.zona.assign-petugas', $zona->id) }}" method="POST">
                         @csrf
-                        <div class="space-y-3">
+                        <div class="space-y-4">
                             <div>
-                                <label for="petugas_id" class="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Pilih Petugas <span class="text-red-500">*</span>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    Pilih Petugas (Bisa lebih dari satu) <span class="text-red-500">*</span>
                                 </label>
-                                <select id="petugas_id" name="petugas_id"
-                                        class="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent focus:bg-white transition-all duration-200">
-                                    <option value="">-- Pilih Petugas --</option>
+                                
+                                {{-- Scrollable Checklist --}}
+                                <div class="max-h-60 overflow-y-auto border border-gray-100 rounded-xl divide-y divide-gray-50 bg-gray-50/50 p-2 space-y-1">
                                     @foreach($petugasTanpaZona as $p)
-                                        <option value="{{ $p->id }}">
-                                            {{ $p->user->name ?? '(Tanpa Nama)' }}
-                                            @if($p->nip) — {{ $p->nip }} @endif
-                                        </option>
+                                        <label class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-200 cursor-pointer border border-transparent hover:border-gray-100 select-none">
+                                            <input type="checkbox" name="petugas_id[]" value="{{ $p->id }}" 
+                                                   class="w-4 h-4 text-[#022448] border-gray-300 rounded focus:ring-[#022448] transition cursor-pointer">
+                                            <div class="flex-1">
+                                                <p class="text-sm font-semibold text-gray-800">
+                                                    {{ $p->user->name ?? '(Tanpa Nama)' }}
+                                                </p>
+                                                @if($p->nip)
+                                                    <p class="text-xs text-gray-400 font-mono mt-0.5">NIP: {{ $p->nip }}</p>
+                                                @endif
+                                            </div>
+                                        </label>
                                     @endforeach
-                                </select>
+                                </div>
                             </div>
+                            
                             <button type="submit"
-                                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-navy-gradient text-white text-sm font-semibold rounded-xl shadow-md shadow-[#022448]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+                                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-navy-gradient text-white text-sm font-semibold rounded-xl shadow-md shadow-[#022448]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer">
                                 <span class="material-symbols-outlined text-lg">person_add</span>
-                                Petakan ke Zona Ini
+                                Petakan Petugas Terpilih
                             </button>
                         </div>
                     </form>
@@ -183,7 +192,7 @@
                             <span class="material-symbols-outlined text-gray-300 text-xl">person_off</span>
                         </div>
                         <p class="text-sm font-medium text-gray-500">Tidak ada petugas tersedia</p>
-                        <p class="text-xs text-gray-400 mt-1">Semua petugas sudah dipetakan ke zona masing-masing</p>
+                        <p class="text-xs text-gray-400 mt-1">Semua petugas sudah terdaftar di zona ini.</p>
                     </div>
                 @endif
             </div>

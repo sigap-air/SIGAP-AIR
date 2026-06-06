@@ -5,8 +5,6 @@ namespace Tests;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
-use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Support\Collection;
 use Laravel\Dusk\TestCase as BaseDuskTestCase;
 use PHPUnit\Framework\Attributes\BeforeClass;
 
@@ -15,55 +13,11 @@ abstract class DuskTestCase extends BaseDuskTestCase
     use CreatesApplication;
 
     /**
-     * Creates the application instance for Dusk / PHPUnit.
-     */
-    public function createApplication()
-    {
-        $app = require __DIR__ . '/../bootstrap/app.php';
-
-        $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
-        return $app;
-    }
-
-    /**
-     * Creates the application.
-     *
-     * @return \Illuminate\Foundation\Application
-     */
-    public function createApplication()
-    {
-        $app = require __DIR__.'/../bootstrap/app.php';
-
-        $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-
-        return $app;
-    }
-
-    /**
      * Prepare for Dusk test execution.
-     *
-     * ChromeDriver harus sama major version dengan Chrome:
-     *   php artisan dusk:chrome-driver --detect
-     *
-     * Opsional di .env / .env.dusk.local:
-     *   DUSK_CHROMEDRIVER_PATH=C:\path\to\chromedriver.exe  — pakai binary manual
-     *   DUSK_START_CHROMEDRIVER=false — jangan jalankan driver bawaan Dusk; jalankan
-     *       chromedriver yang cocok sendiri di port 9515 (atau set DUSK_DRIVER_URL).
      */
-    public function createApplication()
-    {
-        $app = require __DIR__ . '/../bootstrap/app.php';
-
-        $app->make(Kernel::class)->bootstrap();
-
-        return $app;
-    }
-
     #[BeforeClass]
     public static function prepare(): void
     {
-
         if (static::runningInSail()) {
             return;
         }
@@ -85,6 +39,9 @@ abstract class DuskTestCase extends BaseDuskTestCase
         static::startChromeDriver(['--port=9515']);
     }
 
+    /**
+     * Create the RemoteWebDriver instance.
+     */
     protected function driver(): RemoteWebDriver
     {
         $options = (new ChromeOptions)->addArguments(
@@ -97,7 +54,7 @@ abstract class DuskTestCase extends BaseDuskTestCase
                 '--disable-smooth-scrolling',
             ])->unless(
                 $this->hasHeadlessDisabled(),
-                function (Collection $items) {
+                function ($items) {
                     return $items->merge([
                         '--disable-gpu',
                         '--headless=new',
@@ -105,15 +62,6 @@ abstract class DuskTestCase extends BaseDuskTestCase
                 }
             )->all()
         );
-        $options = (new ChromeOptions)->addArguments(collect([
-            '--window-size=1920,1080',
-            '--disable-search-engine-choice-screen',
-        ])->unless($this->hasHeadlessDisabled(), function (Collection $items) {
-            return $items->merge([
-                '--disable-gpu',
-                '--headless=new',
-            ]);
-        })->all());
 
         return RemoteWebDriver::create(
             $_ENV['DUSK_DRIVER_URL']

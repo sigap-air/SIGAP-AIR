@@ -33,7 +33,7 @@
                     </div>
                     <div>
                         <h2 class="text-base font-semibold text-gray-800">Foto Profil</h2>
-                        <p class="text-xs text-gray-400">Opsional — JPG, PNG, WebP, maks. 2 MB</p>
+                        <p class="text-xs text-gray-400">Opsional — JPG, PNG, WebP, maks. 10 MB</p>
                     </div>
                 </div>
 
@@ -67,7 +67,7 @@
                                 <label for="hapus_foto" class="text-xs text-red-600 cursor-pointer">Hapus foto saat ini</label>
                             </div>
                         @endif
-                        <p class="text-xs text-gray-400">Format: JPG, PNG, atau WebP. Maks. 2 MB.</p>
+                        <p class="text-xs text-gray-400">Format: JPG, PNG, atau WebP. Maks. 10 MB.</p>
                         @error('foto_profil')
                             <p class="text-red-500 text-xs flex items-center gap-1">
                                 <span class="material-symbols-outlined text-sm">error</span> {{ $message }}
@@ -112,7 +112,9 @@
                         </label>
                         <input type="email" name="email" id="email"
                                value="{{ old('email', $petugas->user?->email) }}"
+                               placeholder="nama@pdam.go.id"
                                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('email') ? 'border-red-400 bg-red-50' : '' }}">
+                        <p class="text-xs text-gray-400 mt-1">Harus menggunakan domain <strong>@pdam.go.id</strong></p>
                         @error('email')
                             <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
                                 <span class="material-symbols-outlined text-sm">error</span> {{ $message }}
@@ -137,7 +139,7 @@
 
                     {{-- No. Telepon --}}
                     <div>
-                        <label for="no_telepon" class="block text-sm font-medium text-gray-700 mb-1.5">No. Telepon</label>
+                        <label for="no_telepon" class="block text-sm font-medium text-gray-700 mb-1.5">No. Telepon <span class="text-red-500">*</span></label>
                         <input type="tel" name="no_telepon" id="no_telepon"
                                value="{{ old('no_telepon', $petugas->user?->no_telepon) }}"
                                placeholder="08xxxxxxxxxx"
@@ -203,16 +205,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     {{-- NIP --}}
                     <div>
-                        <label for="nip" class="block text-sm font-medium text-gray-700 mb-1.5">NIP</label>
-                        <input type="text" name="nip" id="nip"
-                               value="{{ old('nip', $petugas->nip) }}"
-                               placeholder="Contoh: PEG-2024-001"
-                               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('nip') ? 'border-red-400 bg-red-50' : '' }}">
-                        @error('nip')
-                            <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">error</span> {{ $message }}
-                            </p>
-                        @enderror
+                        <label for="nip" class="block text-sm font-medium text-gray-700 mb-1.5">
+                            NIP <span class="text-xs text-gray-400 font-normal">(Auto Generated)</span>
+                        </label>
+                        <div class="w-full border border-gray-200 bg-gray-100 text-gray-500 rounded-xl px-4 py-2.5 text-sm font-mono cursor-not-allowed">
+                            {{ $petugas->nip ?? '—' }}
+                        </div>
+                        <input type="hidden" name="nip" value="{{ $petugas->nip }}">
                     </div>
 
                     {{-- Status Tersedia --}}
@@ -262,23 +261,21 @@
         {{-- Kolom Kanan: Aksi & Info --}}
         <div class="space-y-6">
             {{-- Tombol Aksi --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
-                <button type="submit" id="btn-update-petugas"
-                        class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-navy-gradient text-white font-semibold rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-                    <span class="material-symbols-outlined text-xl">save</span>
-                    Simpan Perubahan
-                </button>
-                <a href="{{ route('admin.petugas.show', $petugas) }}"
-                   class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-[#022448] font-semibold rounded-xl hover:bg-blue-100 transition">
-                    <span class="material-symbols-outlined text-xl">visibility</span>
-                    Lihat Detail
-                </a>
-                <a href="{{ route('admin.petugas.index') }}"
-                   class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">
-                    <span class="material-symbols-outlined text-xl">arrow_back</span>
-                    Kembali
-                </a>
-            </div>
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
+    <button type="button" onclick="openStatusModal({{ $petugas->id }}, @js($petugas->user?->name ?? 'Petugas'), @js($petugas->status_tersedia))" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 text-amber-700 font-semibold rounded-xl hover:bg-amber-100 transition">
+        <span class="material-symbols-outlined text-xl">person_off</span>
+        Ubah Status
+    </button>
+    <a href="{{ route('admin.petugas.index') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">
+        <span class="material-symbols-outlined text-xl">arrow_back</span>
+        Kembali
+    </a>
+    <button type="submit" form="form-edit-petugas" id="btn-update-petugas"
+            class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#022448] text-white font-semibold rounded-xl hover:bg-[#033466] transition">
+        <span class="material-symbols-outlined text-xl">save</span>
+        Simpan
+    </button>
+</div>
 
             {{-- Info Akun Saat Ini --}}
             <div class="bg-gray-50 border border-gray-100 rounded-2xl p-5">
@@ -310,22 +307,59 @@
                         <h3 class="text-sm font-semibold text-red-700">Nonaktifkan Petugas</h3>
                     </div>
                     <p class="text-xs text-red-600 mb-3">Petugas tidak dapat dinonaktifkan jika masih memiliki tugas aktif.</p>
-                    <form action="{{ route('admin.petugas.destroy', $petugas) }}" method="POST"
-                          onsubmit="return confirm('Yakin nonaktifkan petugas ini? Status akan berubah menjadi Tidak Aktif.')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" id="btn-nonaktifkan-dari-edit"
-                                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-700 transition">
-                            <span class="material-symbols-outlined text-base">person_off</span>
-                            Nonaktifkan
-                        </button>
-                    </form>
+                    <button type="submit" form="form-nonaktifkan-petugas" id="btn-nonaktifkan-dari-edit"
+                            class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-700 transition">
+                        <span class="material-symbols-outlined text-base">person_off</span>
+                        Nonaktifkan
+                    </button>
                 </div>
             @endif
+
+{{-- Status Modal (same as index) --}}
+<div id="status-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/40" onclick="closeStatusModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-lg font-bold text-gray-900">Ubah Status Ketersediaan</h3>
+            <p class="text-sm text-gray-500 mb-4" id="status-modal-name"></p>
+            <form id="status-modal-form" method="POST">
+                @csrf
+                @method('PATCH')
+                <select name="status_tersedia" id="status-modal-select" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4">
+                    <option value="tersedia">✅ Tersedia</option>
+                    <option value="sibuk">🕐 Sibuk</option>
+                    <option value="tidak_aktif">❌ Tidak Aktif</option>
+                </select>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" onclick="closeStatusModal()" class="px-4 py-2 text-sm bg-gray-100 rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-[#022448] text-white rounded-lg">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    const statusRoute = "{{ route('admin.petugas.update-status', $petugas) }}";
+    function openStatusModal(id, name, status) {
+        document.getElementById('status-modal').classList.remove('hidden');
+        document.getElementById('status-modal-name').textContent = name;
+        document.getElementById('status-modal-select').value = status;
+        document.getElementById('status-modal-form').action = statusRoute;
+    }
+    function closeStatusModal() { document.getElementById('status-modal').classList.add('hidden'); }
+</script>
         </div>
 
     </div>
 </form>
+
+@if($petugas->status_tersedia !== 'tidak_aktif')
+    <form id="form-nonaktifkan-petugas" action="{{ route('admin.petugas.destroy', $petugas) }}" method="POST" class="hidden"
+          onsubmit="return confirm('Yakin nonaktifkan petugas ini? Status akan berubah menjadi Tidak Aktif.')">
+        @csrf
+        @method('DELETE')
+    </form>
+@endif
 
 {{-- Script Preview Foto --}}
 <script>
