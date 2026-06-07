@@ -15,6 +15,14 @@
     </style>
 @endpush
 {{-- Page Header --}}
+@push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <style>
+        #map { height: 400px; width: 100%; border-radius: 12px; border: 1px solid #E5E7EB; z-index: 0; }
+    </style>
+@endpush
+
 <div class="mb-8">
     <div class="flex items-center gap-3 mb-2">
         <a href="{{ route('admin.zona.show', $zona->id) }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
@@ -98,6 +106,14 @@
                 @enderror
             </div>
 
+            {{-- Peta Batas Zona (Geo Boundary) --}}
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">
+                    Batas Zona (Peta) <span class="text-red-500">*</span>
+                </label>
+                <p class="text-xs text-gray-500 mb-2">Gunakan ikon <b>Draw a Polygon</b> pada peta untuk menggambar area batas wilayah.</p>
+                <div id="map"></div>
+                <input type="hidden" id="geo_boundary" name="geo_boundary" value="{{ old('geo_boundary', $zona->geo_boundary) }}" required>
             {{-- Geo Boundary Map --}}
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -138,12 +154,80 @@
                 <button type="submit"
                         class="inline-flex items-center gap-2 px-6 py-2.5 bg-navy-gradient text-white text-sm font-semibold rounded-xl shadow-md shadow-[#022448]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
                     <span class="material-symbols-outlined text-lg">save</span>
+
                     Perbarui Zona
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var map = L.map('map').setView([-6.917464, 107.619123], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            var drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+
+            var drawControl = new L.Control.Draw({
+                edit: {
+                    featureGroup: drawnItems
+                },
+                draw: {
+                    polygon: true,
+                    polyline: false,
+                    rectangle: false,
+                    circle: false,
+                    marker: false,
+                    circlemarker: false
+                }
+            });
+            map.addControl(drawControl);
+
+            // Load existing/old boundary
+            var oldBoundary = document.getElementById('geo_boundary').value;
+            if (oldBoundary) {
+                try {
+                    var latlngs = JSON.parse(oldBoundary);
+                    var polygon = L.polygon(latlngs, {color: '#022448'}).addTo(drawnItems);
+                    map.fitBounds(polygon.getBounds());
+                } catch (e) {
+                    console.error("Invalid old geo_boundary JSON");
+                }
+            }
+
+            map.on(L.Draw.Event.CREATED, function (event) {
+                var layer = event.layer;
+                drawnItems.clearLayers(); // Hanya 1 polygon per zona
+                drawnItems.addLayer(layer);
+                
+                var latlngs = layer.getLatLngs()[0].map(function(ll) {
+                    return [ll.lat, ll.lng];
+                });
+                document.getElementById('geo_boundary').value = JSON.stringify(latlngs);
+            });
+
+            map.on(L.Draw.Event.EDITED, function (event) {
+                event.layers.eachLayer(function(layer) {
+                    var latlngs = layer.getLatLngs()[0].map(function(ll) {
+                        return [ll.lat, ll.lng];
+                    });
+                    document.getElementById('geo_boundary').value = JSON.stringify(latlngs);
+                });
+            });
+
+            map.on(L.Draw.Event.DELETED, function (event) {
+                document.getElementById('geo_boundary').value = '';
+            });
+        });
+    </script>
+@endpush
 
 </x-app-admin-layout>
 

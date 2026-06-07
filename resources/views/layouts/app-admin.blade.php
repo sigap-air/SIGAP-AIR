@@ -28,6 +28,7 @@
             background: linear-gradient(135deg, #022448 0%, #1e3a5f 100%);
         }
     </style>
+    @stack('styles')
 </head>
 <body class="bg-gray-50 font-body text-gray-900 antialiased">
     <div x-data="{
