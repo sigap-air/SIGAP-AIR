@@ -14,6 +14,8 @@ class Zona extends Model
 {
     use HasFactory;
 
+    /** Kode zona resmi yang ditampilkan di form pengaduan masyarakat. */
+    public const KODE_MASYARAKAT = ['BDG-U01', 'BDG-S02', 'BDG-B03', 'BDG-T04'];
 
     // FIX: tabel aktual adalah zona_wilayah, bukan zonas (Laravel default)
     protected $table = 'zona_wilayah';
@@ -45,5 +47,17 @@ class Zona extends Model
     public function pengaduans()
     {
         return $this->hasMany(Pengaduan::class);
+    }
+
+    /**
+     * Zona aktif yang boleh dipilih masyarakat saat mengajukan pengaduan.
+     */
+    public function scopeUntukMasyarakat($query)
+    {
+        $kodes = implode("','", self::KODE_MASYARAKAT);
+
+        return $query->where('is_active', true)
+            ->whereIn('kode_zona', self::KODE_MASYARAKAT)
+            ->orderByRaw("FIELD(kode_zona, '{$kodes}')");
     }
 }

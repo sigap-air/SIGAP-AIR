@@ -4,7 +4,13 @@
     
     Inovasi: Integrasi Peta Interaktif Leaflet + OpenStreetMap + GPS Geolocation
 --}}
-<x-masyarakat-form-layout title="Pengaduan Baru" :back-url="route('masyarakat.dashboard')">
+@php
+    $isRevisi = isset($pengaduanRevisi);
+    $p = $pengaduanRevisi ?? null;
+@endphp
+<x-masyarakat-form-layout
+    :title="$isRevisi ? 'Revisi Pengaduan' : 'Pengaduan Baru'"
+    :back-url="$isRevisi ? route('masyarakat.pengaduan.riwayat.show', $p->nomor_tiket) : route('masyarakat.dashboard')">
     {{-- Leaflet CSS (CDNJS) --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <style>
@@ -37,21 +43,39 @@
         }
     </style>
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900">Pengaduan Baru</h1>
-        <p class="mt-1 text-sm text-gray-500">Lengkapi form berikut untuk mengirim laporan gangguan layanan air.</p>
+        <h1 class="text-2xl font-bold text-gray-900">{{ $isRevisi ? 'Revisi Pengaduan' : 'Pengaduan Baru' }}</h1>
+        <p class="mt-1 text-sm text-gray-500">
+            @if ($isRevisi)
+                Perbaiki data pengaduan <span class="font-semibold">{{ $p->nomor_tiket }}</span> sesuai catatan penolakan, lalu ajukan ulang untuk verifikasi supervisor.
+            @else
+                Lengkapi form berikut untuk mengirim laporan gangguan layanan air.
+            @endif
+        </p>
     </div>
 
+    @if ($isRevisi && $p->alasan_penolakan)
+    <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4">
+        <p class="text-sm font-semibold text-red-800">Alasan penolakan supervisor</p>
+        <p class="mt-1 text-sm text-red-700">{{ $p->alasan_penolakan }}</p>
+    </div>
+    @endif
+
     <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
-        <form action="{{ route('masyarakat.pengaduan.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col" data-confirm="Yakin ingin mengirim pengaduan ini?">
+        <form action="{{ $isRevisi ? route('masyarakat.pengaduan.revisi.update', $p->nomor_tiket) : route('masyarakat.pengaduan.store') }}"
+              method="POST" enctype="multipart/form-data" class="flex flex-col"
+              data-confirm="{{ $isRevisi ? 'Yakin ingin mengajukan ulang pengaduan yang sudah direvisi?' : 'Yakin ingin mengirim pengaduan ini?' }}">
             @csrf
+            @if ($isRevisi)
+                @method('PUT')
+            @endif
 
             <x-sigap-form-field label="Kategori Pengaduan" name="kategori_id" :required="true">
                 <select name="kategori_id"
                     class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:ring-2 focus:ring-brand"
                     required>
-                    <option value="" disabled {{ old('kategori_id') ? '' : 'selected' }}>Pilih kategori</option>
+                    <option value="" disabled {{ old('kategori_id', $p?->kategori_id) ? '' : 'selected' }}>Pilih kategori</option>
                     @foreach ($kategoris as $k)
-                        <option value="{{ $k->id }}" {{ (string) old('kategori_id') === (string) $k->id ? 'selected' : '' }}>
+                        <option value="{{ $k->id }}" {{ (string) old('kategori_id', $p?->kategori_id) === (string) $k->id ? 'selected' : '' }}>
                             {{ $k->nama_kategori }} (SLA {{ $k->sla_jam }} jam)
                         </option>
                     @endforeach
@@ -66,7 +90,10 @@
                     Lokasi Pengaduan
                     <span class="text-red-500 ml-0.5">*</span>
                 </label>
-                <p class="text-xs text-gray-500 mb-3">Klik pada peta atau gunakan tombol GPS untuk menandai lokasi gangguan. Zona akan terdeteksi otomatis.</p>
+                <p class="text-xs text-gray-500 mb-3">
+                    Klik di dalam area berwarna di peta (Utara/Selatan/Barat/Timur) untuk menandai lokasi dan mengisi zona otomatis.
+                    Anda juga bisa klik di mana saja pada peta, atau gunakan tombol <strong>Gunakan Lokasi Saya Saat Ini</strong> di bawah peta.
+                </p>
 
                 {{-- Peta Leaflet --}}
                 <div id="map" class="mb-3"></div>
@@ -82,8 +109,8 @@
                 </button>
 
                 {{-- Hidden fields untuk koordinat --}}
-                <input type="hidden" name="latitude"  id="input-latitude"  value="{{ old('latitude') }}">
-                <input type="hidden" name="longitude" id="input-longitude" value="{{ old('longitude') }}">
+                <input type="hidden" name="latitude"  id="input-latitude"  value="{{ old('latitude', $p?->latitude) }}">
+                <input type="hidden" name="longitude" id="input-longitude" value="{{ old('longitude', $p?->longitude) }}">
 
                 {{-- Koordinat info (ditampilkan setelah pin diletakkan) --}}
                 <div id="coords-info" class="hidden mb-3 flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-700">
@@ -99,9 +126,9 @@
                 <select name="zona_id" id="zona_id"
                     class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 shadow-sm focus:ring-2 focus:ring-brand"
                     required>
-                    <option value="" disabled {{ old('zona_id') ? '' : 'selected' }}>Pilih zona (atau klik peta untuk auto-detect)</option>
+                    <option value="" disabled {{ old('zona_id', $p?->zona_id) ? '' : 'selected' }}>Pilih zona (atau klik peta untuk auto-detect)</option>
                     @foreach ($zonas as $z)
-                        <option value="{{ $z->id }}" {{ (string) old('zona_id') === (string) $z->id ? 'selected' : '' }}>
+                        <option value="{{ $z->id }}" {{ (string) old('zona_id', $p?->zona_id) === (string) $z->id ? 'selected' : '' }}>
                             {{ $z->nama_zona }}
                         </option>
                     @endforeach
@@ -123,7 +150,7 @@
 
             {{-- Alamat / Patokan (teks, tetap wajib) --}}
             <x-sigap-form-field label="Alamat / Patokan Lokasi" name="lokasi" :required="true">
-                <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}"
+                <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi', $p?->lokasi) }}"
                     placeholder="Contoh: Jl. Merdeka No. 10, dekat SPBU, RT 03 RW 07"
                     class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-500 shadow-sm focus:ring-2 focus:ring-brand"
                     required />
@@ -135,7 +162,7 @@
             </x-sigap-form-field>
 
             <x-sigap-form-field label="Nomor Telepon" name="no_telepon" :required="true">
-                <input type="tel" name="no_telepon" value="{{ old('no_telepon') }}"
+                <input type="tel" name="no_telepon" value="{{ old('no_telepon', auth()->user()->no_telepon) }}"
                     placeholder="Contoh: 08123456789"
                     inputmode="numeric" pattern="[0-9]*"
                     oninput="this.value = this.value.replace(/[^0-9]/g, '')"
@@ -149,14 +176,24 @@
             <x-sigap-form-field label="Deskripsi Masalah" name="deskripsi" :required="true">
                 <textarea name="deskripsi" rows="5" placeholder="Jelaskan kendala secara detail"
                     class="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-800 placeholder-gray-500 shadow-sm focus:ring-2 focus:ring-brand"
-                    required>{{ old('deskripsi') }}</textarea>
+                    required>{{ old('deskripsi', $p?->deskripsi) }}</textarea>
                 <p class="mt-1 text-xs text-gray-500">Minimal 20 karakter.</p>
             </x-sigap-form-field>
 
-            <x-sigap-image-upload label="Bukti Foto" name="foto_bukti" :required="true" :optional="false" />
+            @if ($isRevisi && $p->foto_bukti)
+            <div class="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <p class="text-xs font-semibold text-gray-600 mb-2">Foto bukti saat ini</p>
+                <img src="{{ asset('storage/' . $p->foto_bukti) }}" alt="Foto bukti" class="max-h-48 rounded-lg object-contain">
+                <p class="mt-2 text-xs text-gray-500">Unggah foto baru di bawah jika ingin mengganti bukti laporan.</p>
+            </div>
+            @endif
+
+            <x-sigap-image-upload label="Bukti Foto" name="foto_bukti" :required="!$isRevisi" :optional="$isRevisi" />
 
             <div class="mt-4">
-                <x-sigap-action-button variant="primary" type="submit">Kirim Pengaduan</x-sigap-action-button>
+                <x-sigap-action-button variant="primary" type="submit">
+                    {{ $isRevisi ? 'Ajukan Ulang Pengaduan' : 'Kirim Pengaduan' }}
+                </x-sigap-action-button>
             </div>
         </form>
     </div>
@@ -205,6 +242,7 @@
         // RENDER POLYGON ZONA DI PETA
         // =====================================================================
         const zonaLayers = {};
+        const allPolygonBounds = [];
 
         ZONA_BOUNDARIES.forEach(function(zona, index) {
             if (!zona.geo_boundary || !zona.geo_boundary.coordinates) return;
@@ -222,6 +260,8 @@
                 dashArray: '5, 5',
             }).addTo(map);
 
+            allPolygonBounds.push(polygon.getBounds());
+
             // Tooltip nama zona di tengah polygon
             polygon.bindTooltip(zona.nama_zona, {
                 permanent: true,
@@ -231,12 +271,18 @@
 
             // Klik polygon → pilih zona otomatis
             polygon.on('click', function(e) {
-                selectZona(zona.id, zona.nama_zona, true);
+                L.DomEvent.stopPropagation(e);
                 placeMarker(e.latlng.lat, e.latlng.lng);
+                showDetectedZona(zona.id, zona.nama_zona);
             });
 
             zonaLayers[zona.id] = { polygon, color, nama: zona.nama_zona };
         });
+
+        if (allPolygonBounds.length > 0) {
+            const groupBounds = allPolygonBounds.reduce((acc, b) => acc.extend(b), L.latLngBounds(allPolygonBounds[0]));
+            map.fitBounds(groupBounds, { padding: [24, 24] });
+        }
 
         // =====================================================================
         // MARKER (PIN) YANG BISA DIGESER
@@ -339,11 +385,7 @@
             }
 
             if (detectedZonaId) {
-                selectZona(detectedZonaId, detectedZonaName, false);
-                document.getElementById('zona-detected-badge').classList.remove('hidden');
-                document.getElementById('zona-detected-text').textContent =
-                    `Zona terdeteksi: ${detectedZonaName}`;
-                document.getElementById('zona-outside-badge').classList.add('hidden');
+                showDetectedZona(detectedZonaId, detectedZonaName);
             } else {
                 // Titik di luar semua zona — tetap biarkan user pilih manual
                 document.getElementById('zona-detected-badge').classList.add('hidden');
@@ -354,9 +396,17 @@
             }
         }
 
-        function selectZona(zonaId, zonaName, fromMapClick) {
+        function showDetectedZona(zonaId, zonaName) {
+            selectZona(zonaId, zonaName);
+            document.getElementById('zona-detected-badge').classList.remove('hidden');
+            document.getElementById('zona-detected-text').textContent = `Zona terdeteksi: ${zonaName}`;
+            document.getElementById('zona-outside-badge').classList.add('hidden');
+        }
+
+        function selectZona(zonaId, zonaName) {
             const select = document.getElementById('zona_id');
             select.value = zonaId;
+            select.dispatchEvent(new Event('change'));
 
             // Highlight polygon yang dipilih
             Object.entries(zonaLayers).forEach(([id, layer]) => {

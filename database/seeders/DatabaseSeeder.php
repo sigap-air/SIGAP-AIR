@@ -93,6 +93,16 @@ class DatabaseSeeder extends Seeder
 
         // 2. Seeder Kategori Pengaduan
         KategoriPengaduan::updateOrCreate(
+            ['kode_kategori' => 'AMT-01'],
+            [
+                'nama_kategori' => 'Air Mati',
+                'deskripsi' => 'Laporan tidak ada aliran air sama sekali',
+                'sla_jam' => 12,
+                'is_active' => true,
+            ]
+        );
+
+        KategoriPengaduan::updateOrCreate(
             ['kode_kategori' => 'AK-01'],
             [
                 'nama_kategori' => 'Air Keruh',

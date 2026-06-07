@@ -53,7 +53,7 @@ class NotifikasiController extends Controller
         if ($notif->pengaduan_id) {
             $pengaduan = Pengaduan::find($notif->pengaduan_id);
             if ($pengaduan) {
-                return redirect()->route('pengaduan.riwayat.show', $pengaduan->nomor_tiket);
+                return redirect()->route('masyarakat.pengaduan.riwayat.show', $pengaduan->nomor_tiket);
             }
         }
         

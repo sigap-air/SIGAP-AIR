@@ -70,6 +70,8 @@ Route::middleware('auth')->group(function () {
         // PBI-10 Riwayat Pengaduan
         // Routes: GET /masyarakat/pengaduan/riwayat & /masyarakat/pengaduan/riwayat/{pengaduan}
         Route::get('/pengaduan/riwayat', [RiwayatController::class, 'index'])->name('pengaduan.riwayat');
+        Route::get('/pengaduan/riwayat/{pengaduan}/revisi', [PengaduanController::class, 'editRevisi'])->name('pengaduan.revisi.edit');
+        Route::put('/pengaduan/riwayat/{pengaduan}/revisi', [PengaduanController::class, 'updateRevisi'])->name('pengaduan.revisi.update');
         Route::get('/pengaduan/riwayat/{pengaduan}', [RiwayatController::class, 'show'])->name('pengaduan.riwayat.show');
 
         // PBI-11 Rating & Feedback (hanya setelah pengaduan selesai)

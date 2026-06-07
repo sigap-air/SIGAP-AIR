@@ -38,6 +38,20 @@ class NotifikasiService
             });
     }
 
+    public function notifikasiSupervisorRevisi(Pengaduan $pengaduan): void
+    {
+        User::where('role', 'supervisor')->where('is_active', true)
+            ->each(function ($sup) use ($pengaduan) {
+                $this->kirim(
+                    $sup->id,
+                    $pengaduan->id,
+                    'Pengaduan Direvisi',
+                    "Tiket {$pengaduan->nomor_tiket} telah direvisi pelapor dan menunggu verifikasi ulang.",
+                    'status_berubah'
+                );
+            });
+    }
+
     public function notifikasiAssignment(Pengaduan $pengaduan,
                                          Assignment $assignment): void
     {

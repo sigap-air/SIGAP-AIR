@@ -15,7 +15,7 @@
 namespace App\Http\Controllers\Masyarakat;
 
 use App\Http\Controllers\Controller;
-use App\Models\Kategori;          // Model Kategori (table: kategori_pengaduan)
+use App\Models\KategoriPengaduan;
 use App\Models\Pengaduan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -40,7 +40,7 @@ class RiwayatController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $kategoris = Kategori::where('is_active', true)->get();
+        $kategoris = KategoriPengaduan::untukMasyarakat()->get();
 
         return view('masyarakat.riwayat.index', compact('pengaduan', 'kategoris'));
 
@@ -60,7 +60,7 @@ class RiwayatController extends Controller
             'zona',
             'assignment.petugas.user',
             'assignment.supervisor',
-            'statusLog.user',   // untuk timeline (relasi placeholder sampai model StatusLog dibuat)
+            'statusLogs.user',
             'rating',
             'sla',
         ]);

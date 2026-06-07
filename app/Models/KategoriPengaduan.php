@@ -9,6 +9,9 @@ class KategoriPengaduan extends Model
 {
     use HasFactory;
 
+    /** Kode kategori resmi yang ditampilkan di form pengaduan masyarakat. */
+    public const KODE_MASYARAKAT = ['AMT-01', 'AK-01', 'AM-02', 'AB-03'];
+
     protected $table = 'kategori_pengaduan';
 
     protected $fillable = [
@@ -44,5 +47,17 @@ class KategoriPengaduan extends Model
     {
         return $this->hasMany(Pengaduan::class, 'kategori_id')
                     ->whereNotIn('status', ['selesai', 'ditolak']);
+    }
+
+    /**
+     * Kategori aktif yang boleh dipilih masyarakat saat mengajukan pengaduan.
+     */
+    public function scopeUntukMasyarakat($query)
+    {
+        $kodes = implode("','", self::KODE_MASYARAKAT);
+
+        return $query->where('is_active', true)
+            ->whereIn('kode_kategori', self::KODE_MASYARAKAT)
+            ->orderByRaw("FIELD(kode_kategori, '{$kodes}')");
     }
 }

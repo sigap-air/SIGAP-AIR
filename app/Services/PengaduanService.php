@@ -13,6 +13,7 @@ namespace App\Services;
 
 use App\Models\{Pelanggan, Pengaduan, Sla, User};
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class PengaduanService
@@ -83,11 +84,11 @@ class PengaduanService
                 );
             }
 
-            // 3. Set SLA otomatis berdasarkan kategori
+            // 3. Set SLA otomatis berdasarkan kategori (sama seperti label di form pengaduan)
             $slaJam = $pengaduan->kategori->sla_jam;
             Sla::create([
                 'pengaduan_id' => $pengaduan->id,
-                'batas_waktu'  => now()->addHours($slaJam),
+                'batas_waktu'  => $pengaduan->tanggal_pengajuan->copy()->addHours($slaJam),
                 'status_sla'   => 'berjalan',
                 'is_flagged'   => false,
             ]);
@@ -102,6 +103,110 @@ class PengaduanService
             );
 
             return $pengaduan;
+        });
+    }
+
+    /**
+     * Revisi pengaduan yang ditolak — perbarui data & ajukan ulang ke supervisor.
+     */
+    public function revisi(Pengaduan $pengaduan, array $data, User $pelapor): Pengaduan
+    {
+        return DB::transaction(function () use ($pengaduan, $data, $pelapor) {
+            if ($pengaduan->user_id !== $pelapor->id) {
+                abort(403);
+            }
+
+            if ($pengaduan->status !== 'ditolak') {
+                throw ValidationException::withMessages([
+                    'status' => 'Hanya pengaduan yang ditolak yang dapat direvisi.',
+                ]);
+            }
+
+            $hasCoords = isset($data['latitude'], $data['longitude'])
+                && $data['latitude'] !== null && $data['longitude'] !== null;
+
+            if ($hasCoords) {
+                $isZonaValid = app(\App\Services\ZonaValidationService::class)
+                    ->validateByCoordinates((float) $data['latitude'], (float) $data['longitude'], (int) $data['zona_id']);
+            } else {
+                $isZonaValid = app(\App\Services\ZonaValidationService::class)
+                    ->validateLokasi($data['lokasi'], (int) $data['zona_id']);
+            }
+
+            $fotoBukti = $pengaduan->foto_bukti;
+            if (isset($data['foto_bukti'])) {
+                if ($pengaduan->foto_bukti) {
+                    Storage::disk('public')->delete($pengaduan->foto_bukti);
+                }
+                $fotoBukti = $data['foto_bukti']->store('uploads/pengaduan', 'public');
+            }
+
+            $pengaduan->update([
+                'kategori_id'       => $data['kategori_id'],
+                'zona_id'           => $data['zona_id'],
+                'is_zona_valid'     => $isZonaValid,
+                'lokasi'            => $data['lokasi'],
+                'latitude'          => $data['latitude'] ?? null,
+                'longitude'         => $data['longitude'] ?? null,
+                'deskripsi'         => $data['deskripsi'],
+                'foto_bukti'        => $fotoBukti,
+                'status'            => 'menunggu_verifikasi',
+                'alasan_penolakan'  => null,
+                'tanggal_pengajuan' => now(),
+            ]);
+
+            $pelapor->update(['no_telepon' => $data['no_telepon']]);
+
+            Pelanggan::updateOrCreate(
+                ['user_id' => $pelapor->id],
+                [
+                    'zona_id'           => $data['zona_id'],
+                    'nama_pelanggan'     => $pelapor->name,
+                    'alamat'            => $data['lokasi'],
+                    'nomor_sambungan'   => 'AUTO-' . str_pad((string) $pelapor->id, 6, '0', STR_PAD_LEFT),
+                    'no_telepon'        => $data['no_telepon'],
+                    'is_active'         => true,
+                ]
+            );
+
+            $pengaduan->load('kategori');
+            $slaJam = $pengaduan->kategori->sla_jam;
+
+            if ($pengaduan->sla) {
+                $pengaduan->sla->update([
+                    'batas_waktu' => $pengaduan->tanggal_pengajuan->copy()->addHours($slaJam),
+                    'status_sla'  => 'berjalan',
+                    'is_flagged'  => false,
+                    'resolved_at' => null,
+                ]);
+            } else {
+                Sla::create([
+                    'pengaduan_id' => $pengaduan->id,
+                    'batas_waktu'  => $pengaduan->tanggal_pengajuan->copy()->addHours($slaJam),
+                    'status_sla'   => 'berjalan',
+                    'is_flagged'   => false,
+                ]);
+            }
+
+            $this->catatStatusLog(
+                $pengaduan,
+                $pelapor,
+                'ditolak',
+                'menunggu_verifikasi',
+                'Pengaduan direvisi dan diajukan ulang oleh pelapor.'
+            );
+
+            $this->notifikasiService->kirim(
+                $pelapor->id,
+                $pengaduan->id,
+                'Pengaduan Diajukan Ulang',
+                "Tiket {$pengaduan->nomor_tiket} telah direvisi dan menunggu verifikasi supervisor.",
+                'status_berubah'
+            );
+
+            $this->notifikasiService->notifikasiSupervisorRevisi($pengaduan);
+
+            return $pengaduan->fresh(['kategori', 'zona', 'sla']);
         });
     }
 

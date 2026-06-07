@@ -10,15 +10,17 @@ class KategoriSeeder extends Seeder
     public function run(): void
     {
         $kategoris = [
-            ['nama_kategori' => 'Air Keruh',       'sla_jam' => 24, 'deskripsi' => 'Air berwarna keruh atau kotor'],
-            ['nama_kategori' => 'Air Berbau',       'sla_jam' => 24, 'deskripsi' => 'Air mengeluarkan bau tidak sedap'],
-            ['nama_kategori' => 'Air Tidak Mengalir','sla_jam' => 12,'deskripsi' => 'Tidak ada aliran air sama sekali'],
-            ['nama_kategori' => 'Tekanan Air Lemah','sla_jam' => 48, 'deskripsi' => 'Aliran air sangat kecil/lemah'],
-            ['nama_kategori' => 'Pipa Bocor',       'sla_jam' => 6,  'deskripsi' => 'Ada kebocoran pada pipa distribusi'],
+            ['kode_kategori' => 'AMT-01', 'nama_kategori' => 'Air Mati',   'sla_jam' => 12, 'deskripsi' => 'Tidak ada aliran air sama sekali'],
+            ['kode_kategori' => 'AK-01',  'nama_kategori' => 'Air Keruh',  'sla_jam' => 24, 'deskripsi' => 'Air berwarna keruh atau kotor'],
+            ['kode_kategori' => 'AM-02',  'nama_kategori' => 'Air Macet',  'sla_jam' => 12, 'deskripsi' => 'Aliran air terhenti atau sangat lambat'],
+            ['kode_kategori' => 'AB-03',  'nama_kategori' => 'Air Berbau', 'sla_jam' => 48, 'deskripsi' => 'Air mengeluarkan bau tidak sedap'],
         ];
 
         foreach ($kategoris as $k) {
-            Kategori::create([...$k, 'is_active' => true]);
+            Kategori::updateOrCreate(
+                ['kode_kategori' => $k['kode_kategori']],
+                [...$k, 'is_active' => true]
+            );
         }
     }
 }

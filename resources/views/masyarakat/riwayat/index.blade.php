@@ -49,7 +49,7 @@
                     <option value="">Semua Kategori</option>
                     @foreach ($kategoris as $k)
                     <option value="{{ $k->id }}" {{ request('kategori_id') == $k->id ? 'selected' : '' }}>
-                        {{ $k->nama_kategori }}
+                        {{ $k->nama_kategori }} (SLA {{ $k->sla_jam }} jam)
                     </option>
                     @endforeach
                 </select>
@@ -134,7 +134,10 @@
                             </td>
 
                             {{-- Kategori --}}
-                            <td class="px-6 py-4 text-gray-700">{{ $p->kategori->nama_kategori }}</td>
+                            <td class="px-6 py-4 text-gray-700">
+                                {{ $p->kategori->nama_kategori }}
+                                <span class="text-gray-400 text-xs">(SLA {{ $p->kategori->sla_jam }} jam)</span>
+                            </td>
 
                             {{-- Lokasi --}}
                             <td class="px-6 py-4 text-gray-600 text-xs">{{ Str::limit($p->lokasi, 30) }}</td>
@@ -160,6 +163,15 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </a>
+                                    @if ($p->status === 'ditolak')
+                                    <a href="{{ route('masyarakat.pengaduan.revisi.edit', $p->nomor_tiket) }}"
+                                       title="Revisi Pengaduan"
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </a>
+                                    @endif
                                     @if ($p->status === 'selesai' && !$p->rating)
                                     <a href="{{ route('masyarakat.rating.create', $p) }}"
                                        title="Beri Rating"

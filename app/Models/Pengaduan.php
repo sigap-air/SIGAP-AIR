@@ -101,13 +101,10 @@ class Pengaduan extends Model
 
     /**
      * PBI-10: Log perubahan status pengaduan untuk tampilan timeline.
-     * Model StatusLog belum dibuat — fallback ke penggunaan created_at / updated_at.
      */
     public function statusLogs()
     {
-        // Jika model StatusLog sudah dibuat, gunakan:
-        // return $this->hasMany(StatusLog::class)->orderBy('created_at');
-        return $this->hasMany(Assignment::class)->whereRaw('1=0'); // placeholder kosong
+        return $this->hasMany(StatusLog::class)->orderBy('created_at');
     }
 
     // ========================

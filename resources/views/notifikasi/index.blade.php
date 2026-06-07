@@ -23,7 +23,7 @@
                         <p class="font-semibold text-gray-800 text-sm">{{ $notif->judul }}</p>
                         <p class="text-sm text-gray-600 mt-0.5">{{ $notif->pesan }}</p>
                         @if ($notif->pengaduan)
-                        <a href="{{ route('masyarakat.riwayat.show', $notif->pengaduan) }}"
+                        <a href="{{ route('masyarakat.pengaduan.riwayat.show', $notif->pengaduan->nomor_tiket) }}"
                            class="text-xs text-blue-600 hover:underline mt-1 inline-block">Lihat Pengaduan →</a>
                         @endif
                     </div>

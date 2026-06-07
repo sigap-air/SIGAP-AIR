@@ -133,6 +133,13 @@
                 @endif
 
                 @if ($pengaduan->status === 'menunggu_verifikasi')
+                    @if (!empty($isRevisiUlang))
+                    <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                        <p class="font-semibold">Pengaduan hasil revisi pelapor</p>
+                        <p class="mt-1 text-amber-800">Tiket ini pernah ditolak dan telah diperbaiki oleh pelapor. Silakan verifikasi ulang data terbaru.</p>
+                    </div>
+                    @endif
+
                     <form method="POST" action="{{ route('supervisor.verifikasi.update', $pengaduan) }}" id="formVerifikasi">
                         @csrf
                         @method('PATCH')

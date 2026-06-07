@@ -117,14 +117,14 @@
                     <span>Beranda</span>
                 </a>
 
-                <a href="#" :class="isactive('/pengaduan/baru') ? 'border-b-2 border-[#2563EB] text-[#2563EB]' : 'text-gray-600 hover:text-gray-900'" class="px-4 py-3 font-medium text-sm transition-colors flex items-center gap-2">
+                <a href="{{ route('masyarakat.pengaduan.create') }}" :class="isactive('/pengaduan/create') ? 'border-b-2 border-[#2563EB] text-[#2563EB]' : 'text-gray-600 hover:text-gray-900'" class="px-4 py-3 font-medium text-sm transition-colors flex items-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M12 3.586a1 1 0 00-1.414 0L7 7.172V5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2v2.172l-3.586-3.586zM15 13H5v2h10v-2z" clip-rule="evenodd" />
                     </svg>
                     <span>Buat Pengaduan</span>
                 </a>
 
-                <a href="#" :class="isactive('/pengaduan/riwayat') ? 'border-b-2 border-[#2563EB] text-[#2563EB]' : 'text-gray-600 hover:text-gray-900'" class="px-4 py-3 font-medium text-sm transition-colors flex items-center gap-2">
+                <a href="{{ route('masyarakat.pengaduan.riwayat') }}" :class="isactive('/pengaduan/riwayat') ? 'border-b-2 border-[#2563EB] text-[#2563EB]' : 'text-gray-600 hover:text-gray-900'" class="px-4 py-3 font-medium text-sm transition-colors flex items-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                         <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000-2H2a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2 1 1 0 000 2h2a1 1 0 110 2H4zm2 4a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
@@ -151,14 +151,14 @@
                     <span>Beranda</span>
                 </a>
 
-                <a href="#" :class="isactive('/pengaduan/baru') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
+                <a href="{{ route('masyarakat.pengaduan.create') }}" :class="isactive('/pengaduan/create') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
                     <span>Buat</span>
                 </a>
 
-                <a href="#" :class="isactive('/pengaduan/riwayat') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
+                <a href="{{ route('masyarakat.pengaduan.riwayat') }}" :class="isactive('/pengaduan/riwayat') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                         <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000-2H2a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2 1 1 0 000 2h2a1 1 0 110 2H4zm2 4a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />

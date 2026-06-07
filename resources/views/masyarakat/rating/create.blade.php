@@ -4,7 +4,7 @@
 
     <div class="max-w-lg mx-auto">
         <div class="mb-4">
-            <a href="{{ route('masyarakat.riwayat.show', $pengaduan) }}" class="text-sm text-blue-600 hover:underline">← Kembali ke Detail</a>
+            <a href="{{ route('masyarakat.pengaduan.riwayat.show', $pengaduan->nomor_tiket) }}" class="text-sm text-blue-600 hover:underline">← Kembali ke Detail</a>
         </div>
         <div class="bg-white rounded-xl shadow p-6">
             <div class="text-center mb-6">

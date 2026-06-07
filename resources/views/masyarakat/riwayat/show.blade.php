@@ -12,11 +12,30 @@
                     <x-badge-status :status="$pengaduan->status" />
                 </div>
 
+                @if ($pengaduan->status === 'ditolak')
+                <div class="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <p class="text-sm font-semibold text-amber-900">Pengaduan ditolak — perlu revisi</p>
+                    @if ($pengaduan->alasan_penolakan)
+                    <p class="mt-1 text-sm text-amber-800">{{ $pengaduan->alasan_penolakan }}</p>
+                    @endif
+                    <a href="{{ route('masyarakat.pengaduan.revisi.edit', $pengaduan->nomor_tiket) }}"
+                       class="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#022448] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#1e3a5f] transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Revisi & Ajukan Ulang
+                    </a>
+                </div>
+                @endif
+
                 <dl class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
                     {{-- Kategori --}}
                     <div>
                         <dt class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori</dt>
-                        <dd class="mt-1.5 font-semibold text-gray-900">{{ $pengaduan->kategori->nama_kategori }}</dd>
+                        <dd class="mt-1.5 font-semibold text-gray-900">
+                            {{ $pengaduan->kategori->nama_kategori }}
+                            <span class="text-gray-500 font-normal">(SLA {{ $pengaduan->kategori->sla_jam }} jam)</span>
+                        </dd>
                     </div>
 
                     {{-- Zona --}}
@@ -69,13 +88,6 @@
                     <button @click="openBukti = false" class="absolute top-4 right-6 text-white text-5xl hover:text-gray-300 transition-colors">&times;</button>
                     <img src="{{ asset('storage/' . $pengaduan->foto_bukti) }}" class="max-w-full max-h-full rounded-xl object-contain">
                 </div>
-            </div>
-            @endif
-
-            @if ($pengaduan->assignment?->instruksi)
-            <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
-                <h3 class="text-base font-semibold text-gray-900 mb-4">Instruksi Penanganan</h3>
-                <x-instruksi-supervisor :assignment="$pengaduan->assignment" compact />
             </div>
             @endif
 
@@ -139,7 +151,14 @@
                         ],
                     ];
                     $statusArray = array_keys($statusSteps);
-                    $currentIdx = array_search($pengaduan->status, $statusArray);
+                    $timelineStatus = match ($pengaduan->status) {
+                        'sedang_diproses' => 'diproses',
+                        default => $pengaduan->status,
+                    };
+                    $currentIdx = array_search($timelineStatus, $statusArray, true);
+                    if ($currentIdx === false) {
+                        $currentIdx = -1;
+                    }
                 @endphp
 
                 @if ($pengaduan->status === 'ditolak')
@@ -149,6 +168,10 @@
                         @if ($pengaduan->alasan_penolakan)
                         <p class="text-xs text-red-600 mt-2 leading-relaxed">{{ $pengaduan->alasan_penolakan }}</p>
                         @endif
+                        <a href="{{ route('masyarakat.pengaduan.revisi.edit', $pengaduan->nomor_tiket) }}"
+                           class="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-[#022448] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1e3a5f] transition-colors">
+                            Revisi Pengaduan
+                        </a>
                     </div>
                 @else
                     <div class="space-y-4 relative">
@@ -175,48 +198,55 @@
             </div>
 
             {{-- Card: SLA Info --}}
-            @if ($pengaduan->sla)
+            @if ($pengaduan->kategori)
             <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
                 <h3 class="text-base font-semibold text-gray-900 mb-4">Batas Waktu (SLA)</h3>
                 @php
-                    $deadlineSla = $pengaduan->sla->deadline?->copy();
+                    $slaJam = $pengaduan->kategori->sla_jam;
+                    $deadlineSla = $pengaduan->tanggal_pengajuan->copy()->addHours($slaJam);
                     $nowLocal = now();
-                    $sisaDetik = $deadlineSla ? $nowLocal->diffInSeconds($deadlineSla, false) : null;
+                    $sisaDetik = $nowLocal->diffInSeconds($deadlineSla, false);
                     $teksSisaSla = '—';
 
-                    if (!is_null($sisaDetik)) {
-                        if ($sisaDetik > 0) {
-                            $sisaHari = (int) ceil($sisaDetik / 86400);
-                            $teksSisaSla = $sisaHari . ' hari lagi';
-                        } elseif ($sisaDetik === 0) {
-                            $teksSisaSla = 'hari ini';
-                        } else {
-                            $lewatHari = (int) ceil(abs($sisaDetik) / 86400);
-                            $teksSisaSla = 'terlambat ' . $lewatHari . ' hari';
-                        }
+                    if ($sisaDetik > 0) {
+                        $sisaJam = max(1, (int) ceil($sisaDetik / 3600));
+                        $teksSisaSla = $sisaJam . ' jam lagi';
+                    } elseif ($sisaDetik === 0) {
+                        $teksSisaSla = 'kurang dari 1 jam lagi';
+                    } else {
+                        $lewatJam = max(1, (int) ceil(abs($sisaDetik) / 3600));
+                        $teksSisaSla = 'terlambat ' . $lewatJam . ' jam';
+                    }
+
+                    $statusSla = $pengaduan->sla?->status_sla;
+                    if (!$statusSla) {
+                        $statusSla = $sisaDetik < 0 ? 'overdue' : 'berjalan';
                     }
                 @endphp
                 <div class="space-y-3">
                     <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Batas SLA:</span>
+                        <span class="font-semibold text-gray-900">{{ $slaJam }} jam</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
                         <span class="text-gray-600">Deadline:</span>
-                        <span class="font-semibold text-gray-900">{{ $pengaduan->sla->deadline->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB</span>
-
+                        <span class="font-semibold text-gray-900">{{ $deadlineSla->timezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB</span>
                     </div>
                     <div class="pt-3 border-t border-gray-100">
-                        @if (($pengaduan->sla->status_sla ?? null) === 'terpenuhi')
+                        @if ($statusSla === 'terpenuhi')
                         <div class="flex items-center gap-2 text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg text-xs font-semibold">
                             <span>✅</span>
                             <span>SLA Terpenuhi</span>
                         </div>
-                        @elseif (($pengaduan->sla->status_sla ?? null) === 'overdue')
+                        @elseif ($statusSla === 'overdue')
                         <div class="flex items-center gap-2 text-red-700 bg-red-50 px-3 py-2 rounded-lg text-xs font-semibold">
                             <span>🚨</span>
-                            <span>SLA Terlampaui</span>
+                            <span>SLA Terlampaui ({{ $slaJam }} jam)</span>
                         </div>
                         @else
                         <div class="flex items-center gap-2 text-amber-700 bg-amber-50 px-3 py-2 rounded-lg text-xs font-semibold">
                             <span>⏳</span>
-                            <span>{{ $teksSisaSla }}</span>
+                            <span>{{ $teksSisaSla }} (batas {{ $slaJam }} jam)</span>
                         </div>
                         @endif
                     </div>
