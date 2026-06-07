@@ -68,7 +68,6 @@ class PenangananController extends Controller
             'pengaduan.zona',
             'pengaduan.pelapor',
             'pengaduan.sla',
-            'pengaduan.statusLogs.user',
         ]);
         return view('petugas.tugas.show', compact('tugas'));
     }

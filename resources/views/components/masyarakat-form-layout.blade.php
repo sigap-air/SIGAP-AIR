@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'SIGAP-AIR' }} — SIGAP-AIR</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body class="min-h-screen bg-gray-50 font-sans text-gray-800 antialiased">
     <div class="min-h-screen flex flex-col">
@@ -93,5 +94,6 @@
             });
         });
     </script>
+    @stack('scripts')
 </body>
 </html>

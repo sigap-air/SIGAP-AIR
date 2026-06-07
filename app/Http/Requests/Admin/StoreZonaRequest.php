@@ -21,6 +21,7 @@ class StoreZonaRequest extends FormRequest
             'kode_zona' => ['required', 'string', 'max:20', 'unique:zona_wilayah,kode_zona'],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
             'is_active'  => ['boolean'],
+            'geo_boundary' => ['nullable', 'string'], // Menerima JSON string dari form Leaflet Draw
         ];
     }
 

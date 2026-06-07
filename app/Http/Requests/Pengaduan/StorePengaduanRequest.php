@@ -14,11 +14,12 @@ class StorePengaduanRequest extends FormRequest
     public function rules(): array
     {
         return [
-
             // FIX ERR-2: nama tabel sesuai migration (bukan konvensi plural Laravel)
             'kategori_id' => 'required|exists:kategori_pengaduan,id',
             'zona_id'     => 'required|exists:zona_wilayah,id',
             'lokasi'      => 'required|string|max:500',
+            'latitude'    => 'nullable|numeric|between:-90,90',
+            'longitude'   => 'nullable|numeric|between:-180,180',
             'no_telepon'  => 'required|string|regex:/^[0-9]+$/|max:20',
             'deskripsi'   => 'required|string|min:20|max:2000',
             'foto_bukti'  => 'required|image|mimes:jpg,jpeg,png|max:10240', // max 10MB

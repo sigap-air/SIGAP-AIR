@@ -1,5 +1,15 @@
 <x-app-supervisor-layout>
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <style>
+        #map {
+            height: 300px;
+            width: 100%;
+            z-index: 0;
+        }
+    </style>
+@endpush
 {{-- Page Header --}}
 <div class="mb-8">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -169,6 +179,8 @@
                     </div>
                 </div>
             </div>
+            {{-- Peta Zona --}}
+            <div id="map" class="border-t border-gray-100"></div>
         </div>
 
         {{-- ======================================= --}}
@@ -353,3 +365,69 @@
 </div>
 
 </x-app-supervisor-layout>
+
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Default Center: Bandung
+            const map = L.map('map').setView([-6.9175, 107.6191], 12);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            const geoBoundaryStr = @json($zona->geo_boundary);
+            
+            // Draw Zona Boundary
+            if (geoBoundaryStr) {
+                try {
+                    let geojson = geoBoundaryStr;
+                    if (typeof geojson === 'string') geojson = JSON.parse(geojson);
+                    
+                    const layer = L.geoJSON(geojson, {
+                        style: { color: '#022448', fillColor: '#022448', fillOpacity: 0.15, weight: 2, dashArray: '5,5' }
+                    }).addTo(map);
+                    
+                    map.fitBounds(layer.getBounds());
+                } catch (e) {
+                    console.error("Gagal parse geo_boundary", e);
+                }
+            }
+
+            // Draw Pengaduan Markers
+            const pengaduanData = @json($pengaduanTerbaru);
+            
+            // Custom icon marker merah
+            const markerIcon = L.divIcon({
+                className: '',
+                html: `<div style="
+                    width: 24px; height: 24px;
+                    background: #DC2626;
+                    border: 2px solid white;
+                    border-radius: 50% 50% 50% 0;
+                    transform: rotate(-45deg);
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                    position: relative;
+                "></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 24],
+                popupAnchor: [0, -24],
+            });
+
+            pengaduanData.forEach(function(p) {
+                if (p.latitude && p.longitude) {
+                    const statusName = p.status.replace('_', ' ').toUpperCase();
+                    L.marker([p.latitude, p.longitude], { icon: markerIcon }).addTo(map)
+                        .bindPopup(`
+                            <div class="text-sm">
+                                <strong class="text-[#022448]">${p.nomor_tiket}</strong><br>
+                                <span class="text-xs text-gray-500">${p.deskripsi.substring(0, 50)}...</span><br>
+                                <span class="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] font-bold rounded">${statusName}</span>
+                            </div>
+                        `);
+                }
+            });
+        });
+    </script>
+@endpush

@@ -34,8 +34,19 @@ class PengaduanService
                 $fotoBukti = $data['foto_bukti']->store('uploads/pengaduan', 'public');
             }
 
-            // 2. Buat pengaduan
-            $isZonaValid = app(\App\Services\ZonaValidationService::class)->validateLokasi($data['lokasi'], $data['zona_id']);
+            // 2. Buat pengaduan — validasi zona berdasarkan koordinat jika ada, fallback ke teks
+            $hasCoords = isset($data['latitude']) && isset($data['longitude'])
+                && $data['latitude'] !== null && $data['longitude'] !== null;
+
+            if ($hasCoords) {
+                // Validasi spasial (Point-in-Polygon) — lebih akurat
+                $isZonaValid = app(\App\Services\ZonaValidationService::class)
+                    ->validateByCoordinates((float) $data['latitude'], (float) $data['longitude'], $data['zona_id']);
+            } else {
+                // Fallback: validasi berbasis kata kunci teks
+                $isZonaValid = app(\App\Services\ZonaValidationService::class)
+                    ->validateLokasi($data['lokasi'], $data['zona_id']);
+            }
 
             $pengaduan = Pengaduan::create([
                 'nomor_tiket'       => Pengaduan::generateNomorTiket(),
@@ -44,6 +55,8 @@ class PengaduanService
                 'zona_id'           => $data['zona_id'],
                 'is_zona_valid'     => $isZonaValid,
                 'lokasi'            => $data['lokasi'],
+                'latitude'          => $data['latitude'] ?? null,
+                'longitude'         => $data['longitude'] ?? null,
                 'deskripsi'         => $data['deskripsi'],
                 'foto_bukti'        => $fotoBukti,
                 'status'            => 'menunggu_verifikasi',

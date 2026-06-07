@@ -14,12 +14,23 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Seeder Zona Wilayah (Bandung — 4 wilayah utama)
+        // geo_boundary: GeoJSON Polygon koordinat batas wilayah (format [lng, lat])
         $zonaBdgUtara = ZonaWilayah::updateOrCreate(
             ['kode_zona' => 'BDG-U01'],
             [
                 'nama_zona' => 'Bandung Utara',
                 'deskripsi' => 'Wilayah pelayanan Bandung Utara meliputi Kec. Cidadap, Coblong, Bandung Wetan, Cibeunying Kaler, Cibeunying Kidul, Sukasari',
                 'is_active' => true,
+                'geo_boundary' => [
+                    'type' => 'Polygon',
+                    'coordinates' => [[
+                        [107.5800, -6.8600],
+                        [107.6500, -6.8600],
+                        [107.6500, -6.9000],
+                        [107.5800, -6.9000],
+                        [107.5800, -6.8600],
+                    ]],
+                ],
             ]
         )->id;
 
@@ -29,6 +40,16 @@ class DatabaseSeeder extends Seeder
                 'nama_zona' => 'Bandung Selatan',
                 'deskripsi' => 'Wilayah pelayanan Bandung Selatan meliputi Kec. Lengkong, Regol, Bandung Kidul, Buahbatu, Kiaracondong',
                 'is_active' => true,
+                'geo_boundary' => [
+                    'type' => 'Polygon',
+                    'coordinates' => [[
+                        [107.5800, -6.9400],
+                        [107.6500, -6.9400],
+                        [107.6500, -6.9800],
+                        [107.5800, -6.9800],
+                        [107.5800, -6.9400],
+                    ]],
+                ],
             ]
         )->id;
 
@@ -38,6 +59,16 @@ class DatabaseSeeder extends Seeder
                 'nama_zona' => 'Bandung Barat',
                 'deskripsi' => 'Wilayah pelayanan Bandung Barat meliputi Kec. Andir, Cicendo, Sukajadi, Babakan Ciparay, Bojongloa Kaler, Bojongloa Kidul',
                 'is_active' => true,
+                'geo_boundary' => [
+                    'type' => 'Polygon',
+                    'coordinates' => [[
+                        [107.5400, -6.9000],
+                        [107.5800, -6.9000],
+                        [107.5800, -6.9400],
+                        [107.5400, -6.9400],
+                        [107.5400, -6.9000],
+                    ]],
+                ],
             ]
         )->id;
 
@@ -47,6 +78,16 @@ class DatabaseSeeder extends Seeder
                 'nama_zona' => 'Bandung Timur',
                 'deskripsi' => 'Wilayah pelayanan Bandung Timur meliputi Kec. Arcamanik, Antapani, Mandalajati, Cibiru, Ujungberung',
                 'is_active' => true,
+                'geo_boundary' => [
+                    'type' => 'Polygon',
+                    'coordinates' => [[
+                        [107.6500, -6.9000],
+                        [107.7100, -6.9000],
+                        [107.7100, -6.9400],
+                        [107.6500, -6.9400],
+                        [107.6500, -6.9000],
+                    ]],
+                ],
             ]
         )->id;
 

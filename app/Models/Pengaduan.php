@@ -32,6 +32,8 @@ class Pengaduan extends Model
         'zona_id',
         'is_zona_valid',
         'lokasi',
+        'latitude',
+        'longitude',
         'deskripsi',
         'foto_bukti',
         'status', // menunggu_verifikasi | disetujui | ditolak | ditugaskan | diproses | selesai
@@ -41,6 +43,8 @@ class Pengaduan extends Model
 
     protected $casts = [
         'tanggal_pengajuan' => 'datetime',
+        'latitude'          => 'float',
+        'longitude'         => 'float',
     ];
 
     // tanggal_pengajuan tidak dimasukkan ke $appends agar cast datetime tetap bekerja
@@ -99,12 +103,11 @@ class Pengaduan extends Model
      * PBI-10: Log perubahan status pengaduan untuk tampilan timeline.
      * Model StatusLog belum dibuat — fallback ke penggunaan created_at / updated_at.
      */
-    public function statusLog()
+    public function statusLogs()
     {
         // Jika model StatusLog sudah dibuat, gunakan:
         // return $this->hasMany(StatusLog::class)->orderBy('created_at');
-        return $this->hasMany(Assignment::class); // placeholder sampai model dibuat
-
+        return $this->hasMany(Assignment::class)->whereRaw('1=0'); // placeholder kosong
     }
 
     // ========================

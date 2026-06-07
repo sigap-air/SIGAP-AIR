@@ -1,6 +1,19 @@
 {{-- PBI-07 Detail Tugas + Update Status — styling identik admin --}}
 <x-app-petugas-layout>
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <style>
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            z-index: 0;
+        }
+    </style>
+@endpush
+
 {{-- Breadcrumb --}}
 <div class="mb-6">
     <a href="{{ route('petugas.tugas.index') }}" class="inline-flex items-center gap-1 text-sm text-[#022448] hover:text-[#1e3a5f] font-medium transition-colors">
@@ -95,6 +108,25 @@
                 </div>
             </dl>
         </div>
+
+        {{-- Peta Lokasi --}}
+        @if ($tugas->pengaduan->latitude && $tugas->pengaduan->longitude)
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
+            <h2 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">pin_drop</span>
+                Titik Peta Lokasi
+            </h2>
+            <div id="map"></div>
+            <div class="mt-3 flex items-center justify-between text-sm">
+                <span class="text-gray-500">
+                    Kordinat: <span class="font-mono font-medium text-gray-700">{{ $tugas->pengaduan->latitude }}, {{ $tugas->pengaduan->longitude }}</span>
+                </span>
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ $tugas->pengaduan->latitude }},{{ $tugas->pengaduan->longitude }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium">
+                    <span class="material-symbols-outlined text-sm">directions</span> Buka Google Maps
+                </a>
+            </div>
+        </div>
+        @endif
 
         {{-- Foto Bukti Pelapor --}}
         @if ($tugas->pengaduan->foto_bukti)
@@ -385,3 +417,50 @@
 </div>
 
 </x-app-petugas-layout>
+
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lat = {{ $tugas->pengaduan->latitude ?? 'null' }};
+            const lng = {{ $tugas->pengaduan->longitude ?? 'null' }};
+            
+            if (lat && lng && document.getElementById('map')) {
+                const map = L.map('map').setView([lat, lng], 16);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                const markerIcon = L.divIcon({
+                    className: '',
+                    html: `<div style="
+                        width: 32px; height: 32px;
+                        background: #022448;
+                        border: 3px solid white;
+                        border-radius: 50% 50% 50% 0;
+                        transform: rotate(-45deg);
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                        position: relative;
+                    ">
+                        <div style="
+                            width: 10px; height: 10px;
+                            background: white;
+                            border-radius: 50%;
+                            position: absolute;
+                            top: 50%; left: 50%;
+                            transform: translate(-50%, -50%);
+                        "></div>
+                    </div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 32],
+                    popupAnchor: [0, -32],
+                });
+
+                L.marker([lat, lng], { icon: markerIcon }).addTo(map)
+                    .bindPopup('<b>Titik Laporan:</b><br>{{ addslashes($tugas->pengaduan->lokasi) }}')
+                    .openPopup();
+            }
+        });
+    </script>
+@endpush

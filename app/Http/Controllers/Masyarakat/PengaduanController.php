@@ -31,7 +31,16 @@ class PengaduanController extends Controller
         $kategoris = KategoriPengaduan::where('is_active', true)->get();
         $zonas     = Zona::where('is_active', true)->get();
 
-        return view('masyarakat.pengaduan.create', compact('kategoris', 'zonas'));
+        // Kirim data GeoJSON boundary untuk setiap zona agar bisa dirender di peta Leaflet
+        // Format: [ { id, nama_zona, kode_zona, geo_boundary: {...} }, ... ]
+        $zonaBoundaries = $zonas->map(fn($z) => [
+            'id'           => $z->id,
+            'nama_zona'    => $z->nama_zona,
+            'kode_zona'    => $z->kode_zona,
+            'geo_boundary' => $z->geo_boundary,
+        ])->values();
+
+        return view('masyarakat.pengaduan.create', compact('kategoris', 'zonas', 'zonaBoundaries'));
     }
 
     // ✅ Halaman sukses setelah submit

@@ -54,6 +54,7 @@ class ZonaController extends Controller
             'kode_zona' => strtoupper($request->kode_zona),
             'deskripsi' => $request->deskripsi,
             'is_active'  => $request->boolean('is_active', true),
+            'geo_boundary' => $request->geo_boundary ? json_decode($request->geo_boundary, true) : null,
         ]);
 
         return redirect()
@@ -104,6 +105,7 @@ class ZonaController extends Controller
             'kode_zona' => strtoupper($request->kode_zona),
             'deskripsi' => $request->deskripsi,
             'is_active'  => $request->boolean('is_active', true),
+            'geo_boundary' => $request->geo_boundary ? json_decode($request->geo_boundary, true) : null,
         ]);
 
         return redirect()

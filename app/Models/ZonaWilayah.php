@@ -27,11 +27,13 @@ class ZonaWilayah extends Model
         'nama_zona',
         'kode_zona',
         'deskripsi',
+        'geo_boundary',
         'is_active',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'    => 'boolean',
+        'geo_boundary' => 'array',
     ];
 
     // ========================
