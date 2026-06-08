@@ -15,6 +15,14 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
+        @php
+            $profileRoute = match (Auth::user()->role) {
+                'admin' => route('admin.profil.edit'),
+                'supervisor' => route('supervisor.profil.edit'),
+                'petugas' => route('petugas.profil.edit'),
+                default => route('masyarakat.profil.edit'),
+            };
+        @endphp
         <div class="min-h-screen bg-gray-100">
             <nav class="bg-white border-b border-gray-100">
                 <!-- Primary Navigation Menu -->
@@ -52,7 +60,7 @@
                                 </x-slot>
 
                                 <x-slot name="content">
-                                    <x-dropdown-link :href="auth()->user()->role === 'masyarakat' ? route('masyarakat.profil.edit') : '#'">
+                                    <x-dropdown-link :href="$profileRoute">
                                         {{ __('Profile') }}
                                     </x-dropdown-link>
 
@@ -98,7 +106,7 @@
                         </div>
 
                         <div class="mt-3 space-y-1">
-                            <x-responsive-nav-link :href="auth()->user()->role === 'masyarakat' ? route('masyarakat.profil.edit') : '#'">
+                            <x-responsive-nav-link :href="$profileRoute">
                                 {{ __('Profile') }}
                             </x-responsive-nav-link>
 

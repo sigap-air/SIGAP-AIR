@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * PBI #8 — Kelola Profil Masyarakat
@@ -24,9 +26,11 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $user = $request->user();
+
+        abort_unless(in_array($user->role, ['masyarakat', 'admin', 'supervisor'], true), 403, 'Akun belum memiliki akses ke halaman profil ini.');
+
+        return view($this->profileView($user->role), $this->profileViewData($user));
     }
 
     /**
@@ -64,7 +68,7 @@ class ProfileController extends Controller
         $user->fill($validated);
         $user->save();
 
-        return Redirect::route('masyarakat.profil.edit')->with('status', 'profile-updated');
+        return Redirect::route($this->profileRoute($user->role))->with('status', 'profile-updated');
     }
 
     /**
@@ -72,22 +76,22 @@ class ProfileController extends Controller
      */
     public function updatePassword(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
-            'password'         => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', Password::min(8), 'confirmed'],
         ], [
-            'current_password.required'         => 'Password saat ini wajib diisi.',
-            'current_password.current_password'  => 'Password saat ini tidak sesuai.',
-            'password.required'                  => 'Password baru wajib diisi.',
-            'password.min'                       => 'Password baru minimal 8 karakter.',
-            'password.confirmed'                 => 'Konfirmasi password tidak cocok.',
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'current_password.current_password' => 'Password saat ini tidak sesuai.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
         $request->user()->update([
-            'password' => bcrypt($validated['password']),
+            'password' => Hash::make($validated['password']),
         ]);
 
-        return Redirect::route('masyarakat.profil.edit')->with('status', 'password-updated');
+        return Redirect::route($this->profileRoute($request->user()->role))->with('status', 'password-updated');
     }
 
     /**
@@ -95,6 +99,8 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        abort_unless($request->user()->role === 'masyarakat', 403, 'Akun ini tidak dapat dihapus dari halaman profil.');
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
@@ -114,5 +120,37 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    private function profileView(string $role): string
+    {
+        return 'profile.edit';
+    }
+
+    private function profileRoute(string $role): string
+    {
+        return match ($role) {
+            'admin' => 'admin.profil.edit',
+            'supervisor' => 'supervisor.profil.edit',
+            default => 'masyarakat.profil.edit',
+        };
+    }
+
+    private function profileViewData($user): array
+    {
+        $roleLabel = match ($user->role) {
+            'admin' => 'Admin',
+            'supervisor' => 'Supervisor',
+            default => 'Masyarakat',
+        };
+
+        $routePrefix = $user->role;
+
+        return [
+            'user' => $user,
+            'roleLabel' => $roleLabel,
+            'profileUpdateRoute' => $this->profileRoute($user->role),
+            'passwordUpdateRoute' => $routePrefix . '.profil.update-password',
+        ];
     }
 }

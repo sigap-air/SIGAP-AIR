@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Petugas;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use App\Http\Controllers\Controller;
 use App\Models\Assignment;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * PBI #24 — Profil & Status Petugas Teknis
@@ -100,6 +102,29 @@ class ProfilController extends Controller
         $user->save();
 
         return Redirect::route('petugas.profil.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update password petugas.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validateWithBag('updatePassword', [
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', Password::min(8), 'confirmed'],
+        ], [
+            'current_password.required' => 'Password saat ini wajib diisi.',
+            'current_password.current_password' => 'Password saat ini tidak sesuai.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password baru minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return Redirect::route('petugas.profil.edit')->with('status', 'password-updated');
     }
 
 }
