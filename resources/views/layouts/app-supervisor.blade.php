@@ -30,6 +30,9 @@
     </style>
 </head>
 <body class="bg-gray-50 font-body text-gray-900 antialiased">
+    @php
+        $profileRoute = route('supervisor.profil.edit');
+    @endphp
     <div x-data="{
         sidebarOpen: window.innerWidth >= 1024,
         showNotifications: false,
@@ -118,6 +121,7 @@
 
                             <!-- Profile Dropdown Menu -->
                             <div x-show="showProfileDropdown" @click.outside="showProfileDropdown = false" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+                                <a href="{{ $profileRoute }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">Edit Profil</a>
                                 <a href="{{ route('supervisor.profil.edit') }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100">Edit Profil</a>
                                 <form method="POST" action="{{ route('logout') }}" class="block" data-confirm="Yakin ingin logout dari akun ini?">
                                     @csrf

@@ -58,7 +58,7 @@ Route::middleware('auth')->group(function () {
         // PBI-08: Kelola Profil Masyarakat
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profil.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profil.update');
-        Route::put('/profil/password', [ProfileController::class, 'updatePassword'])->name('profil.update-password');
+        Route::put('/profil/password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('profil.update-password');
         Route::delete('/profil', [ProfileController::class, 'destroy'])->name('profil.destroy');
 
         // PBI-04 Pengajuan Pengaduan Digital
@@ -98,6 +98,7 @@ Route::middleware('auth')->group(function () {
         // PBI-24: Profil & Status Petugas
         Route::get('/profil', [\App\Http\Controllers\Petugas\ProfilController::class, 'edit'])->name('profil.edit');
         Route::patch('/profil', [\App\Http\Controllers\Petugas\ProfilController::class, 'update'])->name('profil.update');
+        Route::put('/profil/password', [\App\Http\Controllers\Petugas\ProfilController::class, 'updatePassword'])->name('profil.update-password');
     });
 
     // Role: Supervisor
@@ -108,6 +109,11 @@ Route::middleware('auth')->group(function () {
         // PBI-27: Kelola Profil Supervisor
         Route::get('/profil', [SupervisorProfilController::class, 'edit'])->name('profil.edit');
         Route::patch('/profil', [SupervisorProfilController::class, 'update'])->name('profil.update');
+
+        // PBI-08: Kelola Profil Supervisor
+        Route::get('/profil', [ProfileController::class, 'edit'])->name('profil.edit');
+        Route::patch('/profil', [ProfileController::class, 'update'])->name('profil.update');
+        Route::put('/profil/password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('profil.update-password');
 
         Route::get('/verifikasi', [VerifikasiController::class, 'index'])->name('verifikasi.index');
         Route::get('/verifikasi/{pengaduan}', [VerifikasiController::class, 'show'])->name('verifikasi.show');
@@ -142,6 +148,9 @@ Route::middleware('auth')->group(function () {
     // Role: Admin
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/profil', [ProfileController::class, 'edit'])->name('profil.edit');
+        Route::patch('/profil', [ProfileController::class, 'update'])->name('profil.update');
+        Route::put('/profil/password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('profil.update-password');
         Route::get('/dashboard/stats', [AdminDashboardController::class, 'stats'])->name('dashboard.stats');
         Route::get('/pengaduan', [DaftarPengaduanController::class, 'index'])->name('pengaduan.index');
         Route::get('/pengaduan/export-csv', [DaftarPengaduanController::class, 'exportCsv'])->name('pengaduan.export-csv');
