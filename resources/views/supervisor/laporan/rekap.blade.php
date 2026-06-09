@@ -1,17 +1,26 @@
 {{-- PBI-14 Laporan Rekap Pengaduan --}}
-<x-app-supervisor-layout>
+@php
+    $isAdmin = auth()->user()->isAdmin();
+    $layoutComponent = $isAdmin ? 'app-admin-layout' : 'app-supervisor-layout';
+    $indexRoute = $isAdmin ? 'admin.laporan.index' : 'supervisor.laporan.index';
+    $exportRoute = $isAdmin ? 'admin.laporan.export-pdf' : 'supervisor.laporan.export-pdf';
+    $dashboardRoute = $isAdmin ? 'admin.dashboard' : 'supervisor.dashboard';
+    $dashboardLabel = $isAdmin ? 'Kembali ke Dashboard Admin' : 'Kembali ke Dashboard Supervisor';
+@endphp
+
+<x-dynamic-component :component="$layoutComponent">
     <x-slot name="title">Laporan Rekap Pengaduan</x-slot>
 
     <div class="mb-4">
-        <a href="{{ route('supervisor.dashboard') }}" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#022448]">
+        <a href="{{ route($dashboardRoute) }}" class="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-[#022448]">
             <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white">←</span>
-            <span>Kembali ke Dashboard Supervisor</span>
+            <span>{{ $dashboardLabel }}</span>
         </a>
     </div>
 
     <div class="flex items-center justify-between mb-5">
         <h1 class="text-2xl font-bold text-gray-800">📄 Laporan Rekap Pengaduan</h1>
-        <a href="{{ route('supervisor.laporan.export-pdf', request()->all()) }}"
+        <a href="{{ route($exportRoute, request()->all()) }}"
            target="_blank"
            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
             🖨️ Export / Print PDF
@@ -46,14 +55,25 @@
                 @endforeach
             </select>
         </div>
+        <div>
+            <label class="block text-xs text-gray-600 mb-1">Status</label>
+            <select name="status" class="border rounded-lg px-3 py-2 text-sm">
+                <option value="">Semua Status</option>
+                @foreach ($data['statuses'] as $s)
+                <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
+                    {{ ucwords(str_replace('_', ' ', $s)) }}
+                </option>
+                @endforeach
+            </select>
+        </div>
         <div class="flex gap-2">
             <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700 transition">Filter</button>
-            <a href="{{ route('supervisor.laporan.index') }}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition">Reset</a>
+            <a href="{{ route($indexRoute) }}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition">Reset</a>
         </div>
     </form>
 
     {{-- Summary Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-5">
         <div class="bg-white rounded-xl shadow p-4 text-center">
             <div class="text-2xl font-black text-gray-800">{{ $data['total'] }}</div>
             <div class="text-xs text-gray-500 mt-1">Total Pengaduan</div>
@@ -65,10 +85,6 @@
         <div class="bg-white rounded-xl shadow p-4 text-center">
             <div class="text-2xl font-black text-red-700">{{ $data['total_overdue'] }}</div>
             <div class="text-xs text-gray-500 mt-1">Overdue</div>
-        </div>
-        <div class="bg-white rounded-xl shadow p-4 text-center">
-            <div class="text-2xl font-black text-blue-700">{{ $data['rata_waktu_jam'] ?? '—' }}</div>
-            <div class="text-xs text-gray-500 mt-1">Rata-rata Waktu (Jam)</div>
         </div>
     </div>
 
@@ -106,4 +122,4 @@
             </tbody>
         </table>
     </div>
-</x-app-supervisor-layout>
+</x-dynamic-component>

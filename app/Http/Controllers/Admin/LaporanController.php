@@ -1,10 +1,8 @@
 <?php
 /**
- * PBI-14 — Laporan Rekap Pengaduan Periodik
- * Controller menggunakan LaporanService sebagai sumber data.
- * Export PDF menggunakan blade print-page (preview + print dialog browser).
+ * PBI-14 — Laporan Rekap Pengaduan Periodik (Admin)
  */
-namespace App\Http\Controllers\Supervisor;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\LaporanService;
@@ -19,6 +17,7 @@ class LaporanController extends Controller
         $data = $this->laporanService->getRekap(
             $request->only(['dari', 'sampai', 'zona_id', 'kategori_id', 'status'])
         );
+
         return view('supervisor.laporan.rekap', compact('data'));
     }
 
