@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ZonaController;
 use App\Http\Controllers\Admin\DaftarPengaduanController;
 use App\Http\Controllers\Masyarakat\DashboardController as MasyarakatDashboardController;
@@ -99,7 +100,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/pengaduan/export-csv', [DaftarPengaduanController::class, 'exportCsv'])->name('pengaduan.export-csv');
         Route::get('/kinerja', [LaporanKinerjaController::class, 'index'])->name('kinerja.index');
         Route::get('/kinerja/export-excel', [LaporanKinerjaController::class, 'exportExcel'])->name('kinerja.export-excel');
-        // PBI-01,02,03,09,16,17 routes here
+        // PBI-16 — Manajemen User & Role
+        Route::get('users',                          [UserController::class, 'index'])->name('users.index');
+        Route::get('users/create',                   [UserController::class, 'create'])->name('users.create');
+        Route::post('users',                         [UserController::class, 'store'])->name('users.store');
+        Route::get('users/{user}/edit',              [UserController::class, 'edit'])->name('users.edit');
+        Route::put('users/{user}',                   [UserController::class, 'update'])->name('users.update');
+        Route::delete('users/{user}',                [UserController::class, 'destroy'])->name('users.destroy');
+        Route::post('users/{user}/reset-password',   [UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::post('users/{user}/toggle-active',    [UserController::class, 'toggleActive'])->name('users.toggle-active');
+
+        // PBI-01,02,03,09,17 routes here
         Route::resource('pelanggan', \App\Http\Controllers\Admin\PelangganController::class);
         Route::resource('kategori', \App\Http\Controllers\Admin\KategoriController::class)
             ->except(['show']);
