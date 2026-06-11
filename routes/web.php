@@ -23,6 +23,7 @@ use App\Http\Controllers\Supervisor\ProfilController as SupervisorProfilControll
 use App\Http\Controllers\Supervisor\VerifikasiController;
 use App\Http\Controllers\Supervisor\ZonaController as SupervisorZonaController;
 use App\Http\Controllers\Supervisor\ManajemenPetugasController;
+use App\Http\Controllers\Supervisor\BebanPenangananController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -132,6 +133,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/laporan/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export-pdf');
         Route::get('/kinerja', [KinerjaPetugasController::class, 'index'])->name('kinerja.index');
         Route::get('/kinerja/export-excel', [KinerjaPetugasController::class, 'exportExcel'])->name('kinerja.export-excel');
+
+        // PBI-36: Monitoring Beban Penanganan Pengaduan
+        Route::get('/beban-penanganan', [BebanPenangananController::class, 'index'])->name('beban-penanganan.index');
 
         // PBI-09: Monitor SLA & Alert Overdue
         Route::get('/monitor-sla', [MonitorSlaController::class, 'index'])->name('monitor-sla.index');
