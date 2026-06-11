@@ -11,6 +11,7 @@
         </div>
         @unless($readOnly)
             <a href="{{ route('admin.petugas.create') }}"
+               id="btn-tambah-petugas"
                class="inline-flex items-center gap-2 px-6 py-3 bg-navy-gradient text-white font-semibold rounded-xl shadow-lg shadow-[#022448]/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
                 <span class="material-symbols-outlined text-xl">person_add</span>
                 Tambah Petugas
@@ -88,12 +89,12 @@
     <form method="GET" action="{{ route($routePrefix . '.index') }}" class="flex flex-wrap gap-3 items-end">
         <div class="flex-1 min-w-[200px]">
             <label class="block text-xs font-semibold text-gray-600 mb-1">Cari Petugas</label>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Nama, email, atau NIP..."
+            <input type="text" name="search" id="input-search-petugas" value="{{ request('search') }}" placeholder="Nama, email, atau NIP..."
                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448]">
         </div>
         <div class="min-w-[160px]">
             <label class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
-            <select name="status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <select name="status" id="filter-status" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
                 <option value="">Semua Status</option>
                 <option value="tersedia"    {{ request('status') === 'tersedia'    ? 'selected' : '' }}>Tersedia</option>
                 <option value="sibuk"       {{ request('status') === 'sibuk'       ? 'selected' : '' }}>Sibuk</option>
@@ -102,14 +103,14 @@
         </div>
         <div class="min-w-[180px]">
             <label class="block text-xs font-semibold text-gray-600 mb-1">Zona</label>
-            <select name="zona_id" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <select name="zona_id" id="filter-zona" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
                 <option value="">Semua Zona</option>
                 @foreach($zonas as $zona)
                     <option value="{{ $zona->id }}" {{ request('zona_id') == $zona->id ? 'selected' : '' }}>{{ $zona->nama_zona }}</option>
                 @endforeach
             </select>
         </div>
-        <button type="submit" class="px-4 py-2 bg-[#022448] text-white text-sm font-semibold rounded-lg">Filter</button>
+        <button type="submit" id="btn-filter-petugas" class="px-4 py-2 bg-[#022448] text-white text-sm font-semibold rounded-lg">Filter</button>
         @if(request()->hasAny(['search','status','zona_id']))
             <a href="{{ route($routePrefix . '.index') }}" class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg">Reset</a>
         @endif
