@@ -40,13 +40,18 @@ class UserController extends Controller
         return view('admin.user.index', compact('users'));
     }
 
-    /**
-     * GET /admin/users/create
-     */
     public function create()
     {
         $zonas = ZonaWilayah::where('is_active', true)->orderBy('nama_zona')->get();
-        return view('admin.user.create', compact('zonas'));
+        $year = date('Y');
+        $counters = [
+            'admin'      => User::where('role', 'admin')->whereYear('created_at', $year)->count() + 1,
+            'supervisor' => User::where('role', 'supervisor')->whereYear('created_at', $year)->count() + 1,
+            'petugas'    => User::where('role', 'petugas')->whereYear('created_at', $year)->count() + 1,
+            'masyarakat' => User::where('role', 'masyarakat')->whereYear('created_at', $year)->count() + 1,
+        ];
+
+        return view('admin.user.create', compact('zonas', 'counters', 'year'));
     }
 
     /**
@@ -55,13 +60,33 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         DB::transaction(function () use ($request) {
+            $fotoPath = null;
+            if ($request->hasFile('foto_profil')) {
+                $fotoPath = $request->file('foto_profil')->store('profile_photos', 'public');
+            }
+
+            // Auto-generate NIP berdasarkan role
+            $prefix = match($request->role) {
+                'admin' => 'ADM',
+                'supervisor' => 'SPV',
+                'petugas' => 'PEG',
+                default => 'MSY',
+            };
+            $year = date('Y');
+            $count = User::where('role', $request->role)
+                         ->whereYear('created_at', $year)
+                         ->count() + 1;
+            $nip = sprintf("%s-%s-%04d", $prefix, $year, $count);
+
             $user = User::create([
+                'nip'        => $nip,
                 'name'       => $request->nama,
                 'email'      => $request->email,
                 'username'   => $request->username,
                 'password'   => Hash::make($request->password),
                 'role'       => $request->role,
                 'no_telepon' => $request->no_telepon,
+                'foto_profil'=> $fotoPath,
                 'is_active'  => true,
             ]);
 
@@ -70,6 +95,7 @@ class UserController extends Controller
                 Petugas::create([
                     'user_id'         => $user->id,
                     'zona_id'         => $request->zona_id,
+                    'nip'             => $user->nip,
                     'status_tersedia' => 'tersedia',
                 ]);
             }
@@ -107,6 +133,13 @@ class UserController extends Controller
 
             if ($request->filled('password')) {
                 $data['password'] = Hash::make($request->password);
+            }
+
+            if ($request->hasFile('foto_profil')) {
+                if ($user->foto_profil) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->foto_profil);
+                }
+                $data['foto_profil'] = $request->file('foto_profil')->store('profile_photos', 'public');
             }
 
             $user->update($data);

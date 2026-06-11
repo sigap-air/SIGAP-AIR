@@ -116,8 +116,8 @@
                     {{-- Pengguna: Avatar + Nama + Email --}}
                     <td class="px-6 py-3">
                         <div class="flex items-center gap-3">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=022448&color=fff&size=64"
-                                 alt="{{ $user->name }}" class="w-9 h-9 rounded-full flex-shrink-0">
+                            <img src="{{ $user->foto_profil ? asset('storage/' . $user->foto_profil) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=022448&color=fff&size=64' }}"
+                                 alt="{{ $user->name }}" class="w-9 h-9 rounded-full flex-shrink-0 object-cover ring-1 ring-gray-100">
                             <div>
                                 <p class="font-semibold text-gray-900">{{ $user->name }}</p>
                                 <p class="text-xs text-gray-500">{{ $user->email }}</p>

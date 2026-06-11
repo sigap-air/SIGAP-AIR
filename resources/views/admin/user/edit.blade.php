@@ -1,5 +1,15 @@
 <x-app-admin-layout>
 
+    @if ($errors->any())
+        <div x-data="{show:true}" x-show="show" x-cloak x-init="setTimeout(() => show = false, 4000)" class="fixed top-4 right-4 bg-amber-100 border border-amber-400 text-amber-800 px-4 py-2 rounded shadow-md z-50">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
 {{-- Breadcrumb --}}
 <div class="mb-5 flex items-center gap-2 text-sm text-gray-500">
     <a href="{{ route('admin.users.index') }}" class="hover:text-[#022448] transition-colors">Manajemen User</a>
@@ -12,8 +22,8 @@
 
         {{-- Card Header --}}
         <div class="bg-[#022448] px-6 py-5 flex items-center gap-4">
-            <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=1e3a5f&color=fff&size=80"
-                 alt="{{ $user->name }}" class="w-12 h-12 rounded-full ring-2 ring-white/20">
+            <img src="{{ $user->foto_profil ? asset('storage/' . $user->foto_profil) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=1e3a5f&color=fff&size=80' }}"
+                 alt="{{ $user->name }}" class="w-12 h-12 rounded-full ring-2 ring-white/20 object-cover">
             <div>
                 <h1 class="text-lg font-bold text-white font-headline">Edit User</h1>
                 <p class="text-xs text-blue-200">{{ $user->email }}</p>
@@ -21,9 +31,28 @@
         </div>
 
         {{-- Form --}}
-        <form method="POST" action="{{ route('admin.users.update', $user) }}" x-data="userEditForm()" class="p-6 space-y-5">
+        <form method="POST" action="{{ route('admin.users.update', $user) }}" x-data="userEditForm()" class="p-6 space-y-5" enctype="multipart/form-data">
             @csrf
             @method('PUT')
+
+            {{-- Foto Profil --}}
+            <div class="flex flex-col items-center mb-6">
+                <div class="relative w-28 h-28 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 overflow-hidden mb-3 flex items-center justify-center">
+                    <template x-if="photoPreview">
+                        <img :src="photoPreview" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!photoPreview">
+                        <img src="{{ $user->foto_profil ? asset('storage/' . $user->foto_profil) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=f9fafb&color=9ca3af&size=112' }}" class="w-full h-full object-cover">
+                    </template>
+                </div>
+                <label for="foto_profil" class="cursor-pointer bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">edit</span>
+                    Ubah Foto Profil
+                </label>
+                <input type="file" id="foto_profil" name="foto_profil" class="hidden" accept="image/png, image/jpeg, image/jpg, image/webp" @change="updatePreview($event)">
+                <p class="text-xs text-gray-400 mt-2">Format: JPG/PNG/WebP, Maks 10MB (opsional)</p>
+                @error('foto_profil') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
 
             {{-- Nama & Email --}}
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -43,6 +72,7 @@
                         Email <span class="text-red-500">*</span>
                     </label>
                     <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}"
+                           placeholder="contoh@pdam.go.id" pattern=".*@pdam\.go\.id$" title="Email wajib menggunakan domain @pdam.go.id"
                            class="w-full border {{ $errors->has('email') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition"
                            required>
                     @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -53,7 +83,7 @@
                         Username <span class="text-red-500">*</span>
                     </label>
                     <input type="text" id="username" name="username" value="{{ old('username', $user->username) }}"
-                           placeholder="tanpa spasi"
+                           placeholder="tanpa_spasi" pattern="^\S+$" title="Username tidak boleh menggunakan spasi"
                            class="w-full border {{ $errors->has('username') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm font-mono focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition"
                            required>
                     @error('username') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -166,6 +196,16 @@ function userEditForm() {
         role: '{{ old('role', $user->role) }}',
         showPassword: false,
         showPasswordConfirm: false,
+        photoPreview: null,
+
+        updatePreview(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.photoPreview = URL.createObjectURL(file);
+            } else {
+                this.photoPreview = null;
+            }
+        }
     }
 }
 </script>

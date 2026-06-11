@@ -1,5 +1,15 @@
 <x-app-admin-layout>
 
+    @if ($errors->any())
+        <div x-data="{show:true}" x-show="show" x-cloak x-init="setTimeout(() => show = false, 4000)" class="fixed top-4 right-4 bg-amber-100 border border-amber-400 text-amber-800 px-4 py-2 rounded shadow-md z-50">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
 {{-- Breadcrumb --}}
 <div class="mb-5 flex items-center gap-2 text-sm text-gray-500">
     <a href="{{ route('admin.users.index') }}" class="hover:text-[#022448] transition-colors">Manajemen User</a>
@@ -22,8 +32,27 @@
         </div>
 
         {{-- Form --}}
-        <form method="POST" action="{{ route('admin.users.store') }}" x-data="userForm()" class="p-6 space-y-5">
+        <form method="POST" action="{{ route('admin.users.store') }}" x-data="userForm()" class="p-6 space-y-5" enctype="multipart/form-data" novalidate>
             @csrf
+
+            {{-- Foto Profil --}}
+            <div class="flex flex-col items-center mb-6">
+                <div class="relative w-28 h-28 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 overflow-hidden mb-3 flex items-center justify-center">
+                    <template x-if="photoPreview">
+                        <img :src="photoPreview" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!photoPreview">
+                        <span class="material-symbols-outlined text-4xl text-gray-400">add_a_photo</span>
+                    </template>
+                </div>
+                <label for="foto_profil" class="cursor-pointer bg-[#022448] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-[#1e3a5f] transition-colors shadow-sm flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm">upload</span>
+                    Pilih Foto Profil
+                </label>
+                <input type="file" id="foto_profil" name="foto_profil" class="hidden" accept="image/png, image/jpeg, image/jpg, image/webp" @change="updatePreview($event)" required>
+                <p class="text-xs text-gray-400 mt-2">Format: JPG/PNG/WebP, Maks 10MB</p>
+                @error('foto_profil') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            </div>
 
             {{-- Nama & Email --}}
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -43,7 +72,7 @@
                         Email <span class="text-red-500">*</span>
                     </label>
                     <input type="email" id="email" name="email" value="{{ old('email') }}"
-                           placeholder="contoh@email.com"
+                           placeholder="contoh@pdam.go.id" pattern=".*@pdam\.go\.id$" title="Email wajib menggunakan domain @pdam.go.id"
                            class="w-full border {{ $errors->has('email') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition"
                            required>
                     @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -54,7 +83,7 @@
                         Username <span class="text-red-500">*</span>
                     </label>
                     <input type="text" id="username" name="username" value="{{ old('username') }}"
-                           placeholder="tanpa spasi"
+                           placeholder="tanpa_spasi" pattern="^\S+$" title="Username tidak boleh menggunakan spasi"
                            class="w-full border {{ $errors->has('username') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm font-mono focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition"
                            required>
                     @error('username') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
@@ -86,23 +115,35 @@
                 </div>
             </div>
 
-            {{-- Zona (hanya muncul jika role = petugas) --}}
-            <div x-show="role === 'petugas'" x-transition>
-                <label for="zona_id" class="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Zona Wilayah <span class="text-red-500">*</span>
-                    <span class="text-gray-400 font-normal text-xs ml-1">(wajib untuk petugas)</span>
-                </label>
-                <select id="zona_id" name="zona_id"
-                        class="w-full border {{ $errors->has('zona_id') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition">
-                    <option value="">-- Pilih Zona --</option>
-                    @foreach ($zonas as $zona)
-                        <option value="{{ $zona->id }}" {{ old('zona_id') == $zona->id ? 'selected' : '' }}>
-                            {{ $zona->nama_zona }}
-                            @if ($zona->kode_zona) ({{ $zona->kode_zona }}) @endif
-                        </option>
-                    @endforeach
-                </select>
-                @error('zona_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {{-- NIP Info --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                        NIP <span class="text-xs text-emerald-600 ml-1 font-normal bg-emerald-50 px-2 py-0.5 rounded-full">✨ Auto-Generate</span>
+                    </label>
+                    <input type="text" :value="nipPreview" disabled
+                           class="w-full border border-gray-300 bg-gray-100 text-gray-500 rounded-xl px-4 py-2.5 text-sm font-mono font-medium tracking-wide">
+                    <p class="text-xs text-gray-400 mt-1.5" x-text="'Format yang akan disimpan: ' + (role === 'admin' ? 'ADM' : (role === 'supervisor' ? 'SPV' : (role === 'petugas' ? 'PEG' : (role === 'masyarakat' ? 'MSY' : 'ROLE')))) + '-{{ $year }}-XXXX'"></p>
+                </div>
+
+                {{-- Zona (hanya muncul jika role = petugas) --}}
+                <div x-show="role === 'petugas'" x-transition style="display: none;">
+                    <label for="zona_id" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                        Zona Wilayah <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal text-xs ml-1">(wajib untuk petugas)</span>
+                    </label>
+                    <select id="zona_id" name="zona_id"
+                            class="w-full border {{ $errors->has('zona_id') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition">
+                        <option value="">-- Pilih Zona --</option>
+                        @foreach ($zonas as $zona)
+                            <option value="{{ $zona->id }}" {{ old('zona_id') == $zona->id ? 'selected' : '' }}>
+                                {{ $zona->nama_zona }}
+                                @if ($zona->kode_zona) ({{ $zona->kode_zona }}) @endif
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('zona_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             {{-- Password --}}
@@ -163,6 +204,31 @@ function userForm() {
         role: '{{ old('role') }}',
         showPassword: false,
         showPasswordConfirm: false,
+        photoPreview: null,
+        counters: @json($counters),
+        year: '{{ $year }}',
+        
+        get nipPreview() {
+            if (!this.role) return 'Pilih role terlebih dahulu';
+            let prefix = {
+                'admin': 'ADM',
+                'supervisor': 'SPV',
+                'petugas': 'PEG',
+                'masyarakat': 'MSY'
+            }[this.role] || 'ROLE';
+            let count = this.counters[this.role] || 1;
+            let countStr = count.toString().padStart(4, '0');
+            return `${prefix}-${this.year}-${countStr}`;
+        },
+
+        updatePreview(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.photoPreview = URL.createObjectURL(file);
+            } else {
+                this.photoPreview = null;
+            }
+        }
     }
 }
 </script>
