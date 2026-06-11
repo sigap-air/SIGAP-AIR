@@ -40,9 +40,13 @@ class UserController extends Controller
         return view('admin.user.index', compact('users'));
     }
 
+    /**
+     * GET /admin/users/create
+     */
     public function create()
     {
         $zonas = ZonaWilayah::where('is_active', true)->orderBy('nama_zona')->get();
+        return view('admin.user.create', compact('zonas'));
         $year = date('Y');
         $counters = [
             'admin'      => User::where('role', 'admin')->whereYear('created_at', $year)->count() + 1,
@@ -60,6 +64,7 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         DB::transaction(function () use ($request) {
+            $user = User::create([
             $fotoPath = null;
             if ($request->hasFile('foto_profil')) {
                 $fotoPath = $request->file('foto_profil')->store('profile_photos', 'public');

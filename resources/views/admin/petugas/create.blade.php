@@ -54,7 +54,7 @@
                         <input type="file" name="foto_profil" id="foto_profil"
                                accept="image/jpg,image/jpeg,image/png,image/webp"
                                class="hidden"
-                               onchange="previewFoto(this)">
+                               onchange="previewFoto(this)" required>
                         <p class="text-xs text-gray-400 mt-2">Format: JPG, PNG, atau WebP. Maks. 10 MB.</p>
                         @error('foto_profil')
                             <p class="text-red-500 text-xs mt-1 flex items-center gap-1">
@@ -102,6 +102,9 @@
                         <input type="email" name="email" id="email"
                                value="{{ old('email') }}"
                                placeholder="nama@pdam.go.id"
+                               pattern=".*@pdam\.go\.id$"
+                               title="Email harus menggunakan domain @pdam.go.id"
+                               required
                                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('email') ? 'border-red-400 bg-red-50' : '' }}">
                         <p class="text-xs text-gray-400 mt-1">Harus menggunakan domain <strong>@pdam.go.id</strong></p>
                         @error('email')
@@ -134,6 +137,7 @@
                                value="{{ old('no_telepon') }}"
                                placeholder="08xxxxxxxxxx"
                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                               required
                                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('no_telepon') ? 'border-red-400 bg-red-50' : '' }}">
                         @error('no_telepon')
                             <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
@@ -201,9 +205,9 @@
                                 Auto-Generate
                             </span>
                         </label>
-                        <input type="text" name="nip" id="nip" value="{{ old('nip', $autoNip) }}"
-                               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('nip') ? 'border-red-400 bg-red-50' : '' }}">
-                        <p class="text-xs text-gray-400 mt-1">NIP dibuat otomatis oleh sistem jika kosong.</p>
+                        <input type="text" value="{{ old('nip', $autoNip) }}" disabled
+                               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono bg-gray-100 cursor-not-allowed text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('nip') ? 'border-red-400 bg-red-50' : '' }}">
+                        <p class="text-xs text-gray-400 mt-1">NIP dibuat otomatis oleh sistem.</p>
                     </div>
 
                     {{-- Status Tersedia --}}

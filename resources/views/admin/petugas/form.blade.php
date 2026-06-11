@@ -25,7 +25,8 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
                     <input type="email" name="email" value="{{ old('email', $petugas?->user->email) }}"
-                           class="w-full border rounded-lg px-3 py-2" required>
+                           class="w-full border rounded-lg px-3 py-2" 
+                           pattern=".*@pdam\.go\.id$" title="Email harus menggunakan domain @pdam.go.id" required>
                     @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
@@ -35,9 +36,10 @@
                     @error('username') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon <span class="text-red-500">*</span></label>
                     <input type="text" name="no_telepon" value="{{ old('no_telepon', $petugas?->user->no_telepon) }}"
-                           class="w-full border rounded-lg px-3 py-2">
+                           class="w-full border rounded-lg px-3 py-2" required>
+                    @error('no_telepon') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">NIP (No. Pegawai) <span class="text-red-500">*</span></label>
@@ -47,17 +49,19 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">NIP <span class="text-xs text-gray-400 font-normal">(Auto Generated)</span></label>
                     @if(isset($petugas))
                         <div class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed">{{ $petugas->nip ?? '—' }}</div>
-                        <input type="hidden" name="nip" value="{{ $petugas->nip }}">
                     @else
-                        <input type="text" name="nip" value="{{ old('nip', $autoNip ?? '') }}"
-                               class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed" readonly tabindex="-1">
+                        <input type="text" value="{{ $autoNip ?? '' }}"
+                               class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed" disabled>
                     @endif
                     @error('nip') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div class="col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto Profil</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Foto Profil {!! !isset($petugas) ? '<span class="text-red-500">*</span>' : '' !!} 
+                        <span class="text-xs text-gray-500 font-normal">(Maks: 10MB)</span>
+                    </label>
                     <input type="file" name="foto_profil" accept="image/png, image/jpeg, image/jpg, image/webp"
-                           class="w-full border rounded-lg px-3 py-2">
+                           class="w-full border rounded-lg px-3 py-2" {{ !isset($petugas) ? 'required' : '' }}>
                     @error('foto_profil') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                     @if(isset($petugas) && $petugas->user?->foto_profil)
                         <div class="mt-2 flex items-center gap-3">

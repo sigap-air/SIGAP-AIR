@@ -22,6 +22,8 @@
 
         {{-- Card Header --}}
         <div class="bg-[#022448] px-6 py-5 flex items-center gap-4">
+            <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=1e3a5f&color=fff&size=80"
+                 alt="{{ $user->name }}" class="w-12 h-12 rounded-full ring-2 ring-white/20">
             <img src="{{ $user->foto_profil ? asset('storage/' . $user->foto_profil) : 'https://ui-avatars.com/api/?name='.urlencode($user->name).'&background=1e3a5f&color=fff&size=80' }}"
                  alt="{{ $user->name }}" class="w-12 h-12 rounded-full ring-2 ring-white/20 object-cover">
             <div>
@@ -31,6 +33,10 @@
         </div>
 
         {{-- Form --}}
+        <form method="POST" action="{{ route('admin.users.update', $user) }}" x-data="userEditForm()" class="p-6 space-y-5">
+            @csrf
+            @method('PUT')
+
         <form method="POST" action="{{ route('admin.users.update', $user) }}" x-data="userEditForm()" class="p-6 space-y-5" enctype="multipart/form-data">
             @csrf
             @method('PUT')
@@ -83,6 +89,7 @@
                         Username <span class="text-red-500">*</span>
                     </label>
                     <input type="text" id="username" name="username" value="{{ old('username', $user->username) }}"
+                           placeholder="tanpa spasi"
                            placeholder="tanpa_spasi" pattern="^\S+$" title="Username tidak boleh menggunakan spasi"
                            class="w-full border {{ $errors->has('username') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm font-mono focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition"
                            required>

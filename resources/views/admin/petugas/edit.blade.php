@@ -113,6 +113,9 @@
                         <input type="email" name="email" id="email"
                                value="{{ old('email', $petugas->user?->email) }}"
                                placeholder="nama@pdam.go.id"
+                               pattern=".*@pdam\.go\.id$"
+                               title="Email harus menggunakan domain @pdam.go.id"
+                               required
                                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('email') ? 'border-red-400 bg-red-50' : '' }}">
                         <p class="text-xs text-gray-400 mt-1">Harus menggunakan domain <strong>@pdam.go.id</strong></p>
                         @error('email')
@@ -144,6 +147,7 @@
                                value="{{ old('no_telepon', $petugas->user?->no_telepon) }}"
                                placeholder="08xxxxxxxxxx"
                                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                               required
                                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('no_telepon') ? 'border-red-400 bg-red-50' : '' }}">
                         @error('no_telepon')
                             <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
@@ -211,7 +215,6 @@
                         <div class="w-full border border-gray-200 bg-gray-100 text-gray-500 rounded-xl px-4 py-2.5 text-sm font-mono cursor-not-allowed">
                             {{ $petugas->nip ?? '—' }}
                         </div>
-                        <input type="hidden" name="nip" value="{{ $petugas->nip }}">
                     </div>
 
                     {{-- Status Tersedia --}}

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\PetugasController;
+use App\Http\Controllers\Admin\PetugasController as AdminPetugasController;
 use App\Http\Controllers\Admin\SlaController as AdminSlaController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ZonaController;
@@ -174,6 +175,9 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
+        Route::get('/pengaduan', [DaftarPengaduanController::class, 'index'])->name('pengaduan.index');
+
+        // ✅ SLA (punyamu)
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profil.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profil.update');
         Route::put('/profil/password', [\App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('profil.update-password');
@@ -202,19 +206,22 @@ Route::middleware('auth')->group(function () {
         Route::get('/sla', [AdminSlaController::class, 'index'])->name('sla.index');
         Route::get('/sla/{sla}/edit', [AdminSlaController::class, 'edit'])->name('sla.edit');
         Route::patch('/sla/{sla}', [AdminSlaController::class, 'update'])->name('sla.update');
-        Route::resource('pelanggan', \App\Http\Controllers\Admin\PelangganController::class);
-        Route::resource('kategori', \App\Http\Controllers\Admin\KategoriController::class)
-            ->except(['show']);
 
-        // PBI-16 — Kelola Data Petugas Teknis & PBI-17 — Manajemen Petugas Teknis
-        Route::resource('petugas', AdminPetugasController::class)->parameters(['petugas' => 'petugas']);
-        // Hapus permanen petugas (hard delete)
-        Route::delete('petugas/{petugas}/hapus-permanen', [AdminPetugasController::class, 'hapusPermanen'])->name('petugas.hapus-permanen');
-        // PBI-16 / PBI-17 — Kelola & Manajemen Petugas Teknis
-        Route::resource('petugas', PetugasController::class)->parameters(['petugas' => 'petugas']);
+        // ✅ USER ROLE (temenmu)
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::get('users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('users', [UserController::class, 'store'])->name('users.store');
+        Route::get('users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        // ✅ PETUGAS (FIX duplicate)
+        Route::resource('petugas', AdminPetugasController::class);
         Route::patch('petugas/{petugas}/status', [PetugasController::class, 'updateStatus'])->name('petugas.update-status');
         Route::delete('petugas/{petugas}/hapus-permanen', [PetugasController::class, 'hapusPermanen'])->name('petugas.hapus-permanen');
 
+        // Zona
+        Route::resource('zona', ZonaController::class);
         // PBI-03 — Zona Wilayah & Pemetaan Petugas
         Route::get('zona',                              [ZonaController::class, 'index'])->name('zona.index');
         Route::get('zona/create',                       [ZonaController::class, 'create'])->name('zona.create');
@@ -234,8 +241,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['role:admin,supervisor'])->group(function () {
         //
     });
-});
 
+});
 require __DIR__.'/auth.php';
 require __DIR__.'/auth.php';
 

@@ -32,6 +32,9 @@
         </div>
 
         {{-- Form --}}
+        <form method="POST" action="{{ route('admin.users.store') }}" x-data="userForm()" class="p-6 space-y-5">
+            @csrf
+
         <form method="POST" action="{{ route('admin.users.store') }}" x-data="userForm()" class="p-6 space-y-5" enctype="multipart/form-data" novalidate>
             @csrf
 
@@ -72,6 +75,7 @@
                         Email <span class="text-red-500">*</span>
                     </label>
                     <input type="email" id="email" name="email" value="{{ old('email') }}"
+                           placeholder="contoh@email.com"
                            placeholder="contoh@pdam.go.id" pattern=".*@pdam\.go\.id$" title="Email wajib menggunakan domain @pdam.go.id"
                            class="w-full border {{ $errors->has('email') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition"
                            required>
@@ -83,6 +87,7 @@
                         Username <span class="text-red-500">*</span>
                     </label>
                     <input type="text" id="username" name="username" value="{{ old('username') }}"
+                           placeholder="tanpa spasi"
                            placeholder="tanpa_spasi" pattern="^\S+$" title="Username tidak boleh menggunakan spasi"
                            class="w-full border {{ $errors->has('username') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm font-mono focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition"
                            required>
@@ -115,6 +120,23 @@
                 </div>
             </div>
 
+            {{-- Zona (hanya muncul jika role = petugas) --}}
+            <div x-show="role === 'petugas'" x-transition>
+                <label for="zona_id" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Zona Wilayah <span class="text-red-500">*</span>
+                    <span class="text-gray-400 font-normal text-xs ml-1">(wajib untuk petugas)</span>
+                </label>
+                <select id="zona_id" name="zona_id"
+                        class="w-full border {{ $errors->has('zona_id') ? 'border-red-400 bg-red-50' : 'border-gray-300' }} rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#022448]/30 focus:border-[#022448] outline-none transition">
+                    <option value="">-- Pilih Zona --</option>
+                    @foreach ($zonas as $zona)
+                        <option value="{{ $zona->id }}" {{ old('zona_id') == $zona->id ? 'selected' : '' }}>
+                            {{ $zona->nama_zona }}
+                            @if ($zona->kode_zona) ({{ $zona->kode_zona }}) @endif
+                        </option>
+                    @endforeach
+                </select>
+                @error('zona_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {{-- NIP Info --}}
                 <div>
