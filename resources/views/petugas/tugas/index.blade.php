@@ -84,14 +84,10 @@
                     </a>
                 </div>
 
-                {{-- Instruksi Supervisor --}}
                 @if ($tugas->instruksi)
-                <div class="mt-3 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2.5 flex items-start gap-2">
-                    <span class="material-symbols-outlined text-amber-600 text-lg mt-0.5">description</span>
-                    <div>
-                        <p class="text-xs font-semibold text-amber-700">Instruksi Supervisor</p>
-                        <p class="text-xs text-amber-800 mt-0.5">{{ $tugas->instruksi }}</p>
-                    </div>
+                <div class="mt-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-2.5">
+                    <p class="text-xs font-semibold text-amber-700">Instruksi Perbaikan Supervisor</p>
+                    <p class="mt-0.5 line-clamp-2 text-xs text-amber-800">{{ $tugas->instruksi }}</p>
                 </div>
                 @endif
             </div>

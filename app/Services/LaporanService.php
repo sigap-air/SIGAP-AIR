@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\{Pengaduan, Assignment, Petugas, Zona, Kategori, Rating};
+use App\Services\PengaduanFilterService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
@@ -23,7 +24,13 @@ class LaporanService
             ->when(!empty($filter['sampai']), fn($q) => $q->where($tanggalKolom, '<=', Carbon::parse($filter['sampai'])->endOfDay()))
             ->when(!empty($filter['zona_id']), fn($q) => $q->where('zona_id', $filter['zona_id']))
             ->when(!empty($filter['kategori_id']), fn($q) => $q->where('kategori_id', $filter['kategori_id']))
-            ->when(!empty($filter['status']), fn($q) => $q->where('status', $filter['status']));
+            ->when(!empty($filter['status']), function ($q) use ($filter) {
+                if ($filter['status'] === 'diproses') {
+                    $q->whereIn('status', ['disetujui', 'ditugaskan', 'diproses', 'sedang_diproses']);
+                } else {
+                    $q->where('status', $filter['status']);
+                }
+            });
 
         $pengaduans = $query->latest()->get();
 
@@ -48,7 +55,29 @@ class LaporanService
             'filter'         => $filter,
             'zonas'          => Zona::where('is_active', true)->get(),
             'kategoris'      => Kategori::where('is_active', true)->get(),
+            'statuses'       => app(PengaduanFilterService::class)->statusOptions(),
         ];
+    }
+
+    /**
+     * Nama file export PDF: laporan_rekap_[periode]_[tanggal_export].pdf
+     */
+    public function buildRekapExportFilename(array $filter): string
+    {
+        $periode = 'semua';
+
+        if (! empty($filter['dari']) && ! empty($filter['sampai'])) {
+            $periode = Carbon::parse($filter['dari'])->format('Ymd')
+                . '-' . Carbon::parse($filter['sampai'])->format('Ymd');
+        } elseif (! empty($filter['dari'])) {
+            $periode = Carbon::parse($filter['dari'])->format('Ymd') . '-sekarang';
+        } elseif (! empty($filter['sampai'])) {
+            $periode = 'awal-' . Carbon::parse($filter['sampai'])->format('Ymd');
+        }
+
+        $tanggalExport = now()->format('Ymd');
+
+        return "laporan_rekap_{$periode}_{$tanggalExport}.pdf";
     }
 
     /**
@@ -57,8 +86,8 @@ class LaporanService
     public function getKinerja(array $filter = []): array
     {
         $query = Petugas::with(['user', 'assignments.pengaduan.sla', 'assignments.pengaduan.rating'])
-            ->when(!empty($filter['zona_id']), fn($q) => $q->whereHas('zonas', fn($z) => $z->where('zonas.id', $filter['zona_id'])))
-            ->when(!empty($filter['status']), fn($q) => $q->where('status_ketersediaan', $filter['status']));
+            ->when(!empty($filter['zona_id']), fn($q) => $q->where('zona_id', $filter['zona_id']))
+->when(!empty($filter['status']), fn($q) => $q->where('status_tersedia', $filter['status']));
 
         $petugas = $query->get()->map(function ($p) use ($filter) {
             $assignments = $p->assignments

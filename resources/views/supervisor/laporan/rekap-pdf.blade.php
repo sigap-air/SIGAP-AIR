@@ -2,7 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Laporan Rekap SIGAP-AIR</title>
+    @php
+        $titleName = preg_replace('/\.pdf$/i', '', $filename ?? 'laporan_rekap');
+    @endphp
+    <title>{{ $titleName }}</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 12px; color: #333; }
         h1 { font-size: 18px; text-align: center; margin-bottom: 4px; }
@@ -34,7 +37,6 @@ Dicetak pada: {{ now()->translatedFormat('d F Y, H:i') }} WIB</p>
     <div class="card"><div class="val">{{ $data['total'] }}</div><div class="lbl">Total</div></div>
     <div class="card"><div class="val">{{ $data['per_status']['selesai'] ?? 0 }}</div><div class="lbl">Selesai</div></div>
     <div class="card"><div class="val">{{ $data['total_overdue'] }}</div><div class="lbl">Overdue</div></div>
-    <div class="card"><div class="val">{{ $data['rata_waktu_jam'] ?? '—' }}</div><div class="lbl">Rata-rata Jam</div></div>
 </div>
 
 <table>

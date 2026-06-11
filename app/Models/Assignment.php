@@ -20,7 +20,7 @@ class Assignment extends Model
         'pengaduan_id',
         'petugas_id',
         'supervisor_id',
-        'instruksi',
+        'instruksi', // catatan / instruksi perbaikan dari supervisor sebelum assignment
         'jadwal_penanganan',
         'status_assignment', // ditugaskan | diproses | selesai
         'catatan_penanganan',

@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * Filter Dashboard — Filter untuk Supervisor dan Admin
+ * TANGGUNG JAWAB: Imanuel Karmelio V. Liuw (PBI 13)
+ */
 namespace App\Services;
 
 use App\Models\{Kategori, Pengaduan, Petugas, Zona};
@@ -53,7 +56,7 @@ class PengaduanFilterService
 
         if ($request->filled('status')) {
             if ($request->status === 'diproses') {
-                $query->whereIn('status', ['diproses', 'sedang_diproses']);
+                $query->whereIn('status', ['disetujui', 'ditugaskan', 'diproses', 'sedang_diproses']);
             } else {
                 $query->where('status', $request->status);
             }

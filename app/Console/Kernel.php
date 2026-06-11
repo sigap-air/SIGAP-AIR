@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // PBI-09: Cek SLA overdue setiap 15 menit
+        $schedule->command('sla:check-overdue')->everyFifteenMinutes();
     }
 
     /**

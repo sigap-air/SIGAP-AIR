@@ -1,6 +1,19 @@
 {{-- PBI-07 Detail Tugas + Update Status — styling identik admin --}}
 <x-app-petugas-layout>
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <style>
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            z-index: 0;
+        }
+    </style>
+@endpush
+
 {{-- Breadcrumb --}}
 <div class="mb-6">
     <a href="{{ route('petugas.tugas.index') }}" class="inline-flex items-center gap-1 text-sm text-[#022448] hover:text-[#1e3a5f] font-medium transition-colors">
@@ -96,6 +109,25 @@
             </dl>
         </div>
 
+        {{-- Peta Lokasi --}}
+        @if ($tugas->pengaduan->latitude && $tugas->pengaduan->longitude)
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
+            <h2 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-600">pin_drop</span>
+                Titik Peta Lokasi
+            </h2>
+            <div id="map"></div>
+            <div class="mt-3 flex items-center justify-between text-sm">
+                <span class="text-gray-500">
+                    Kordinat: <span class="font-mono font-medium text-gray-700">{{ $tugas->pengaduan->latitude }}, {{ $tugas->pengaduan->longitude }}</span>
+                </span>
+                <a href="https://www.google.com/maps/dir/?api=1&destination={{ $tugas->pengaduan->latitude }},{{ $tugas->pengaduan->longitude }}" target="_blank" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium">
+                    <span class="material-symbols-outlined text-sm">directions</span> Buka Google Maps
+                </a>
+            </div>
+        </div>
+        @endif
+
         {{-- Foto Bukti Pelapor --}}
         @if ($tugas->pengaduan->foto_bukti)
         <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
@@ -123,6 +155,84 @@
             </a>
         </div>
         @endif
+
+        {{-- Timeline Riwayat Status --}}
+        @if ($tugas->pengaduan->statusLogs->isNotEmpty())
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6" x-data="{ expanded: false }">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-semibold text-gray-800 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#022448]">timeline</span>
+                    Riwayat Status Pengaduan
+                </h2>
+                @if ($tugas->pengaduan->statusLogs->count() > 4)
+                <button @click="expanded = !expanded" class="text-xs text-[#022448] hover:text-[#1e3a5f] font-medium flex items-center gap-1 transition-colors">
+                    <span x-text="expanded ? 'Sembunyikan' : 'Tampilkan Semua'"></span>
+                    <span class="material-symbols-outlined text-sm transition-transform" :class="expanded ? 'rotate-180' : ''">expand_more</span>
+                </button>
+                @endif
+            </div>
+
+            <div class="relative">
+                {{-- Vertical line --}}
+                <div class="absolute left-[17px] top-2 bottom-2 w-0.5 bg-gray-200"></div>
+
+                <div class="space-y-0">
+                    @foreach ($tugas->pengaduan->statusLogs as $index => $log)
+                    <div class="{{ $index >= 4 ? 'overflow-hidden transition-all duration-300' : '' }}"
+                         {!! $index >= 4 ? 'x-show="expanded" x-transition.opacity.duration.300ms' : '' !!}>
+                        <div class="relative flex gap-3 pb-5 group">
+                            {{-- Icon dot --}}
+                            <div class="relative z-10 flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center {{ $log->color_class }} ring-4 ring-white transition-transform group-hover:scale-110">
+                                <span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">{{ $log->icon }}</span>
+                            </div>
+
+                            {{-- Content --}}
+                            <div class="flex-1 min-w-0 pt-0.5">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">{{ $log->label_status_baru }}</p>
+                                        <p class="text-xs text-gray-500 mt-0.5">
+                                            oleh <span class="font-medium text-gray-700">{{ $log->user->name }}</span>
+                                            · <span class="text-gray-400">{{ $log->user->role ? ucfirst($log->user->role) : '' }}</span>
+                                        </p>
+                                    </div>
+                                    <div class="flex-shrink-0 text-right">
+                                        <p class="text-xs text-gray-400">{{ $log->created_at->translatedFormat('d M Y') }}</p>
+                                        <p class="text-xs text-gray-400">{{ $log->created_at->format('H:i') }} WIB</p>
+                                    </div>
+                                </div>
+
+                                {{-- Catatan --}}
+                                @if ($log->catatan)
+                                <div class="mt-2 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                                    <p class="text-xs text-gray-600 leading-relaxed">{{ $log->catatan }}</p>
+                                </div>
+                                @endif
+
+                                {{-- Waktu relatif --}}
+                                <p class="text-xs text-gray-400 mt-1.5">{{ $log->created_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @else
+        {{-- Empty state ketika belum ada log --}}
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
+            <h2 class="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#022448]">timeline</span>
+                Riwayat Status Pengaduan
+            </h2>
+            <div class="text-center py-6">
+                <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#022448]/5">
+                    <span class="material-symbols-outlined text-[#022448]/30 text-2xl">history</span>
+                </div>
+                <p class="text-xs text-gray-400">Belum ada riwayat perubahan status.</p>
+            </div>
+        </div>
+        @endif
     </div>
 
     {{-- Col 3: Sidebar --}}
@@ -143,16 +253,7 @@
         </div>
         @endif
 
-        {{-- Instruksi Supervisor --}}
-        @if ($tugas->instruksi)
-        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="material-symbols-outlined text-amber-600 text-lg">description</span>
-                <p class="font-semibold text-sm text-amber-700">Instruksi Supervisor</p>
-            </div>
-            <p class="text-xs text-amber-800 mt-1">{{ $tugas->instruksi }}</p>
-        </div>
-        @endif
+        <x-instruksi-supervisor :assignment="$tugas" class="mb-4" />
 
         {{-- Form Update --}}
         @if ($tugas->status_assignment !== 'selesai')
@@ -316,3 +417,50 @@
 </div>
 
 </x-app-petugas-layout>
+
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lat = {{ $tugas->pengaduan->latitude ?? 'null' }};
+            const lng = {{ $tugas->pengaduan->longitude ?? 'null' }};
+            
+            if (lat && lng && document.getElementById('map')) {
+                const map = L.map('map').setView([lat, lng], 16);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                const markerIcon = L.divIcon({
+                    className: '',
+                    html: `<div style="
+                        width: 32px; height: 32px;
+                        background: #022448;
+                        border: 3px solid white;
+                        border-radius: 50% 50% 50% 0;
+                        transform: rotate(-45deg);
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                        position: relative;
+                    ">
+                        <div style="
+                            width: 10px; height: 10px;
+                            background: white;
+                            border-radius: 50%;
+                            position: absolute;
+                            top: 50%; left: 50%;
+                            transform: translate(-50%, -50%);
+                        "></div>
+                    </div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 32],
+                    popupAnchor: [0, -32],
+                });
+
+                L.marker([lat, lng], { icon: markerIcon }).addTo(map)
+                    .bindPopup('<b>Titik Laporan:</b><br>{{ addslashes($tugas->pengaduan->lokasi) }}')
+                    .openPopup();
+            }
+        });
+    </script>
+@endpush

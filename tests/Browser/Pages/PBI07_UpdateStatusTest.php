@@ -20,7 +20,7 @@ class PBI07_UpdateStatusTest extends DuskTestCase
 {
     use DatabaseTruncation;
 
-    private function setup(): array
+    private function createTestData(): array
     {
         $userPetugas = User::factory()->create(['role' => 'petugas']);
         $pelapor     = User::factory()->create(['role' => 'masyarakat']);
@@ -67,7 +67,7 @@ class PBI07_UpdateStatusTest extends DuskTestCase
     /** @test */
     public function petugas_dapat_update_status_ke_diproses()
     {
-        [$userPetugas, $petugas, $pengaduan, $assignment] = $this->setup();
+        [$userPetugas, $petugas, $pengaduan, $assignment] = $this->createTestData();
 
         $this->browse(function (Browser $browser) use ($userPetugas, $assignment) {
             $browser->loginAs($userPetugas)
@@ -86,7 +86,7 @@ class PBI07_UpdateStatusTest extends DuskTestCase
     /** @test */
     public function petugas_dapat_menyelesaikan_tugas_dan_notifikasi_terkirim()
     {
-        [$userPetugas, $petugas, $pengaduan, $assignment, $sla, $pelapor] = $this->setup();
+        [$userPetugas, $petugas, $pengaduan, $assignment, $sla, $pelapor] = $this->createTestData();
 
         // Set status ke diproses dulu
         $assignment->update(['status_assignment' => 'diproses']);

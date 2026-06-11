@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'SIGAP-AIR' }} — SIGAP-AIR</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 <body class="min-h-screen bg-gray-50 font-sans text-gray-800 antialiased">
     <div class="min-h-screen flex flex-col">
@@ -36,7 +37,7 @@
                                 <span class="hidden sm:inline text-sm font-medium">{{ Auth::user()->name }}</span>
                             </button>
                             <div x-show="open" @click.outside="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b">Edit Profil</a>
+                                <a href="{{ route('masyarakat.profil.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b">Edit Profil</a>
                                 <form method="POST" action="{{ route('logout') }}" data-confirm="Yakin ingin logout dari akun ini?">
                                     @csrf
                                     <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</button>
@@ -93,5 +94,6 @@
             });
         });
     </script>
+    @stack('scripts')
 </body>
 </html>

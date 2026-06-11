@@ -32,7 +32,7 @@ class KinerjaService
             foreach ($data['kinerja'] as $row) {
                 fputcsv($fp, [
                     $row['petugas']->user->name ?? '-',
-                    $row['petugas']->nomor_pegawai ?? '-',
+                    $row['petugas']->nip ?? '-',
                     $row['total_tugas'],
                     $row['total_selesai'],
                     $row['rata_waktu_jam'] ?? '-',

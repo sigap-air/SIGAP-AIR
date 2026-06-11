@@ -31,9 +31,20 @@ class VerifikasiController extends Controller
 
     public function show(Pengaduan $pengaduan)
     {
-        $pengaduan->loadMissing(['pelapor', 'kategori', 'zona', 'sla']);
+        $pengaduan->loadMissing([
+            'pelapor',
+            'kategori',
+            'zona',
+            'sla',
+            'statusLogs',
+            'assignment.petugas.user',
+            'assignment.supervisor',
+        ]);
 
-        return view('supervisor.verifikasi.show', compact('pengaduan'));
+        $isRevisiUlang = $pengaduan->status === 'menunggu_verifikasi'
+            && $pengaduan->statusLogs->contains(fn ($log) => $log->status_lama === 'ditolak' && $log->status_baru === 'menunggu_verifikasi');
+
+        return view('supervisor.verifikasi.show', compact('pengaduan', 'isRevisiUlang'));
     }
 
     public function update(VerifikasiPengaduanRequest $request, Pengaduan $pengaduan): RedirectResponse

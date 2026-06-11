@@ -1,5 +1,5 @@
 {{-- PBI-05 Antrean Verifikasi --}}
-<x-app-layout>
+<x-app-supervisor-layout>
     <x-slot name="title">Verifikasi Pengaduan</x-slot>
 
     <div class="mb-4">
@@ -82,4 +82,4 @@
         </div>
         @endif
     </div>
-</x-app-layout>
+</x-app-supervisor-layout>

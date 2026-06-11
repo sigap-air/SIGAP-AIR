@@ -1,4 +1,12 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+    @php
+        $profileRoute = match (Auth::user()->role) {
+            'admin' => route('admin.profil.edit'),
+            'supervisor' => route('supervisor.profil.edit'),
+            'petugas' => route('petugas.profil.edit'),
+            default => route('masyarakat.profil.edit'),
+        };
+    @endphp
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -34,7 +42,7 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
+                        <x-dropdown-link :href="$profileRoute">
                             {{ __('Profile') }}
                         </x-dropdown-link>
 
@@ -80,7 +88,7 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
+                <x-responsive-nav-link :href="$profileRoute">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 

@@ -30,6 +30,7 @@ class UpdateZonaRequest extends FormRequest
             ],
             'deskripsi' => ['nullable', 'string', 'max:1000'],
             'is_active'  => ['boolean'],
+            'geo_boundary' => ['nullable', 'string'],
         ];
     }
 

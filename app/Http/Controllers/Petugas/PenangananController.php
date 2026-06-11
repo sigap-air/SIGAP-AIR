@@ -63,11 +63,11 @@ class PenangananController extends Controller
         abort_if($tugas->petugas_id !== auth()->user()->petugas?->id, 403);
 
         $tugas->load([
+            'supervisor',
             'pengaduan.kategori',
             'pengaduan.zona',
             'pengaduan.pelapor',
             'pengaduan.sla',
-            'pengaduan.statusLogs.user',
         ]);
         return view('petugas.tugas.show', compact('tugas'));
     }
@@ -106,19 +106,21 @@ class PenangananController extends Controller
 
             // Notifikasi ke pelapor bahwa pengaduan selesai
             $this->notifikasiService->kirim(
-                $tugas->pengaduan->pelapor,
-                $tugas->pengaduan,
+                $tugas->pengaduan->pelapor->id,
+                $tugas->pengaduan->id,
                 'Pengaduan Selesai Ditangani ✅',
-                "Pengaduan #{$tugas->pengaduan->nomor_tiket} telah selesai ditangani. Berikan penilaian Anda!"
+                "Pengaduan #{$tugas->pengaduan->nomor_tiket} telah selesai ditangani. Berikan penilaian Anda!",
+                'status_berubah'
             );
 
             // Notifikasi ke supervisor bahwa tugas selesai
             if ($tugas->supervisor) {
                 $this->notifikasiService->kirim(
-                    $tugas->supervisor,
-                    $tugas->pengaduan,
+                    $tugas->supervisor->id,
+                    $tugas->pengaduan->id,
                     'Tugas Selesai Dilaporkan 📋',
-                    "Petugas telah menyelesaikan pengaduan #{$tugas->pengaduan->nomor_tiket}. Silakan review."
+                    "Petugas telah menyelesaikan pengaduan #{$tugas->pengaduan->nomor_tiket}. Silakan review.",
+                    'status_berubah'
                 );
             }
 
@@ -129,10 +131,11 @@ class PenangananController extends Controller
 
         // Notifikasi update status diproses
         $this->notifikasiService->kirim(
-            $tugas->pengaduan->pelapor,
-            $tugas->pengaduan,
+            $tugas->pengaduan->pelapor->id,
+            $tugas->pengaduan->id,
             'Pengaduan Sedang Diproses 🔧',
-            "Pengaduan #{$tugas->pengaduan->nomor_tiket} sedang dalam proses penanganan oleh petugas kami."
+            "Pengaduan #{$tugas->pengaduan->nomor_tiket} sedang dalam proses penanganan oleh petugas kami.",
+            'status_berubah'
         );
 
         return redirect()

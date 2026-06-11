@@ -11,16 +11,17 @@
         showMobileMenu: false,
         showNotifications: false,
         unreadCount: 0,
+        notifications: [],
         showProfileDropdown: false,
         init() {
             this.fetchNotifications();
-            setInterval(() => this.fetchNotifications(), 30000);
         },
         async fetchNotifications() {
             try {
-                const response = await fetch('/api/notifikasi/count');
+                const response = await fetch('/notifikasi/count');
                 const data = await response.json();
                 this.unreadCount = data.unread_count || 0;
+                this.notifications = data.notifications || [];
             } catch (error) {
                 console.error('Failed to fetch notifications:', error);
             }
@@ -60,18 +61,23 @@
                             </button>
 
                             <!-- Notification Dropdown -->
-                            <div x-show="showNotifications" @click.outside="showNotifications = false" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                <div class="p-4 border-b border-gray-200">
+                            <div x-show="showNotifications" @click.outside="showNotifications = false" style="display: none;" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
                                     <h3 class="font-semibold text-gray-900">Notifikasi</h3>
                                 </div>
                                 <div class="max-h-96 overflow-y-auto">
-                                    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
-                                        <p class="text-sm font-medium text-gray-900">Pengaduan Anda telah diproses</p>
-                                        <p class="text-xs text-gray-500 mt-1">Pengaduan #PRL202601 sedang ditindaklanjuti</p>
+                                    <template x-for="notif in notifications" :key="notif.id">
+                                        <a :href="'/notifikasi/' + notif.id + '/baca'" class="block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors text-left">
+                                            <p class="text-sm font-medium text-gray-900" x-text="notif.judul"></p>
+                                            <p class="text-xs text-gray-500 mt-1" x-text="notif.pesan"></p>
+                                        </a>
+                                    </template>
+                                    <div x-show="notifications.length === 0" class="p-4 text-center text-sm text-gray-500">
+                                        Belum ada notifikasi baru
                                     </div>
                                 </div>
                                 <div class="p-3 border-t border-gray-200 text-center">
-                                    <a href="#" class="text-sm text-[#2563EB] hover:text-[#1D4ED8] font-medium">Lihat Semua</a>
+                                    <a href="{{ route('notifikasi.index') }}" class="text-sm text-[#2563EB] hover:text-[#1D4ED8] font-medium">Lihat Semua</a>
                                 </div>
                             </div>
                         </div>
@@ -88,8 +94,7 @@
 
                             <!-- Profile Dropdown Menu -->
                             <div x-show="showProfileDropdown" @click.outside="showProfileDropdown = false" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200">Edit Profil</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200">Ganti Password</a>
+                                <a href="{{ route('masyarakat.profil.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200">Edit Profil</a>
                                 <form method="POST" action="{{ route('logout') }}" class="block" data-confirm="Yakin ingin logout dari akun ini?">
                                     @csrf
                                     <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</button>
@@ -111,14 +116,14 @@
                     <span>Beranda</span>
                 </a>
 
-                <a href="#" :class="isactive('/pengaduan/baru') ? 'border-b-2 border-[#2563EB] text-[#2563EB]' : 'text-gray-600 hover:text-gray-900'" class="px-4 py-3 font-medium text-sm transition-colors flex items-center gap-2">
+                <a href="{{ route('masyarakat.pengaduan.create') }}" :class="isactive('/pengaduan/create') ? 'border-b-2 border-[#2563EB] text-[#2563EB]' : 'text-gray-600 hover:text-gray-900'" class="px-4 py-3 font-medium text-sm transition-colors flex items-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M12 3.586a1 1 0 00-1.414 0L7 7.172V5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2v2.172l-3.586-3.586zM15 13H5v2h10v-2z" clip-rule="evenodd" />
                     </svg>
                     <span>Buat Pengaduan</span>
                 </a>
 
-                <a href="#" :class="isactive('/pengaduan/riwayat') ? 'border-b-2 border-[#2563EB] text-[#2563EB]' : 'text-gray-600 hover:text-gray-900'" class="px-4 py-3 font-medium text-sm transition-colors flex items-center gap-2">
+                <a href="{{ route('masyarakat.pengaduan.riwayat') }}" :class="isactive('/pengaduan/riwayat') ? 'border-b-2 border-[#2563EB] text-[#2563EB]' : 'text-gray-600 hover:text-gray-900'" class="px-4 py-3 font-medium text-sm transition-colors flex items-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                         <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000-2H2a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2 1 1 0 000 2h2a1 1 0 110 2H4zm2 4a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
@@ -145,14 +150,14 @@
                     <span>Beranda</span>
                 </a>
 
-                <a href="#" :class="isactive('/pengaduan/baru') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
+                <a href="{{ route('masyarakat.pengaduan.create') }}" :class="isactive('/pengaduan/create') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
                     <span>Buat</span>
                 </a>
 
-                <a href="#" :class="isactive('/pengaduan/riwayat') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
+                <a href="{{ route('masyarakat.pengaduan.riwayat') }}" :class="isactive('/pengaduan/riwayat') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
                         <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000-2H2a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2 1 1 0 000 2h2a1 1 0 110 2H4zm2 4a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
@@ -160,7 +165,7 @@
                     <span>Riwayat</span>
                 </a>
 
-                <a href="{{ route('profile.edit') }}" :class="isactive('/profil') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
+                <a href="{{ route('masyarakat.profil.edit') }}" :class="isactive('/profil') ? 'text-[#2563EB]' : 'text-gray-600'" class="flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                     </svg>

@@ -26,7 +26,7 @@
         'masyarakat' => [
             ['label' => 'Dashboard',    'route' => 'masyarakat.dashboard',      'icon' => '🏠'],
             ['label' => 'Buat Pengaduan','route' => 'masyarakat.pengaduan.create','icon'=> '📋'],
-            ['label' => 'Riwayat',      'route' => 'masyarakat.riwayat.index',  'icon' => '📜'],
+            ['label' => 'Riwayat',      'route' => 'masyarakat.pengaduan.riwayat',  'icon' => '📜'],
             ['label' => 'Notifikasi',   'route' => 'masyarakat.notifikasi.index','icon'=> '🔔'],
         ],
         default => [],

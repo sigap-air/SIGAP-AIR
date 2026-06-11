@@ -54,6 +54,7 @@ class ZonaController extends Controller
             'kode_zona' => strtoupper($request->kode_zona),
             'deskripsi' => $request->deskripsi,
             'is_active'  => $request->boolean('is_active', true),
+            'geo_boundary' => $request->geo_boundary ? json_decode($request->geo_boundary, true) : null,
         ]);
 
         return redirect()
@@ -70,10 +71,12 @@ class ZonaController extends Controller
         $zona = ZonaWilayah::findOrFail($id);
         $zona->load('petugas.user');
 
-        // Petugas yang belum punya zona (tersedia untuk di-assign)
-        $petugasTanpaZona = Petugas::whereNull('zona_id')
-            ->with('user')
-            ->get();
+        // Petugas yang belum dipetakan ke zona ini (tersedia untuk di-assign)
+        $petugasTanpaZona = Petugas::whereDoesntHave('zones', function ($query) use ($zona) {
+            $query->where('zona_wilayah.id', $zona->id);
+        })
+        ->with('user')
+        ->get();
 
         return view('admin.zona.show', compact('zona', 'petugasTanpaZona'));
     }
@@ -102,6 +105,7 @@ class ZonaController extends Controller
             'kode_zona' => strtoupper($request->kode_zona),
             'deskripsi' => $request->deskripsi,
             'is_active'  => $request->boolean('is_active', true),
+            'geo_boundary' => $request->geo_boundary ? json_decode($request->geo_boundary, true) : null,
         ]);
 
         return redirect()
@@ -149,22 +153,27 @@ class ZonaController extends Controller
     public function assignPetugas(\Illuminate\Http\Request $request, int $id): RedirectResponse
     {
         $request->validate([
-            'petugas_id' => ['required', 'exists:petugas,id'],
+            'petugas_id' => ['required'],
         ]);
 
-        $zona    = ZonaWilayah::findOrFail($id);
-        $petugas = Petugas::findOrFail($request->petugas_id);
+        $zona = ZonaWilayah::findOrFail($id);
+        $petugasIds = is_array($request->petugas_id) ? $request->petugas_id : [$request->petugas_id];
 
-        // Cek jika petugas sudah punya zona aktif lain
-        if ($petugas->zona_id !== null && $petugas->zona_id !== $zona->id) {
-            $namaZonaLama = optional($petugas->zona)->nama_zona ?? 'zona lain';
-            return redirect()->back()->with(
-                'warning',
-                "Petugas sudah terdaftar di {$namaZonaLama}. Lepaskan dulu dari zona tersebut."
-            );
+        // Validasi keberadaan petugas
+        foreach ($petugasIds as $petId) {
+            Petugas::findOrFail($petId);
         }
 
-        $petugas->update(['zona_id' => $zona->id]);
+        // Petakan ke tabel pivot
+        $zona->petugas()->syncWithoutDetaching($petugasIds);
+
+        // Update fallback zona_id ke database petugas (untuk backward compatibility)
+        foreach ($petugasIds as $petId) {
+            $p = Petugas::find($petId);
+            if ($p && $p->zona_id === null) {
+                $p->update(['zona_id' => $zona->id]);
+            }
+        }
 
         return redirect()->back()
             ->with('success', 'Petugas berhasil dipetakan ke zona.');
@@ -172,26 +181,31 @@ class ZonaController extends Controller
 
     /**
      * DELETE /admin/zona/{id}/remove-petugas/{petugasId}
-     * Lepaskan petugas dari zona (set zona_id = null).
+     * Lepaskan petugas dari zona.
      *
-     * BUSINESS RULE: Tidak boleh dilepas jika masih ada assignment aktif.
+     * BUSINESS RULE: Tidak boleh dilepas jika masih ada assignment aktif di zona ini.
      */
     public function removePetugas(int $id, int $petugasId): RedirectResponse
     {
         // Pastikan zona benar-benar ada
-        ZonaWilayah::findOrFail($id);
+        $zona = ZonaWilayah::findOrFail($id);
 
         $petugas = Petugas::findOrFail($petugasId);
 
-        // Cek assignment aktif (ditugaskan | sedang_diproses)
-        if ($petugas->assignmentsAktif()->exists()) {
+        // Cek assignment aktif (ditugaskan | sedang_diproses) untuk pengaduan di zona ini
+        if ($petugas->assignmentsAktif()->whereHas('pengaduan', fn($q) => $q->where('zona_id', $id))->exists()) {
             return redirect()->back()->with(
                 'error',
-                'Petugas tidak dapat dilepas karena masih memiliki tugas aktif.'
+                'Petugas tidak dapat dilepas karena masih memiliki tugas aktif di zona ini.'
             );
         }
 
-        $petugas->update(['zona_id' => null]);
+        // Lepaskan relasi pivot many-to-many
+        $zona->petugas()->detach($petugasId);
+
+        // Update fallback zona_id pada tabel petugas ke zona lainnya jika masih ada
+        $firstZone = $petugas->zones()->first();
+        $petugas->update(['zona_id' => $firstZone ? $firstZone->id : null]);
 
         return redirect()->back()
             ->with('success', 'Petugas berhasil dilepas dari zona.');
