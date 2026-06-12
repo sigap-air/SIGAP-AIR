@@ -121,48 +121,46 @@
         <table class="w-full text-sm">
             <thead>
                 <tr class="bg-gray-50 border-b border-gray-100 uppercase text-xs font-bold text-gray-500 tracking-wider">
-                    <th class="px-6 py-5 text-left">NO</th>
-                    <th class="px-6 py-5 text-left">PETUGAS</th>
-                    <th class="px-6 py-5 text-left">NIP</th>
-                    <th class="px-6 py-5 text-left">ZONA</th>
-                    <th class="px-6 py-5 text-left">STATUS</th>
-                    <th class="px-6 py-5 text-center">AKSI</th>
+                    <th class="px-6 py-6 text-left">NO</th>
+                    <th class="px-6 py-6 text-left">PETUGAS</th>
+                    <th class="px-6 py-6 text-left">NIP</th>
+                    <th class="px-6 py-6 text-left">ZONA</th>
+                    <th class="px-6 py-6 text-left">STATUS</th>
+                    <th class="px-6 py-6 text-center">AKSI</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 bg-white">
                 @forelse($petugas as $index => $p)
                     <tr class="hover:bg-gray-50 transition duration-150">
-                        <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500">
+                        <td class="px-6 py-6 whitespace-nowrap text-sm font-medium text-gray-500">
                             {{ $petugas->firstItem() + $index }}
                         </td>
-                        <td class="px-6 py-5 whitespace-nowrap">
-                            <div class="flex items-center gap-4">
-                                @if($p->user?->foto_profil)
-                                    <img src="{{ asset('storage/' . $p->user->foto_profil) }}" alt="" class="w-12 h-12 rounded-full object-cover shadow-sm">
+                        <td class="px-6 py-6 whitespace-nowrap">
+                            <div class="flex items-center gap-5">
+                                @if($p->user?->foto_profil && file_exists(public_path('storage/' . $p->user->foto_profil)))
+                                    <img src="{{ asset('storage/' . $p->user->foto_profil) }}" alt="" class="w-14 h-14 rounded-full object-cover shadow-sm">
                                 @else
-                                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 shadow-sm">
-                                        <span class="material-symbols-outlined text-2xl">person</span>
-                                    </div>
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($p->user?->name ?? 'P') }}&background=EFF6FF&color=1D4ED8&bold=true" alt="" class="w-14 h-14 rounded-full object-cover shadow-sm">
                                 @endif
-                                <div>
-                                    <div class="text-sm font-bold text-gray-900">{{ $p->user?->name ?? '(tanpa nama)' }}</div>
-                                    <div class="text-xs text-gray-500 mt-0.5">{{ $p->user?->email ?? '—' }}</div>
-                                    <div class="text-xs text-gray-400">{{ $p->user?->no_telepon ?? '—' }}</div>
+                                <div class="flex flex-col gap-1.5">
+                                    <div class="text-[15px] font-bold text-gray-900 leading-none">{{ $p->user?->name ?? '(tanpa nama)' }}</div>
+                                    <div class="text-[13px] text-gray-500 leading-none">{{ $p->user?->email ?? '—' }}</div>
+                                    <div class="text-xs text-gray-400 leading-none">{{ $p->user?->no_telepon ?? '—' }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-5 whitespace-nowrap">
+                        <td class="px-6 py-6 whitespace-nowrap">
                             <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold bg-[#F0F5FA] text-[#022448]">
                                 <span class="mr-1 opacity-70">#</span> {{ $p->nip ?? '—' }}
                             </span>
                         </td>
-                        <td class="px-6 py-5 whitespace-nowrap">
+                        <td class="px-6 py-6 whitespace-nowrap">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-700">
                                 <span class="material-symbols-outlined text-[16px]">map</span>
                                 {{ $p->zona?->nama_zona ?? '—' }}
                             </span>
                         </td>
-                        <td class="px-6 py-5 whitespace-nowrap">
+                        <td class="px-6 py-6 whitespace-nowrap">
                             @php
                                 $cfg = [
                                     'tersedia'    => ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-700', 'dot' => 'bg-emerald-500'],
@@ -177,7 +175,7 @@
                                 {{ $lbl[$p->status_tersedia] ?? $p->status_tersedia }}
                             </span>
                         </td>
-                        <td class="px-6 py-5 whitespace-nowrap text-center">
+                        <td class="px-6 py-6 whitespace-nowrap text-center">
                             <div class="flex items-center justify-center gap-3">
                                 <a href="{{ route($routePrefix . '.show', $p) }}" class="text-[#022448] hover:text-blue-700 transition" title="{{ $routePrefix === 'supervisor.petugas' ? 'Detail & catatan assignment' : 'Detail' }}">
                                     <span class="material-symbols-outlined text-[20px]">visibility</span>

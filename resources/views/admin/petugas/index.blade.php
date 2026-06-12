@@ -147,18 +147,16 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                @if($p->user?->foto_profil)
-                                    <img src="{{ asset('storage/' . $p->user->foto_profil) }}" class="w-9 h-9 rounded-full object-cover border border-gray-200 flex-shrink-0" alt="Foto">
+                                @if($p->user?->foto_profil && file_exists(public_path('storage/' . $p->user->foto_profil)))
+                                    <img src="{{ asset('storage/' . $p->user->foto_profil) }}" class="w-12 h-12 rounded-full object-cover border border-gray-200 flex-shrink-0" alt="Foto">
                                 @else
-                                    <div class="w-9 h-9 rounded-full bg-[#022448]/10 flex items-center justify-center flex-shrink-0 border border-transparent">
-                                        <span class="material-symbols-outlined text-[#022448] text-base">person</span>
-                                    </div>
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($p->user?->name ?? 'P') }}&background=EFF6FF&color=1D4ED8&bold=true" alt="Foto" class="w-12 h-12 rounded-full object-cover shadow-sm">
                                 @endif
-                                <div>
-                                    <p class="font-semibold text-gray-900">{{ $p->user?->name ?? '(tanpa nama)' }}</p>
-                                    <p class="text-xs text-gray-400">{{ $p->user?->email ?? '—' }}</p>
+                                <div class="flex flex-col gap-1">
+                                    <p class="text-[15px] font-bold text-gray-900 leading-none">{{ $p->user?->name ?? '(tanpa nama)' }}</p>
+                                    <p class="text-[13px] text-gray-500 leading-none">{{ $p->user?->email ?? '—' }}</p>
                                     @if($p->user?->no_telepon)
-                                        <p class="text-xs text-gray-400">{{ $p->user->no_telepon }}</p>
+                                        <p class="text-xs text-gray-400 leading-none">{{ $p->user->no_telepon }}</p>
                                     @endif
                                 </div>
                             </div>
@@ -292,5 +290,4 @@
     @endif
 </div>
 
-    @include('petugas-manajemen._index-content')
 </x-app-admin-layout>
