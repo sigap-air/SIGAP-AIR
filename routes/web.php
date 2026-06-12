@@ -173,7 +173,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/pengaduan', [DaftarPengaduanController::class, 'index'])->name('pengaduan.index');
-
+        Route::get('/pengaduan/export-csv', [DaftarPengaduanController::class, 'exportCsv'])->name('pengaduan.export-csv');
         // ✅ SLA (punyamu)
         Route::get('/profil', [ProfileController::class, 'edit'])->name('profil.edit');
         Route::patch('/profil', [ProfileController::class, 'update'])->name('profil.update');
