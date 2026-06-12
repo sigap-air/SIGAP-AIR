@@ -18,7 +18,6 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'nama'                  => 'required|string|max:255',
-            'email'                 => 'required|email|unique:users,email',
             'email'                 => ['required', 'email', 'unique:users,email', 'regex:/@pdam\.go\.id$/'],
             'username'              => 'required|string|max:100|unique:users,username|regex:/^\S+$/',
             'role'                  => 'required|in:admin,supervisor,petugas,masyarakat',

@@ -19,41 +19,6 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = User::query()->latest();
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('role')) {
-            $query->where('role', $request->role);
-        }
-
-        if ($request->filled('status')) {
-            if ($request->status === 'aktif') {
-                $query->where('is_active', true);
-            } elseif ($request->status === 'nonaktif') {
-                $query->where('is_active', false);
-            }
-        }
-
-        $users = $query->paginate(15)->withQueryString();
-
-        $stats = [
-            'total'      => User::count(),
-            'admin'      => User::where('role', 'admin')->count(),
-            'supervisor' => User::where('role', 'supervisor')->count(),
-            'petugas'    => User::where('role', 'petugas')->count(),
-            'masyarakat' => User::where('role', 'masyarakat')->count(),
-        ];
-
-        return view('admin.user.index', compact('users', 'stats'));
     /**
      * GET /admin/users
      * Daftar user dengan filter: search, role, is_active
@@ -72,7 +37,15 @@ class UserController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.user.index', compact('users'));
+        $stats = [
+            'total'      => User::count(),
+            'admin'      => User::where('role', 'admin')->count(),
+            'supervisor' => User::where('role', 'supervisor')->count(),
+            'petugas'    => User::where('role', 'petugas')->count(),
+            'masyarakat' => User::where('role', 'masyarakat')->count(),
+        ];
+
+        return view('admin.user.index', compact('users', 'stats'));
     }
 
     /**
@@ -81,8 +54,7 @@ class UserController extends Controller
     public function create()
     {
         $zonas = ZonaWilayah::where('is_active', true)->orderBy('nama_zona')->get();
-        return view('admin.user.create', compact('zonas'));
-        $year = date('Y');
+        $year  = date('Y');
         $counters = [
             'admin'      => User::where('role', 'admin')->whereYear('created_at', $year)->count() + 1,
             'supervisor' => User::where('role', 'supervisor')->whereYear('created_at', $year)->count() + 1,
@@ -99,7 +71,6 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         DB::transaction(function () use ($request) {
-            $user = User::create([
             $fotoPath = null;
             if ($request->hasFile('foto_profil')) {
                 $fotoPath = $request->file('foto_profil')->store('profile_photos', 'public');
@@ -107,27 +78,27 @@ class UserController extends Controller
 
             // Auto-generate NIP berdasarkan role
             $prefix = match($request->role) {
-                'admin' => 'ADM',
+                'admin'      => 'ADM',
                 'supervisor' => 'SPV',
-                'petugas' => 'PEG',
-                default => 'MSY',
+                'petugas'    => 'PEG',
+                default      => 'MSY',
             };
-            $year = date('Y');
+            $year  = date('Y');
             $count = User::where('role', $request->role)
                          ->whereYear('created_at', $year)
                          ->count() + 1;
             $nip = sprintf("%s-%s-%04d", $prefix, $year, $count);
 
             $user = User::create([
-                'nip'        => $nip,
-                'name'       => $request->nama,
-                'email'      => $request->email,
-                'username'   => $request->username,
-                'password'   => Hash::make($request->password),
-                'role'       => $request->role,
-                'no_telepon' => $request->no_telepon,
-                'foto_profil'=> $fotoPath,
-                'is_active'  => true,
+                'nip'         => $nip,
+                'name'        => $request->nama,
+                'email'       => $request->email,
+                'username'    => $request->username,
+                'password'    => Hash::make($request->password),
+                'role'        => $request->role,
+                'no_telepon'  => $request->no_telepon,
+                'foto_profil' => $fotoPath,
+                'is_active'   => true,
             ]);
 
             // Jika role petugas, otomatis buat record di tabel petugas
@@ -187,10 +158,8 @@ class UserController extends Controller
             // Kelola record petugas jika role berubah ke/dari petugas
             if ($request->role === 'petugas') {
                 if ($user->petugas) {
-                    // Update zona jika sudah ada record petugas
                     $user->petugas->update(['zona_id' => $request->zona_id]);
                 } else {
-                    // Buat record petugas baru
                     Petugas::create([
                         'user_id'         => $user->id,
                         'zona_id'         => $request->zona_id,
@@ -198,8 +167,6 @@ class UserController extends Controller
                     ]);
                 }
             } elseif ($oldRole === 'petugas' && $request->role !== 'petugas') {
-                // Role berubah dari petugas ke role lain — hapus record petugas
-                // hanya jika tidak ada assignment aktif
                 if ($user->petugas && $user->petugas->assignmentsAktif()->count() === 0) {
                     $user->petugas->delete();
                 }
@@ -262,7 +229,6 @@ class UserController extends Controller
      */
     public function toggleActive(User $user)
     {
-        // Cegah admin menonaktifkan dirinya sendiri
         if ($user->id === auth()->id()) {
             return redirect()->back()
                 ->with('error', 'Tidak dapat menonaktifkan akun sendiri.');
