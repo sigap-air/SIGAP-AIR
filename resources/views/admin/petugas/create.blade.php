@@ -196,7 +196,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {{-- NIP — AUTO GENERATED --}}
+                    {{-- NIP — AUTO GENERATED (readonly) --}}
                     <div>
                         <label for="nip" class="block text-sm font-medium text-gray-700 mb-1.5">
                             NIP
@@ -205,6 +205,15 @@
                                 Auto-Generate
                             </span>
                         </label>
+                        <div class="relative">
+                            <input type="text" name="nip" id="nip" value="{{ $autoNip }}"
+                                   readonly tabindex="-1"
+                                   class="w-full border border-gray-200 bg-gray-50 rounded-xl px-4 py-2.5 text-sm font-mono text-gray-500 cursor-not-allowed select-none">
+                            <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-gray-400 text-base">lock</span>
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">NIP dibuat otomatis oleh sistem dan tidak dapat diubah.</p>
                         <input type="text" value="{{ old('nip', $autoNip) }}" disabled
                                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-mono bg-gray-100 cursor-not-allowed text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#022448]/20 focus:border-[#022448] transition {{ $errors->has('nip') ? 'border-red-400 bg-red-50' : '' }}">
                         <p class="text-xs text-gray-400 mt-1">NIP dibuat otomatis oleh sistem.</p>

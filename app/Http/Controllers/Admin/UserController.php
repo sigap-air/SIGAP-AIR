@@ -19,6 +19,41 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = User::query()->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'aktif') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'nonaktif') {
+                $query->where('is_active', false);
+            }
+        }
+
+        $users = $query->paginate(15)->withQueryString();
+
+        $stats = [
+            'total'      => User::count(),
+            'admin'      => User::where('role', 'admin')->count(),
+            'supervisor' => User::where('role', 'supervisor')->count(),
+            'petugas'    => User::where('role', 'petugas')->count(),
+            'masyarakat' => User::where('role', 'masyarakat')->count(),
+        ];
+
+        return view('admin.user.index', compact('users', 'stats'));
     /**
      * GET /admin/users
      * Daftar user dengan filter: search, role, is_active

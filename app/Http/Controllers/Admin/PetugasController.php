@@ -209,10 +209,11 @@ class PetugasController extends Controller
                 'status_tersedia'      => $request->status_tersedia,
                 'zona_id'              => $request->zona_id,
             // 3. Buat record petugas yang terhubung ke user
+            //    NIP selalu di-generate otomatis — tidak menggunakan input dari request
             Petugas::create([
                 'user_id'         => $user->id,
                 'zona_id'         => $request->zona_id ?: null,
-                'nip'             => $request->nip ?: $this->generateNip(),
+                'nip'             => $this->generateNip(),
                 'status_tersedia' => $request->status_tersedia,
             ]);
         });
